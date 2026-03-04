@@ -1,0 +1,403 @@
+---
+title: Import & Export
+description: Share and import WeakAuras between characters and players
+icon: right-left
+---
+
+WeakAuras provides powerful import/export functionality to share your auras with others or move them between characters.
+
+## Exporting Auras
+
+### Basic Export
+
+<Steps>
+  <Step title="Open WeakAuras">
+    Type `/wa` or click the minimap icon
+  </Step>
+  
+  <Step title="Select the Aura">
+    Click on the aura or group you want to export
+  </Step>
+  
+  <Step title="Click Export">
+    Click the export button (📋 icon) in the interface
+  </Step>
+  
+  <Step title="Copy the String">
+    WeakAuras will generate an encoded string. Press Ctrl+C to copy it to your clipboard.
+  </Step>
+</Steps>
+
+### What Gets Exported
+
+When you export an aura, the following is included:
+
+<AccordionGroup>
+  <Accordion title="Display Configuration">
+    - Visual settings (size, position, colors)
+    - Textures and icons
+    - Animation settings
+    - Font choices
+  </Accordion>
+
+  <Accordion title="Trigger Settings">
+    - All trigger configurations
+    - Multiple trigger logic
+    - Custom trigger code
+  </Accordion>
+
+  <Accordion title="Load Conditions">
+    - Class/spec requirements
+    - Zone restrictions
+    - Combat state conditions
+  </Accordion>
+
+  <Accordion title="Actions & Custom Code">
+    - On Init/Show/Hide actions
+    - Custom Lua code
+    - Sound effects
+  </Accordion>
+
+  <Accordion title="Groups & Children">
+    When exporting a group, all child auras are included automatically.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+**Not Exported:**
+- Character-specific settings
+- Position of auras if you want recipients to reposition them
+- WeakAuras Companion sync data
+- Saved variables from `aura_env.saved` (unless specifically configured)
+</Warning>
+
+### Export Format
+
+WeakAuras uses a compressed and encoded format:
+
+```
+!WA:2!...encoded string...
+```
+
+The format includes:
+- Version identifier (`!WA:2!`)
+- LibDeflate compression for size efficiency
+- Base64 encoding for safe transmission
+- Serialized Lua table data
+
+## Importing Auras
+
+### Basic Import
+
+<Steps>
+  <Step title="Copy the Import String">
+    Get the WeakAuras string from a friend, website, or your notes
+  </Step>
+  
+  <Step title="Open WeakAuras">
+    Type `/wa` to open the interface
+  </Step>
+  
+  <Step title="Click Import">
+    Click the "Import" button (or press Ctrl+V if string is in clipboard)
+  </Step>
+  
+  <Step title="Paste the String">
+    Paste the import string into the text field
+  </Step>
+  
+  <Step title="Review & Import">
+    WeakAuras will show a preview. Click "Import" to confirm
+  </Step>
+</Steps>
+
+### Import Dialog
+
+The import dialog shows:
+
+- **Aura Name**: The name of the imported aura
+- **Author**: Who created it (if available)
+- **Description**: What the aura does
+- **Version**: WeakAuras version used to create it
+- **Preview**: Visual preview of the aura
+- **Custom Code Warning**: Alert if the aura contains Lua code
+
+<Warning>
+**Security Notice**: Imported auras may contain custom Lua code. Only import auras from trusted sources. Review any custom code before importing.
+</Warning>
+
+### Handling Import Conflicts
+
+If you already have an aura with the same name:
+
+<Tabs>
+  <Tab title="Update Existing">
+    Replaces your current version with the imported one. Your customizations will be lost.
+  </Tab>
+  
+  <Tab title="Keep Both">
+    Imports the aura with a new name (e.g., "Aura Name 2"). Both versions will exist.
+  </Tab>
+  
+  <Tab title="Cancel">
+    Cancels the import. Your existing aura remains unchanged.
+  </Tab>
+</Tabs>
+
+## Sharing Methods
+
+### Copy/Paste
+
+The simplest method:
+
+1. Export the aura
+2. Share the string via:
+   - Discord
+   - Pastebin
+   - Google Docs
+   - In-game chat (for small auras)
+
+<Tip>
+For long strings, use a service like [Pastebin](https://pastebin.com) instead of pasting directly in chat.
+</Tip>
+
+### Wago.io
+
+The premier sharing platform for WeakAuras:
+
+<CardGroup cols={2}>
+  <Card title="Upload" icon="upload">
+    **Uploading to Wago.io:**
+    1. Visit [wago.io](https://wago.io)
+    2. Create an account
+    3. Click "Import String" and paste your export
+    4. Add description, screenshots, and tags
+    5. Publish for others to use
+  </Card>
+  
+  <Card title="Download" icon="download">
+    **Installing from Wago.io:**
+    1. Find the aura on wago.io
+    2. Click "Copy Import String"
+    3. Import in WeakAuras as normal
+    4. Or use WeakAuras Companion app for one-click install
+  </Card>
+</CardGroup>
+
+### WeakAuras Companion
+
+The [WeakAuras Companion](/development/extensions/weakauras-companion) app provides:
+
+- One-click updates from Wago.io
+- Automatic update notifications
+- Bulk import/update operations
+- Collection management
+
+### In-Game Sharing
+
+Share directly with other players:
+
+<Steps>
+  <Step title="Create a Chat Link">
+    Select your aura and click the "Link" button
+  </Step>
+  
+  <Step title="Share in Chat">
+    Post the link in guild chat, party, raid, or whisper
+  </Step>
+  
+  <Step title="Recipient Clicks Link">
+    Other players click the link to request the aura
+  </Step>
+  
+  <Step title="Automatic Transfer">
+    WeakAuras sends the aura data directly to the player
+  </Step>
+</Steps>
+
+<Note>
+In-game sharing only works with players in your party, raid, or guild. For strangers, use export strings instead.
+</Note>
+
+## Advanced Import/Export
+
+### Transmission.lua
+
+The import/export system is implemented in `WeakAuras/Transmission.lua`:
+
+```lua
+-- Key functions from Transmission.lua
+
+-- Convert display to export string
+DisplayToString(id, forChat)
+
+-- Import aura from string
+Import(str, target)
+
+-- Encode table to string
+TableToString(inTable, forChat)
+
+-- Decode string to table
+StringToTable(inString, fromChat)
+```
+
+### Export String Format
+
+The technical format:
+
+1. **Serialization**: Lua table → LibSerialize
+2. **Compression**: LibDeflate with level 9 compression
+3. **Encoding**: Base64 for safe text transmission
+4. **Prefix**: `!WA:2!` version identifier
+
+```lua
+-- Simplified export process
+local serialized = LibSerialize:SerializeEx(config, auraData)
+local compressed = LibDeflate:CompressDeflate(serialized, {level = 9})
+local encoded = "!WA:2!" .. LibDeflate:EncodeForPrint(compressed)
+```
+
+### Import Versions
+
+WeakAuras supports multiple import versions:
+
+- **Version 0**: Legacy format (simple Base64)
+- **Version 1**: Base64 with LibDeflate compression (`!...`)
+- **Version 2+**: Modern format (`!WA:2!...`)
+
+The import system automatically detects and handles all formats.
+
+### Custom Data Handling
+
+Some data is stripped during export for security:
+
+```lua
+-- Non-transmissable fields (from Transmission.lua)
+local non_transmissable_fields = {
+  -- Character-specific data
+  frameStrata = true,
+  anchorFrameType = true,
+  
+  -- Unused custom trigger fields
+  custom = true,      -- if trigger type is not "custom"
+  customDuration = true,
+  customIcon = true,
+  
+  -- Internal state
+  information = {
+    saved = true      -- aura_env.saved data
+  }
+}
+```
+
+### Programmatic Import
+
+Import auras via Lua:
+
+```lua
+-- Import from string
+local success, error = WeakAuras.Import(importString)
+
+if success then
+  print("Aura imported successfully")
+else
+  print("Import failed:", error)
+end
+
+-- Update existing aura
+local targetData = WeakAuras.GetData("ExistingAuraID")
+WeakAuras.Import(importString, targetData)
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Document Your Auras" icon="book">
+    Add descriptions and notes explaining what the aura does and how to use it.
+  </Card>
+  
+  <Card title="Test Before Sharing" icon="vial">
+    Thoroughly test auras before sharing to ensure they work correctly.
+  </Card>
+  
+  <Card title="Include Load Conditions" icon="filter">
+    Set appropriate load conditions so the aura only loads when needed.
+  </Card>
+  
+  <Card title="Comment Custom Code" icon="code">
+    Document any Lua code with clear comments explaining the logic.
+  </Card>
+  
+  <Card title="Version Your Auras" icon="hashtag">
+    Include version numbers or dates in the aura name or notes.
+  </Card>
+  
+  <Card title="Credit Sources" icon="user">
+    If you modified someone else's aura, credit the original author.
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Import String Not Working">
+    **Possible causes:**
+    - Incomplete copy (missing beginning or end)
+    - Text editor modified the string (added line breaks)
+    - WeakAuras version too old
+    
+    **Solutions:**
+    - Ensure you copied the entire string including `!WA:2!`
+    - Use a plain text editor, not Word or rich text
+    - Update WeakAuras to the latest version
+  </Accordion>
+  
+  <Accordion title="Error Decoding/Decompressing">
+    **Possible causes:**
+    - Corrupted import string
+    - String was modified
+    - Clipboard issue
+    
+    **Solutions:**
+    - Request a fresh export from the source
+    - Try copying again
+    - Check for special characters that got mangled
+  </Accordion>
+  
+  <Accordion title="Aura Not Showing After Import">
+    **Check these:**
+    - Load conditions (class, spec, zone)
+    - Trigger conditions might not be met
+    - Aura might be positioned off-screen
+    - Combat requirements
+    
+    **Solutions:**
+    - Review load conditions in the Load tab
+    - Test the trigger condition
+    - Reset position to screen center
+  </Accordion>
+  
+  <Accordion title="Custom Code Warning">
+    WeakAuras warns when importing auras with custom Lua code.
+    
+    **What to do:**
+    - Only import from trusted sources
+    - Review the custom code before importing
+    - Check for suspicious functions (file access, addon messages)
+    - Ask the community if unsure
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Creating Auras" icon="wand-magic-sparkles" href="/development/creating-auras">
+    Learn to create your own auras
+  </Card>
+  <Card title="WeakAuras Companion" icon="desktop" href="/development/extensions/weakauras-companion">
+    Automate imports from Wago.io
+  </Card>
+  <Card title="Lua Scripting" icon="code" href="/development/lua-scripting">
+    Add custom functionality
+  </Card>
+</CardGroup>

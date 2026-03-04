@@ -1,0 +1,381 @@
+---
+title: Templates
+description: Using and creating WeakAuras templates for quick aura setup
+icon: layer-group
+---
+
+Templates provide pre-configured auras for common use cases, making it easy to create professional-looking displays without starting from scratch.
+
+## Using Templates
+
+### Accessing Templates
+
+1. Open WeakAuras with `/wa`
+2. Click "New" button
+3. Browse the template categories:
+   - **Class Templates**: Abilities, resources, and mechanics for each class
+   - **General Templates**: Universal tracking (cooldowns, proc alerts, resources)
+   - **Encounter Templates**: Boss mechanics and timers
+
+### Template Categories
+
+<Tabs>
+  <Tab title="Class Templates">
+    Templates specific to each class and specialization:
+
+    **Available for Each Class:**
+    - Core abilities and cooldowns
+    - Resource tracking (combo points, holy power, runes, etc.)
+    - Important procs and buffs
+    - Spec-specific mechanics
+
+    **Example: Death Knight**
+    - Rune display with cooldowns
+    - Blood Shield tracker
+    - Bone Shield stacks
+    - Army of the Dead duration
+  </Tab>
+
+  <Tab title="General Templates">
+    Universal templates for all classes:
+
+    - Cooldown tracker
+    - Buff/debuff monitor
+    - Item cooldowns
+    - Cast bar
+    - Target health/power
+    - Missing buffs alert
+  </Tab>
+
+  <Tab title="Encounter Templates">
+    Boss-specific mechanics:
+
+    - Raid boss abilities
+    - Dungeon mechanics
+    - Special encounter timers
+    - Interrupt trackers
+  </Tab>
+</Tabs>
+
+### Customizing Templates
+
+After loading a template:
+
+1. **Select the aura** in the WeakAuras window
+2. **Modify the display**:
+   - Change position and size
+   - Adjust colors and textures
+   - Modify fonts and text
+3. **Adjust triggers**:
+   - Change spell IDs or names
+   - Modify stack requirements
+   - Add additional conditions
+4. **Update actions**:
+   - Add custom sounds
+   - Include chat announcements
+   - Modify animation behavior
+
+<Tip>
+Most templates are groups containing multiple related auras. Expand the group to customize individual elements.
+</Tip>
+
+## Template Structure
+
+Templates are defined in the `WeakAurasTemplates` addon.
+
+### Template Components
+
+Each template consists of:
+
+- **Display Configuration**: Visual settings (position, size, appearance)
+- **Trigger Setup**: Conditions for showing/hiding
+- **Load Conditions**: When the aura should be active
+- **Actions**: Sound, animations, and custom code
+
+### Template Metadata
+
+Templates include metadata for organization:
+
+```lua
+{
+  title = "Template Name",
+  description = "What this template does",
+  icon = "Interface\\Icons\\Spell_Icon",
+  class = "DEATHKNIGHT", -- Optional: class restriction
+  spec = {1, 2}, -- Optional: spec restriction
+  recommended = true, -- Featured template
+}
+```
+
+## Creating Custom Templates
+
+<Warning>
+Creating templates requires Lua programming knowledge and understanding of WeakAuras' internal structure.
+</Warning>
+
+### Template Development
+
+Templates are defined in `WeakAurasTemplates/TriggerTemplates.lua`:
+
+1. **Define your template structure**:
+
+```lua
+local templates = {
+  {
+    title = "My Custom Template",
+    description = "Tracks an important buff",
+    icon = "Interface\\Icons\\Achievement_BG_winAV_60",
+    
+    -- Load conditions
+    load = {
+      class = { "WARRIOR" },
+      spec = { 1 }, -- Arms
+      use_combat = true,
+      combat = true
+    },
+    
+    -- Trigger configuration
+    trigger = {
+      type = "aura2",
+      auranames = { "Battle Shout" },
+      unit = "player",
+      useName = true,
+      debuffType = "HELPFUL"
+    },
+    
+    -- Display settings
+    display = {
+      width = 64,
+      height = 64,
+      xOffset = 0,
+      yOffset = 0,
+      color = {1, 1, 1, 1},
+      -- Additional display options
+    }
+  }
+}
+```
+
+2. **Add to template registry**:
+
+```lua
+-- Register in appropriate category
+TemplatePrivate.addTemplate("WARRIOR", "Arms", templates)
+```
+
+### Template Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Spell IDs">
+    When possible, use spell IDs instead of names for better compatibility across locales:
+    
+    ```lua
+    trigger = {
+      spellIds = { 47440 }, -- Battle Shout spell ID
+      -- Better than using name: "Battle Shout"
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Include Load Conditions">
+    Always include appropriate load conditions to optimize performance:
+    
+    ```lua
+    load = {
+      class = { "WARRIOR" },
+      spec = { 1 },
+      use_combat = true
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Provide Clear Descriptions">
+    Help users understand what the template does:
+    
+    ```lua
+    description = "Tracks Battle Shout buff duration and alerts when it's about to expire"
+    ```
+  </Accordion>
+
+  <Accordion title="Test Across Specs">
+    If your template targets multiple specs, test it thoroughly in each one.
+  </Accordion>
+</AccordionGroup>
+
+### Advanced Template Features
+
+#### Dynamic Values
+
+Templates can use dynamic values based on player stats:
+
+```lua
+trigger = {
+  type = "status",
+  event = "Health",
+  unit = "player",
+  percenthealth = "50", -- Show at 50% health
+  percenthealth_operator = "<="
+}
+```
+
+#### Multiple Triggers
+
+Create templates with complex trigger logic:
+
+```lua
+triggers = {
+  {
+    trigger = {
+      type = "aura2",
+      auranames = { "Buff Name" },
+      unit = "player"
+    },
+    untrigger = {}
+  },
+  {
+    trigger = {
+      type = "status",
+      event = "Combat",
+      use_combat = true
+    },
+    untrigger = {}
+  }
+},
+triggersLogic = "1 and 2" -- Both triggers must be true
+```
+
+#### Child Auras in Groups
+
+Create group templates with multiple child auras:
+
+```lua
+{
+  regionType = "group",
+  title = "Resource Tracker",
+  
+  controlledChildren = {
+    "Health Bar",
+    "Mana Bar",
+    "Combo Points"
+  },
+  
+  -- Define each child as a separate template
+  children = {
+    -- Health bar configuration
+    {
+      id = "Health Bar",
+      regionType = "aurabar",
+      -- ... health bar settings
+    },
+    -- Mana bar configuration  
+    {
+      id = "Mana Bar",
+      regionType = "aurabar",
+      -- ... mana bar settings
+    },
+    -- ... more children
+  }
+}
+```
+
+## Sharing Templates
+
+Templates can be shared with other players:
+
+### Exporting Templates
+
+1. Create and configure your aura
+2. Select it in the WeakAuras window
+3. Click the export icon (📋)
+4. Copy the generated string
+
+See [Import/Export](/development/importing-exporting) for detailed instructions.
+
+### Publishing Templates
+
+Share your templates with the community:
+
+<CardGroup cols={2}>
+  <Card title="Wago.io" icon="upload">
+    Upload to [wago.io](https://wago.io) for easy sharing
+  </Card>
+  <Card title="GitHub" icon="github">
+    Contribute templates to the official repository
+  </Card>
+  <Card title="Discord" icon="discord">
+    Share in the WeakAuras Discord community
+  </Card>
+  <Card title="Forums" icon="comments">
+    Post on WoW community forums
+  </Card>
+</CardGroup>
+
+## Template Resources
+
+### Source Files
+
+Template definitions are in:
+
+- `WeakAurasTemplates/TriggerTemplates.lua` - Main template logic
+- `WeakAurasTemplates/TriggerTemplatesDataWrath.lua` - WotLK-specific templates
+
+### Example Templates
+
+Study existing templates to learn best practices:
+
+<CodeGroup>
+```lua Death Knight Runes
+-- Template for tracking Death Knight runes
+{
+  title = "Rune Display",
+  description = "Shows all 6 runes with cooldowns",
+  icon = "Interface\\Icons\\Spell_Deathknight_RuneWeapon",
+  class = "DEATHKNIGHT",
+  
+  regionType = "group",
+  layout = "grid",
+  gridType = "RD",
+  gridWidth = 6,
+  
+  -- Individual rune tracking for each slot
+}
+```
+
+```lua Buff Tracker
+-- Simple buff tracker template
+{
+  title = "Important Buff",
+  description = "Tracks a specific buff on the player",
+  
+  trigger = {
+    type = "aura2",
+    unit = "player",
+    auranames = { "Buff Name" },
+    useName = true,
+    debuffType = "HELPFUL"
+  },
+  
+  display = {
+    regionType = "icon",
+    width = 64,
+    height = 64,
+    cooldown = true,
+    cooldownTextDisabled = false
+  }
+}
+```
+</CodeGroup>
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Creating Auras" icon="wand-magic-sparkles" href="/development/creating-auras">
+    Learn to create custom auras
+  </Card>
+  <Card title="Lua Scripting" icon="code" href="/development/lua-scripting">
+    Add custom functionality
+  </Card>
+  <Card title="Import/Export" icon="right-left" href="/development/importing-exporting">
+    Share your creations
+  </Card>
+</CardGroup>

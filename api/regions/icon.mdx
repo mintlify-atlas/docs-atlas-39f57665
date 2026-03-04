@@ -1,0 +1,424 @@
+---
+title: Icon Region
+description: API reference for WeakAuras Icon region type
+---
+
+The Icon region displays a texture with optional cooldown spiral overlay. It's the most commonly used region type for tracking buffs, debuffs, and ability cooldowns.
+
+## Region Type
+
+```lua
+regionType = "icon"
+```
+
+## Default Configuration
+
+```lua
+local default = {
+  icon = true,
+  desaturate = false,
+  iconSource = -1,
+  width = 64,
+  height = 64,
+  color = {1, 1, 1, 1},
+  selfPoint = "CENTER",
+  anchorPoint = "CENTER",
+  anchorFrameType = "SCREEN",
+  xOffset = 0,
+  yOffset = 0,
+  zoom = 0,
+  keepAspectRatio = false,
+  frameStrata = 1,
+  cooldown = true,
+  cooldownEdge = false
+}
+```
+
+## Functions
+
+### Color
+
+Sets the color and alpha of the icon texture.
+
+```lua
+region:Color(r, g, b, a)
+```
+
+<ParamField path="r" type="number">
+  Red color component (0-1)
+</ParamField>
+
+<ParamField path="g" type="number">
+  Green color component (0-1)
+</ParamField>
+
+<ParamField path="b" type="number">
+  Blue color component (0-1)
+</ParamField>
+
+<ParamField path="a" type="number">
+  Alpha transparency (0-1)
+</ParamField>
+
+**Example:**
+```lua
+-- Set icon to red with 50% opacity
+region:Color(1, 0, 0, 0.5)
+```
+
+### ColorAnim
+
+Sets animated color values that override the base color during animations.
+
+```lua
+region:ColorAnim(r, g, b, a)
+```
+
+<ParamField path="r" type="number">
+  Red color component (0-1)
+</ParamField>
+
+<ParamField path="g" type="number">
+  Green color component (0-1)
+</ParamField>
+
+<ParamField path="b" type="number">
+  Blue color component (0-1)
+</ParamField>
+
+<ParamField path="a" type="number">
+  Alpha transparency (0-1)
+</ParamField>
+
+### GetColor
+
+Returns the current color values of the icon.
+
+```lua
+local r, g, b, a = region:GetColor()
+```
+
+<ResponseField name="r" type="number">
+  Red color component (0-1)
+</ResponseField>
+
+<ResponseField name="g" type="number">
+  Green color component (0-1)
+</ResponseField>
+
+<ResponseField name="b" type="number">
+  Blue color component (0-1)
+</ResponseField>
+
+<ResponseField name="a" type="number">
+  Alpha transparency (0-1)
+</ResponseField>
+
+### SetIcon
+
+Sets the icon texture path manually.
+
+```lua
+region:SetIcon(iconPath)
+```
+
+<ParamField path="iconPath" type="string">
+  Path to the texture file or spell ID
+</ParamField>
+
+**Example:**
+```lua
+-- Set a specific texture
+region:SetIcon("Interface\\Icons\\Spell_Nature_Lightning")
+
+-- Set by spell ID
+region:SetIcon(12345)
+```
+
+### SetIconSource
+
+Sets which trigger state's icon to display.
+
+```lua
+region:SetIconSource(source)
+```
+
+<ParamField path="source" type="number">
+  Icon source: -1 for current state, 0 for manual icon, or trigger number
+</ParamField>
+
+### UpdateIcon
+
+Updates the displayed icon based on current icon source and state.
+
+```lua
+region:UpdateIcon()
+```
+
+**Example:**
+```lua
+-- Force refresh the icon display
+region:UpdateIcon()
+```
+
+### Scale
+
+Scales the icon region by the given factors.
+
+```lua
+region:Scale(scalex, scaley)
+```
+
+<ParamField path="scalex" type="number">
+  Horizontal scale factor (negative values mirror horizontally)
+</ParamField>
+
+<ParamField path="scaley" type="number">
+  Vertical scale factor (negative values mirror vertically)
+</ParamField>
+
+**Example:**
+```lua
+-- Scale to 150% width, 200% height
+region:Scale(1.5, 2.0)
+
+-- Mirror horizontally
+region:Scale(-1, 1)
+```
+
+### SetDesaturated
+
+Converts the icon to grayscale when enabled.
+
+```lua
+region:SetDesaturated(desaturate)
+```
+
+<ParamField path="desaturate" type="boolean">
+  true to desaturate (grayscale), false for full color
+</ParamField>
+
+### SetRegionWidth
+
+Sets the base width of the icon region.
+
+```lua
+region:SetRegionWidth(width)
+```
+
+<ParamField path="width" type="number">
+  Width in pixels
+</ParamField>
+
+### SetRegionHeight
+
+Sets the base height of the icon region.
+
+```lua
+region:SetRegionHeight(height)
+```
+
+<ParamField path="height" type="number">
+  Height in pixels
+</ParamField>
+
+### SetCooldownEdge
+
+Enables or disables the edge highlight on the cooldown spiral.
+
+```lua
+region:SetCooldownEdge(enabled)
+```
+
+<ParamField path="enabled" type="boolean">
+  true to show cooldown edge, false to hide
+</ParamField>
+
+### SetZoom
+
+Zooms the icon texture by cropping.
+
+```lua
+region:SetZoom(zoom)
+```
+
+<ParamField path="zoom" type="number">
+  Zoom amount (0-1, where 0 is no zoom and 1 is maximum zoom)
+</ParamField>
+
+**Example:**
+```lua
+-- Zoom in 25%
+region:SetZoom(0.25)
+```
+
+### SetInverse
+
+Inverts the cooldown spiral direction.
+
+```lua
+region:SetInverse(inverse)
+```
+
+<ParamField path="inverse" type="boolean">
+  true to invert spiral direction
+</ParamField>
+
+### UpdateValue
+
+Updates the cooldown display based on progress value (value/total).
+
+```lua
+region:UpdateValue()
+```
+
+### UpdateTime
+
+Updates the cooldown display based on duration and expiration time.
+
+```lua
+region:UpdateTime()
+```
+
+### Update
+
+Refreshes the entire icon region including progress and icon texture.
+
+```lua
+region:Update()
+```
+
+### PreShow
+
+Called before the region is shown to initialize the cooldown.
+
+```lua
+region:PreShow()
+```
+
+### SetGlow
+
+Shows or hides all subglow subregions.
+
+```lua
+region:SetGlow(enabled)
+```
+
+<ParamField path="enabled" type="boolean">
+  true to show glow, false to hide
+</ParamField>
+
+**Example:**
+```lua
+-- Enable glow effect
+region:SetGlow(true)
+```
+
+## Properties
+
+Properties that can be dynamically changed via custom code or conditions.
+
+| Property | Type | Setter | Description |
+|----------|------|--------|-------------|
+| desaturate | boolean | SetDesaturated | Grayscale mode |
+| width | number | SetRegionWidth | Icon width in pixels |
+| height | number | SetRegionHeight | Icon height in pixels |
+| color | color | Color | RGBA color values |
+| inverse | boolean | SetInverse | Invert cooldown spiral |
+| cooldownEdge | boolean | SetCooldownEdge | Show cooldown edge |
+| zoom | number | SetZoom | Zoom amount (0-1) |
+| iconSource | number | SetIconSource | Icon source trigger |
+| displayIcon | icon | SetIcon | Manual icon texture |
+
+## State Values
+
+The icon region reads these values from the trigger state:
+
+- `state.icon` - Icon texture path or spell ID
+- `state.value` - Current progress value
+- `state.total` - Total progress value
+- `state.duration` - Cooldown duration
+- `state.expirationTime` - Cooldown expiration time
+- `state.inverse` - Invert cooldown direction
+- `state.paused` - Pause cooldown animation
+
+## Masque Support
+
+Icon regions support Masque (formerly ButtonFacade) for button skinning. The addon automatically detects Masque and applies the configured skin.
+
+**Example:**
+```lua
+-- Masque group is created automatically
+-- Access via: region.MSQGroup
+if region.MSQGroup then
+  region.MSQGroup:SetName("My Aura Group")
+end
+```
+
+## Cooldown Frame
+
+The cooldown frame supports pause/resume functionality:
+
+```lua
+-- Pause cooldown animation
+region.cooldown:Pause()
+
+-- Resume cooldown animation
+region.cooldown:Resume()
+```
+
+## Code Examples
+
+### Custom Icon Color Based on Health
+
+```lua
+-- In custom code trigger
+function()
+  local region = aura_env.region
+  local healthPercent = UnitHealth("player") / UnitHealthMax("player")
+  
+  if healthPercent > 0.5 then
+    region:Color(0, 1, 0, 1) -- Green
+  elseif healthPercent > 0.25 then
+    region:Color(1, 1, 0, 1) -- Yellow
+  else
+    region:Color(1, 0, 0, 1) -- Red
+  end
+end
+```
+
+### Dynamic Icon Switching
+
+```lua
+-- Switch icons based on spec
+function()
+  local region = aura_env.region
+  local spec = GetSpecialization()
+  
+  if spec == 1 then
+    region:SetIcon("Interface\\Icons\\Ability_Warrior_SavageBlow")
+  elseif spec == 2 then
+    region:SetIcon("Interface\\Icons\\Ability_Warrior_DefensiveStance")
+  else
+    region:SetIcon("Interface\\Icons\\Ability_Warrior_OffensiveStance")
+  end
+end
+```
+
+### Pulsing Glow on Low Time
+
+```lua
+-- In custom untrigger code
+function()
+  local region = aura_env.region
+  if region.expirationTime then
+    local remaining = region.expirationTime - GetTime()
+    if remaining < 5 then
+      region:SetGlow(true)
+    else
+      region:SetGlow(false)
+    end
+  end
+  return false -- Don't untrigger
+end
+```

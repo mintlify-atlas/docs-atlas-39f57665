@@ -1,0 +1,551 @@
+---
+title: "Buff and Debuff Triggers"
+description: "Track auras, buffs, and debuffs on any unit with the aura2 trigger system"
+icon: "sparkles"
+---
+
+## Overview
+
+The Aura trigger system (aura2) is a specialized, high-performance trigger type for tracking buffs, debuffs, and other auras. It uses `BuffTrigger2.lua` for optimized scanning and state management.
+
+<Info>
+Aura triggers are significantly more efficient than combat log triggers for tracking buffs and debuffs.
+</Info>
+
+## Basic Aura Trigger
+
+```lua
+{
+  type = "aura2",
+  auranames = {"Power Word: Shield"},
+  unit = "player",
+  debuffType = "HELPFUL",
+  matchesShowOn = "showOnActive"
+}
+```
+
+### Required Fields
+
+| Field | Description | Values |
+|-------|-------------|--------|
+| `unit` | Target unit to scan | `player`, `target`, `focus`, `group`, etc. |
+| `debuffType` | Aura type filter | `HELPFUL`, `HARMFUL`, `BOTH` |
+| `auranames` | Spell names to match | Array of strings |
+
+## Unit Selection
+
+<Tabs>
+  <Tab title="Single Units">
+    ```lua
+    {
+      unit = "player"   -- Player
+      unit = "target"   -- Current target
+      unit = "focus"    -- Focus target
+      unit = "pet"      -- Player's pet
+      unit = "boss1"    -- Boss frame 1
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Multi-Unit">
+    ```lua
+    {
+      unit = "group",      -- All party/raid members
+      unit = "party",      -- Party members only
+      unit = "raid",       -- Raid members only
+      unit = "nameplate"   -- All nameplates
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Multi-Target">
+    ```lua
+    {
+      unit = "multi",      -- Track on multiple enemies
+      useMatch_count = true,
+      match_count = 3,
+      match_count_operator = ">="
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Aura Matching
+
+### By Spell Name
+
+```lua
+{
+  auranames = {
+    "Renew",
+    "Power Word: Shield",
+    "Prayer of Mending"
+  },
+  useNamePattern = false  -- Exact match
+}
+```
+
+### By Spell ID
+
+```lua
+{
+  auraspellids = {
+    "48068",  -- Renew (Rank 12)
+    "48066"   -- Power Word: Shield (Rank 12)
+  },
+  use_exact_spellId = true
+}
+```
+
+<Tip>
+Using spell IDs is more reliable than names, especially for multi-rank spells or localization.
+</Tip>
+
+### Pattern Matching
+
+```lua
+{
+  auranames = {"^Renew"},  -- Starts with "Renew"
+  useNamePattern = true     -- Enable regex patterns
+}
+```
+
+## Aura Filters
+
+### Caster Filter
+
+<CodeGroup>
+```lua Own Auras Only
+{
+  ownOnly = true  -- Only show if player cast it
+}
+```
+
+```lua Exclude Own
+{
+  ownOnly = false  -- Only show others' auras
+}
+```
+
+```lua Specific Caster
+{
+  unitCaster = "player",
+  useName = true
+}
+```
+</CodeGroup>
+
+### Debuff Type
+
+```lua
+{
+  debuffType = "HARMFUL",     -- Debuffs only
+  debuffClass = {
+    magic = true,              -- Magic debuffs
+    disease = true             -- Disease debuffs
+  }
+}
+```
+
+**Debuff Classes:**
+- `magic` - Magic effects
+- `disease` - Diseases
+- `poison` - Poisons
+- `curse` - Curses
+- `none` - Physical/other
+- `enrage` - Enrage effects (empty string in API)
+
+### Stack Count
+
+```lua
+{
+  use_stacks = true,
+  stacks = 5,
+  stacks_operator = ">="
+}
+```
+
+### Remaining Time
+
+```lua
+{
+  use_remaining = true,
+  remaining = "10",
+  remaining_operator = "<"
+}
+```
+
+<Warning>
+Remaining time checks create scheduled updates, which may impact performance with many active triggers.
+</Warning>
+
+## Group Aura Tracking
+
+Track auras across multiple units:
+
+```lua
+{
+  unit = "group",
+  auranames = {"Renew"},
+  useMatch_count = true,
+  match_count = 3,
+  match_count_operator = ">=",
+  useAffected = true  -- Track who has it
+}
+```
+
+### Group Filters
+
+<AccordionGroup>
+  <Accordion title="Role Filters" icon="users">
+    ```lua
+    {
+      groupRole = {
+        TANK = true,
+        HEALER = true
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Class Filters" icon="graduation-cap">
+    ```lua
+    {
+      class = {
+        PRIEST = true,
+        PALADIN = true,
+        DRUID = true
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Include Pets" icon="paw">
+    ```lua
+    {
+      includePets = "PlayersAndPets",  -- Include pets
+      includePets = "PetsOnly"         -- Only pets
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Dead/Disconnected" icon="skull">
+    ```lua
+    {
+      ignoreDead = true,
+      ignoreDisconnected = true,
+      ignoreInvisible = true
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Display Modes
+
+### Show on Active
+
+```lua
+{
+  matchesShowOn = "showOnActive"  -- Show when any aura matches
+}
+```
+
+### Show on Missing
+
+```lua
+{
+  matchesShowOn = "showOnMissing"  -- Show when NO aura matches
+}
+```
+
+### Show on Matches
+
+```lua
+{
+  matchesShowOn = "showOnMatches",  -- Show based on match count
+  useMatch_count = true,
+  match_count = 5,
+  match_count_operator = ">="
+}
+```
+
+### Show Clones
+
+```lua
+{
+  showClones = true,  -- Create clone for each aura instance
+  combinedMode = "showClones"
+}
+```
+
+<Info>
+Clones create separate display instances for each matching aura, useful for DoT trackers.
+</Info>
+
+## Combine Modes
+
+Control how multiple aura matches are displayed:
+
+<Tabs>
+  <Tab title="Show One">
+    ```lua
+    {
+      combineMode = "showOne",
+      compareFunc = function(a, b)
+        return a.expirationTime < b.expirationTime
+      end
+    }
+    ```
+    Shows single "best" match based on comparison function.
+  </Tab>
+  
+  <Tab title="Show Clones">
+    ```lua
+    {
+      combineMode = "showClones"
+    }
+    ```
+    Shows separate display for each match.
+  </Tab>
+  
+  <Tab title="Show Per Unit">
+    ```lua
+    {
+      combineMode = "showPerUnit",
+      perUnitMode = "affected"  -- or "all"
+    }
+    ```
+    Shows one display per unit with the aura.
+  </Tab>
+</Tabs>
+
+## State Properties
+
+Aura triggers provide rich state information:
+
+```lua
+state = {
+  -- Identity
+  name = "Renew",
+  spellId = 48068,
+  icon = "Interface\\Icons\\Spell_Holy_Renew",
+  
+  -- Unit information  
+  unit = "raid5",
+  unitName = "Playername",
+  GUID = "Player-123-456789",
+  
+  -- Aura properties
+  stacks = 1,
+  duration = 15,
+  expirationTime = GetTime() + 10,
+  progressType = "timed",
+  
+  -- Caster information
+  unitCaster = "player",
+  casterName = "Yourname",
+  
+  -- Classification
+  debuffClass = "magic",
+  isStealable = false,
+  isBossDebuff = false,
+  
+  -- Group tracking (if applicable)
+  matchCount = 5,
+  unitCount = 3,
+  maxUnitCount = 25,
+  affected = "Player1, Player2, Player3",
+  affectedUnits = {"raid1", "raid5", "raid12"},
+  totalStacks = 15,
+  
+  -- Tooltip (if enabled)
+  tooltip = "Tooltip text",
+  tooltip1 = "Line 1",
+  tooltip2 = "Line 2"
+}
+```
+
+## Tooltip Integration
+
+```lua
+{
+  fetchTooltip = true,  -- Enable tooltip scanning
+  tooltip_operator = "find('%s')",
+  tooltip = "Increases damage"
+}
+```
+
+<Warning>
+Tooltip scanning adds overhead. Only enable when necessary for trigger logic.
+</Warning>
+
+## Advanced Matching
+
+### Composite Checks
+
+```lua
+{
+  auranames = {"Renew"},
+  use_stacks = true,
+  stacks = 1,
+  use_remaining = true,
+  remaining = "5",
+  remaining_operator = "<",
+  ownOnly = true
+}
+```
+
+### Custom Scan Function
+
+Implemented in C for performance:
+
+```lua
+-- Internal scan function checks all conditions
+local function scanFunc(time, auraData)
+  if triggerInfo.remainingFunc and auraData.expirationTime then
+    local remaining = auraData.expirationTime - time
+    if not triggerInfo.remainingFunc(remaining) then
+      return false
+    end
+  end
+  -- Additional checks...
+  return true
+end
+```
+
+## Performance Optimization
+
+<CardGroup cols={2}>
+  <Card title="Specific Filters" icon="filter">
+    Use spell IDs and specific unit filters to reduce scanning
+  </Card>
+  <Card title="Avoid Polling" icon="clock">
+    Remaining time checks are scheduled, not polled
+  </Card>
+  <Card title="Limit Clones" icon="copy">
+    Use match count limits for clone displays
+  </Card>
+  <Card title="Disable Tooltips" icon="message">
+    Only enable tooltip scanning when needed
+  </Card>
+</CardGroup>
+
+## Common Patterns
+
+### Track Specific Buff
+
+```lua
+{
+  type = "aura2",
+  unit = "player",
+  auranames = {"Bloodlust"},
+  debuffType = "HELPFUL",
+  matchesShowOn = "showOnActive"
+}
+```
+
+### Missing Raid Buff
+
+```lua
+{
+  type = "aura2",
+  unit = "player",
+  auraspellids = {"48470"},  -- Gift of the Wild
+  debuffType = "HELPFUL",
+  matchesShowOn = "showOnMissing"
+}
+```
+
+### Multi-DoT Tracker
+
+```lua
+{
+  type = "aura2",
+  unit = "multi",
+  auranames = {"Shadow Word: Pain", "Vampiric Touch"},
+  debuffType = "HARMFUL",
+  ownOnly = true,
+  showClones = true,
+  use_remaining = true,
+  remaining = "3",
+  remaining_operator = "<"
+}
+```
+
+### Tank Debuff Monitor
+
+```lua
+{
+  type = "aura2",
+  unit = "group",
+  debuffType = "HARMFUL",
+  debuffClass = {magic = true, curse = true},
+  groupRole = {TANK = true},
+  useMatch_count = true,
+  match_count = 1,
+  match_count_operator = ">="
+}
+```
+
+### Raid Cooldown Tracker
+
+```lua
+{
+  type = "aura2",
+  unit = "group",
+  auranames = {"Power Infusion", "Bloodlust", "Heroism"},
+  debuffType = "HELPFUL",
+  combineMode = "showPerUnit",
+  perUnitMode = "affected"
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Aura Not Detected" icon="magnifying-glass">
+    - Verify spell name matches exactly (case-sensitive)
+    - Check debuffType matches (HELPFUL vs HARMFUL)
+    - Ensure unit filter is correct
+    - Try using spell ID instead of name
+  </Accordion>
+  
+  <Accordion title="Wrong Unit Shown" icon="user">
+    Check combine mode settings:
+    - `showOne` - uses comparison function
+    - `showPerUnit` - one per affected unit
+    - `showClones` - one per aura instance
+  </Accordion>
+  
+  <Accordion title="Performance Issues" icon="gauge">
+    - Reduce tooltip scanning
+    - Use specific spell IDs instead of patterns
+    - Limit multi-target tracking
+    - Avoid unnecessary remaining time checks
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CheckGroup>
+  - <Check>Use spell IDs for reliability and performance</Check>
+  - <Check>Filter by specific units when possible</Check>
+  - <Check>Use ownOnly when tracking your own auras</Check>
+  - <Check>Limit clone displays to prevent UI clutter</Check>
+  - <Check>Test group triggers with full raid size</Check>
+  - <Check>Disable fetchTooltip unless required</Check>
+</CheckGroup>
+
+## Related Topics
+
+<CardGroup cols={3}>
+  <Card title="Trigger Overview" icon="bolt" href="/core-concepts/triggers/overview">
+    Learn trigger fundamentals
+  </Card>
+  <Card title="Custom Lua" icon="code" href="/core-concepts/triggers/custom-lua">
+    Advanced trigger scripting
+  </Card>
+  <Card title="Conditions" icon="code-branch" href="/core-concepts/conditions">
+    Conditional display modifications
+  </Card>
+</CardGroup>

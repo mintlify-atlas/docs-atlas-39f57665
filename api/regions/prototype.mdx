@@ -1,0 +1,480 @@
+---
+title: Region Prototype
+description: Base methods and properties inherited by all WeakAuras regions
+---
+
+The Region Prototype provides the foundation for all WeakAuras display regions (Icon, Text, Progress Texture, Model, etc.). All region types inherit these base methods and properties.
+
+## Position and Anchoring
+
+### SetAnchor
+
+Sets the anchor point and relative frame for the region.
+
+```lua
+region:SetAnchor(anchorPoint, relativeTo, relativePoint)
+```
+
+<ParamField path="anchorPoint" type="string" required>
+  Anchor point on the region ("CENTER", "TOPLEFT", etc.)
+</ParamField>
+<ParamField path="relativeTo" type="frame" required>
+  Frame to anchor relative to
+</ParamField>
+<ParamField path="relativePoint" type="string" required>
+  Anchor point on the relative frame
+</ParamField>
+
+### SetOffset
+
+Sets the X and Y offset from the anchor point.
+
+```lua
+region:SetOffset(xOffset, yOffset)
+```
+
+<ParamField path="xOffset" type="number" required>
+  Horizontal offset in pixels
+</ParamField>
+<ParamField path="yOffset" type="number" required>
+  Vertical offset in pixels
+</ParamField>
+
+### GetXOffset / GetYOffset
+
+Returns the current offset values.
+
+```lua
+local x = region:GetXOffset()
+local y = region:GetYOffset()
+```
+
+<ResponseField name="offset" type="number">
+  The offset value in pixels
+</ResponseField>
+
+### SetOffsetRelative
+
+Sets relative offset (used by animations and conditions).
+
+```lua
+region:SetOffsetRelative(xOffsetRelative, yOffsetRelative)
+```
+
+<ParamField path="xOffsetRelative" type="number" required>
+  Relative X offset
+</ParamField>
+<ParamField path="yOffsetRelative" type="number" required>
+  Relative Y offset
+</ParamField>
+
+### UpdatePosition
+
+Updates the region's position based on current anchor and offset values.
+
+```lua
+region:ReAnchor()
+```
+
+### ResetPosition
+
+Resets all position information.
+
+```lua
+region:ResetPosition()
+```
+
+## Alpha and Transparency
+
+### SetRegionAlpha
+
+Sets the base alpha value for the region.
+
+```lua
+region:SetRegionAlpha(alpha)
+```
+
+<ParamField path="alpha" type="number" required>
+  Alpha value (0.0 to 1.0)
+</ParamField>
+
+### GetRegionAlpha
+
+Returns the current effective alpha.
+
+```lua
+local alpha = region:GetRegionAlpha()
+```
+
+<ResponseField name="alpha" type="number">
+  Current alpha value (0.0 to 1.0)
+</ResponseField>
+
+### SetAnimAlpha
+
+Sets the animation alpha (multiplied with region alpha).
+
+```lua
+region:SetAnimAlpha(alpha)
+```
+
+<ParamField path="alpha" type="number" required>
+  Animation alpha value (0.0 to 1.0)
+</ParamField>
+
+## Progress Sources
+
+### SetProgressSource
+
+Sets the progress source for the region.
+
+```lua
+region:SetProgressSource(progressSource)
+```
+
+<ParamField path="progressSource" type="table" required>
+  Progress source configuration:
+  - `[1]` - Trigger number (-2=parent auto, -1=auto, 0=manual, >0=specific trigger)
+  - `[2]` - Type ("timer", "elapsedTimer", "number")
+  - `[3]` - Property name for value
+  - `[4]` - Property name for total/duration
+  - `[5]` - Property name for inverse flag
+  - `[6]` - Property name for paused flag
+  - `[7]` - Property name for remaining time
+  - `[8]` - Use additional progress overlays
+</ParamField>
+
+### GetProgressSource
+
+Returns the current progress source configuration.
+
+```lua
+local progressSource = region:GetProgressSource()
+```
+
+### SetAdjustedMin / SetAdjustedMax
+
+Sets minimum/maximum bounds for progress.
+
+```lua
+region:SetAdjustedMin("10")      -- Absolute value
+region:SetAdjustedMin("10%")     -- Percentage of total
+region:SetAdjustedMax("90%")
+```
+
+<ParamField path="value" type="string" required>
+  Minimum/maximum value (number or percentage)
+</ParamField>
+
+### GetMinMaxProgress
+
+Returns the current progress bounds.
+
+```lua
+local min, max = region:GetMinMaxProgress()
+```
+
+<ResponseField name="min" type="number">
+  Minimum progress value
+</ResponseField>
+<ResponseField name="max" type="number">
+  Maximum progress value
+</ResponseField>
+
+### UpdateProgress
+
+Updates the progress display based on current state.
+
+```lua
+region:UpdateProgress()
+```
+
+## Actions
+
+### SoundPlay
+
+Plays a sound with the given options.
+
+```lua
+region:SoundPlay(options)
+```
+
+<ParamField path="options" type="table" required>
+  Sound options:
+  - `sound_type` - "Play", "Loop", or "Stop"
+  - `sound` - Sound file path or " custom" or " KitID"
+  - `sound_path` - Custom sound file path
+  - `sound_kit_id` - Sound kit ID
+  - `sound_channel` - Audio channel ("Master", "SFX", etc.)
+  - `sound_repeat` - Repeat interval for loops
+  - `sound_fade` - Fade out duration for stops
+</ParamField>
+
+### SoundStop
+
+Stops the currently playing sound.
+
+```lua
+region:SoundStop(fadeoutTime)
+```
+
+<ParamField path="fadeoutTime" type="number">
+  Fade out duration in milliseconds
+</ParamField>
+
+### SendChat
+
+Sends a chat message with the given options.
+
+```lua
+region:SendChat(options)
+```
+
+<ParamField path="options" type="table" required>
+  Chat options:
+  - `message_type` - "PRINT", "WHISPER", "CHANNEL", etc.
+  - `message` - Message text with formatters
+  - `message_dest` - Destination (player name or channel)
+  - `message_channel` - Channel number
+  - `r`, `g`, `b` - Text color
+  - `message_custom` - Custom function
+  - `message_formaters` - Formatter configuration
+</ParamField>
+
+### RunCode
+
+Runs custom Lua code.
+
+```lua
+region:RunCode(func)
+```
+
+<ParamField path="func" type="function" required>
+  Function to execute in the aura environment
+</ParamField>
+
+### GlowExternal
+
+Applies a glow effect to an external frame.
+
+```lua
+region:GlowExternal(options)
+```
+
+<ParamField path="options" type="table" required>
+  Glow options:
+  - `glow_type` - Type of glow effect
+  - `glow_anchor` - Anchor point
+  - `glow_frame` - Target frame
+  - Additional glow-specific parameters
+</ParamField>
+
+## Sub-Regions
+
+### AnchorSubRegion
+
+Anchors a sub-region (text, glow, etc.) to the main region.
+
+```lua
+region:AnchorSubRegion(subRegion, anchorType, anchorPoint, selfPoint, anchorXOffset, anchorYOffset)
+```
+
+<ParamField path="subRegion" type="frame" required>
+  The sub-region frame to anchor
+</ParamField>
+<ParamField path="anchorType" type="string" required>
+  "point" or "area"
+</ParamField>
+<ParamField path="anchorPoint" type="string" required>
+  Anchor point on the region or "sub.N.key" for sub-region anchoring
+</ParamField>
+<ParamField path="selfPoint" type="string" required>
+  Anchor point on the sub-region
+</ParamField>
+<ParamField path="anchorXOffset" type="number">
+  X offset
+</ParamField>
+<ParamField path="anchorYOffset" type="number">
+  Y offset
+</ParamField>
+
+## Lifecycle Methods
+
+### Expand
+
+Shows the region with start animations.
+
+```lua
+region:Expand()
+```
+
+This method:
+1. Calls `PreShow()` if defined
+2. Shows the region
+3. Runs start actions
+4. Plays start animations
+5. Notifies parent (for groups)
+
+### Collapse
+
+Hides the region with finish animations.
+
+```lua
+region:Collapse()
+```
+
+This method:
+1. Calls `PreHide()` if defined
+2. Runs finish actions
+3. Plays finish animations
+4. Hides the region
+5. Stops looping sounds
+6. Notifies parent (for groups)
+
+### Update
+
+Updates the region based on current state.
+
+```lua
+region:Update()
+```
+
+Typically calls:
+- `UpdateProgress()` - Update progress display
+- Region-specific update logic (icon, text, etc.)
+
+### Tick
+
+Called every frame when region needs per-frame updates.
+
+```lua
+region:Tick()
+```
+
+### UpdateTick
+
+Enable or disable per-frame updates.
+
+```lua
+region:UpdateTick()
+```
+
+## State Management
+
+Regions track their current state:
+
+```lua
+region.state       -- Current trigger state (primary)
+region.states      -- All trigger states (indexed by trigger number)
+region.id          -- Aura ID
+region.cloneId     -- Clone ID (for dynamic groups)
+region.toShow      -- Whether region should be visible
+```
+
+## Sub-Region Events
+
+Regions provide an event system for sub-regions:
+
+```lua
+-- Subscribe to events
+region.subRegionEvents:AddSubscriber("eventName", subscriber)
+
+-- Unsubscribe
+region.subRegionEvents:RemoveSubscriber("eventName", subscriber)
+
+-- Notify subscribers
+region.subRegionEvents:Notify("eventName", ...)
+```
+
+### Available Events
+
+- `"AlphaChanged"` - Alpha value changed
+- `"UpdateProgress"` - Progress updated
+- `"FrameTick"` - Per-frame update
+- `"PreShow"` - Before region shows
+- `"PreHide"` - Before region hides
+
+## Examples
+
+### Custom Position Animation
+
+```lua
+-- Animate position relative to base
+for offset = 0, 100, 5 do
+  C_Timer.After(offset * 0.01, function()
+    region:SetOffsetRelative(offset, 0)
+  end)
+end
+```
+
+### Progress with Adjusted Bounds
+
+```lua
+-- Show only middle 80% of progress
+region:SetProgressSource({-1, ""})  -- Auto source
+region:SetAdjustedMin("10%")
+region:SetAdjustedMax("90%")
+region:UpdateProgress()
+```
+
+### Multi-Trigger Progress
+
+```lua
+-- Use trigger 2 for progress
+region:SetProgressSource({
+  2,                    -- Trigger number
+  "timer",              -- Progress type
+  "expirationTime",     -- Time property
+  "duration",           -- Duration property
+  "inverse",            -- Inverse flag property
+  "paused",             -- Paused flag property
+  "remaining",          -- Remaining property
+  true                  -- Use additional progress
+})
+```
+
+### Sound with Looping
+
+```lua
+region:SoundPlay({
+  sound_type = "Loop",
+  sound = "Interface\\AddOns\\WeakAuras\\Media\\Sounds\\AirHorn.ogg",
+  sound_channel = "Master",
+  sound_repeat = 2.0  -- Loop every 2 seconds
+})
+
+-- Stop when done
+region:SoundStop(1000)  -- 1 second fade out
+```
+
+### Sub-Region Anchoring
+
+```lua
+-- Anchor text to top of icon
+region:AnchorSubRegion(
+  textSubRegion,
+  "point",
+  "TOP",
+  "BOTTOM",
+  0,
+  -5
+)
+
+-- Anchor to another sub-region
+region:AnchorSubRegion(
+  subRegion2,
+  "point",
+  "sub.1.BOTTOM",  -- Anchor to first sub-region's bottom
+  "TOP",
+  0,
+  0
+)
+```
+
+## See Also
+
+- [Icon Region](/api/regions/icon) - Icon display implementation
+- [Text Region](/api/regions/text) - Text display implementation
+- [Progress Texture](/api/regions/progress-texture) - Progress bar implementation
+- [Model Region](/api/regions/model) - 3D model implementation
+- [Tables](/api/tables) - Data structures including region state

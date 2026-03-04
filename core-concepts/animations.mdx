@@ -1,0 +1,530 @@
+---
+title: "Animation System"
+description: "Animate displays with slides, fades, zooms, rotations, and custom effects"
+icon: "wand-magic-sparkles"
+---
+
+## Overview
+
+WeakAuras provides a powerful animation system that can slide, fade, scale, rotate, and color-shift your displays. Animations run at different stages of a display's lifecycle.
+
+<Info>
+Animations use `Animations.lua` for smooth, efficient visual effects coordinated across all displays.
+</Info>
+
+## Animation Phases
+
+<Tabs>
+  <Tab title="Start">
+    ```lua
+    {
+      start = {
+        type = "preset",
+        preset = "slidetop",
+        duration = 0.3
+      }
+    }
+    ```
+    Plays when the display first appears.
+  </Tab>
+  
+  <Tab title="Main">
+    ```lua
+    {
+      main = {
+        type = "preset",
+        preset = "pulse",
+        duration = 2
+      }
+    }
+    ```
+    Loops while the display is shown.
+  </Tab>
+  
+  <Tab title="Finish">
+    ```lua
+    {
+      finish = {
+        type = "preset",
+        preset = "slidedown",
+        duration = 0.3
+      }
+    }
+    ```
+    Plays when the display is about to hide.
+  </Tab>
+</Tabs>
+
+## Preset Animations
+
+Quick, pre-configured animations:
+
+### Movement Presets
+
+<CodeGroup>
+```lua Slide In
+{
+  preset = "slidetop",      // From top
+  preset = "slidebottom",   // From bottom
+  preset = "slideleft",     // From left
+  preset = "slideright"     // From right
+}
+```
+
+```lua Grow/Shrink
+{
+  preset = "grow",     // Grow from center
+  preset = "shrink"    // Shrink to center
+}
+```
+
+```lua Special
+{
+  preset = "fade",      // Fade in/out
+  preset = "pulse",     // Pulsing scale
+  preset = "bounce"     // Bouncing effect
+}
+```
+</CodeGroup>
+
+## Custom Animations
+
+Create complex, multi-effect animations:
+
+```lua
+{
+  type = "custom",
+  
+  // Slide (translate)
+  use_translate = true,
+  x = 100,          // Pixels right
+  y = 50,           // Pixels up
+  
+  // Fade (alpha)
+  use_alpha = true,
+  alpha = 0,        // Target alpha
+  
+  // Scale (zoom)
+  use_scale = true,
+  scalex = 1.5,     // 150% width
+  scaley = 1.5,     // 150% height
+  
+  // Rotate
+  use_rotate = true,
+  rotate = 360,     // Degrees
+  
+  // Color shift
+  use_color = true,
+  colorR = 1,
+  colorG = 0,
+  colorB = 0,
+  colorA = 1
+}
+```
+
+## Animation Types
+
+### Slide (Translate)
+
+```lua
+{
+  use_translate = true,
+  translateType = "straightTranslate",  // Linear movement
+  x = 100,          // Horizontal offset
+  y = -50,          // Vertical offset
+  duration = 0.5
+}
+```
+
+<Tip>
+Negative values move left/down, positive values move right/up.
+</Tip>
+
+### Fade (Alpha)
+
+```lua
+{
+  use_alpha = true,
+  alphaType = "straight",  // Linear fade
+  alpha = 0,               // Fade to transparent
+  duration = 0.3
+}
+```
+
+### Scale (Zoom)
+
+```lua
+{
+  use_scale = true,
+  scaleType = "straightScale",
+  scalex = 2.0,  // 200% width
+  scaley = 2.0,  // 200% height
+  duration = 0.4
+}
+```
+
+<Info>
+Scale values less than 1.0 shrink, greater than 1.0 grow.
+</Info>
+
+### Rotate
+
+```lua
+{
+  use_rotate = true,
+  rotateType = "straight",
+  rotate = 360,   // Full rotation
+  duration = 2.0
+}
+```
+
+### Color Shift
+
+```lua
+{
+  use_color = true,
+  colorType = "straightColor",
+  colorR = 1,  // Red
+  colorG = 0,
+  colorB = 0,
+  colorA = 1,  // Opaque
+  duration = 0.5
+}
+```
+
+## Duration Types
+
+<Tabs>
+  <Tab title="Seconds">
+    ```lua
+    {
+      duration_type = "seconds",
+      duration = 2.0  // 2 seconds
+    }
+    ```
+    Fixed time duration.
+  </Tab>
+  
+  <Tab title="Relative">
+    ```lua
+    {
+      duration_type = "relative",
+      duration = 0.5  // 50% of trigger duration
+    }
+    ```
+    Proportional to trigger duration/progress.
+  </Tab>
+</Tabs>
+
+## Easing Functions
+
+Control animation acceleration:
+
+```lua
+{
+  easeType = "none",           // Linear
+  easeType = "easeIn",         // Accelerate
+  easeType = "easeOut",        // Decelerate
+  easeType = "easeInOut",      // Smooth both ends
+  easeStrength = 3             // Easing intensity
+}
+```
+
+<CardGroup cols={2}>
+  <Card title="None" icon="arrows-left-right">
+    Linear, constant speed
+  </Card>
+  <Card title="Ease In" icon="arrow-right-long">
+    Starts slow, accelerates
+  </Card>
+  <Card title="Ease Out" icon="arrow-left-long">
+    Starts fast, decelerates
+  </Card>
+  <Card title="Ease In/Out" icon="arrows-left-right-to-line">
+    Smooth start and end
+  </Card>
+</CardGroup>
+
+## Animation Properties
+
+### Inverse
+
+```lua
+{
+  inverse = true  // Play animation backwards
+}
+```
+
+### Loop
+
+```lua
+{
+  loop = true  // Repeat animation
+}
+```
+
+<Warning>
+Only main animations typically use loop. Start/finish animations run once.
+</Warning>
+
+## Common Animation Patterns
+
+### Fade In on Activate
+
+```lua
+{
+  start = {
+    type = "custom",
+    use_alpha = true,
+    alpha = 0,
+    duration = 0.3,
+    easeType = "easeOut"
+  }
+}
+```
+
+### Slide from Side
+
+```lua
+{
+  start = {
+    type = "custom",
+    use_translate = true,
+    x = -100,  // From left
+    y = 0,
+    duration = 0.4,
+    easeType = "easeOut"
+  }
+}
+```
+
+### Pulsing Glow
+
+```lua
+{
+  main = {
+    type = "custom",
+    use_alpha = true,
+    alpha = 0.5,  // Pulse to 50%
+    duration = 1.0,
+    easeType = "easeInOut",
+    loop = true,
+    inverse = true  // Reverse each loop
+  }
+}
+```
+
+### Grow on Proc
+
+```lua
+{
+  start = {
+    type = "custom",
+    use_scale = true,
+    scalex = 0.5,  // Start small
+    scaley = 0.5,
+    duration = 0.2,
+    easeType = "easeOut"
+  }
+}
+```
+
+### Spin Continuously
+
+```lua
+{
+  main = {
+    type = "custom",
+    use_rotate = true,
+    rotate = 360,
+    duration = 3.0,
+    loop = true
+  }
+}
+```
+
+### Flash Red
+
+```lua
+{
+  start = {
+    type = "custom",
+    use_color = true,
+    colorR = 1,
+    colorG = 0,
+    colorB = 0,
+    colorA = 1,
+    duration = 0.2,
+    easeType = "easeInOut"
+  }
+}
+```
+
+### Bounce In
+
+```lua
+{
+  start = {
+    type = "custom",
+    use_translate = true,
+    y = 100,  // Drop from above
+    duration = 0.5,
+    easeType = "easeOut",
+    easeStrength = 5  // Strong bounce
+  }
+}
+```
+
+## Advanced Techniques
+
+### Sequential Animations
+
+```lua
+// Use finish callback (custom code)
+aura_env.animationFinished = function()
+  // Trigger next animation or action
+end
+```
+
+### Custom Animation Functions
+
+```lua
+{
+  translateType = "custom",
+  translateFunc = [[
+    function(progress, startX, startY, deltaX, deltaY)
+      // Custom motion path
+      local x = startX + deltaX * progress
+      local y = startY + deltaY * math.sin(progress * math.pi)
+      return x, y
+    end
+  ]]
+}
+```
+
+### Coordinated Group Animations
+
+Animations in groups can be synchronized:
+
+```lua
+// Internal: Animations share progress if same duration
+if duration == animations[childKey].duration then
+  progress = animations[childKey].progress
+end
+```
+
+## Animation State
+
+Active animations are tracked:
+
+```lua
+animations[key] = {
+  progress = 0.5,           // 0-1 completion
+  duration = 2.0,
+  startX = 0,
+  startY = 0,
+  startAlpha = 1.0,
+  // ...
+  region = region,
+  type = "main",
+  loop = true
+}
+```
+
+## Performance
+
+<AccordionGroup>
+  <Accordion title="Animation Updates" icon="clock">
+    Animations update on frame tick (OnUpdate). Many simultaneous animations may impact FPS.
+  </Accordion>
+  
+  <Accordion title="Complex Easing" icon="wave-square">
+    Custom easing functions are calculated each frame. Keep them simple.
+  </Accordion>
+  
+  <Accordion title="Group Coordination" icon="users">
+    Groups attempt to sync child animations, which adds overhead.
+  </Accordion>
+</AccordionGroup>
+
+## Canceling Animations
+
+```lua
+// Internal API
+Private.CancelAnimation(region, resetPos, resetAlpha, resetScale, resetRotation, resetColor, doOnFinished)
+```
+
+Animations auto-cancel when:
+- Display hides
+- New animation starts on same property
+- Trigger state changes
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Animation Not Playing" icon="play">
+    - Verify animation is enabled
+    - Check duration > 0
+    - Ensure display is visible
+    - Verify animation phase (start/main/finish)
+  </Accordion>
+  
+  <Accordion title="Animation Jerky" icon="chart-line">
+    - Reduce easeStrength
+    - Use simpler easing type
+    - Check for FPS issues
+    - Avoid very short durations
+  </Accordion>
+  
+  <Accordion title="Wrong Direction" icon="arrows-rotate">
+    - Toggle inverse setting
+    - Check sign of x/y/rotate values
+    - Verify scale > 1.0 for grow, < 1.0 for shrink
+  </Accordion>
+  
+  <Accordion title="Animation Doesn't Reset" icon="rotate-left">
+    - Ensure animation isn't looping indefinitely
+    - Check if finish animation is canceling start
+    - Verify resetPos/resetAlpha are working
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CheckGroup>
+  - <Check>Use presets for common effects</Check>
+  - <Check>Keep animations short (0.2-0.5s) for responsiveness</Check>
+  - <Check>Use easing for smoother motion</Check>
+  - <Check>Limit simultaneous animations for performance</Check>
+  - <Check>Test at low FPS to ensure usability</Check>
+  - <Check>Avoid looping complex animations</Check>
+  - <Check>Use relative duration for timed triggers</Check>
+</CheckGroup>
+
+## Animation Presets Reference
+
+| Preset | Description | Properties |
+|--------|-------------|------------|
+| `slidetop` | Slide from top | translate y: -100 |
+| `slidebottom` | Slide from bottom | translate y: 100 |
+| `slideleft` | Slide from left | translate x: -100 |
+| `slideright` | Slide from right | translate x: 100 |
+| `grow` | Grow from center | scale: 0 → 1 |
+| `shrink` | Shrink to center | scale: 1 → 0 |
+| `fade` | Fade in/out | alpha: 0 → 1 |
+| `pulse` | Pulsing scale | scale: 1 → 1.2 → 1 (loop) |
+| `bounce` | Bounce effect | translate + easing |
+
+## Related Topics
+
+<CardGroup cols={3}>
+  <Card title="Display Types" icon="shapes" href="/core-concepts/display-types/icon">
+    What can be animated
+  </Card>
+  <Card title="Conditions" icon="code-branch" href="/core-concepts/conditions">
+    Trigger animations conditionally
+  </Card>
+  <Card title="Custom Code" icon="code" href="/core-concepts/custom-code">
+    Advanced animation control
+  </Card>
+</CardGroup>

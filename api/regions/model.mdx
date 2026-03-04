@@ -1,0 +1,474 @@
+---
+title: Model Region
+description: API reference for WeakAuras Model region type
+---
+
+The Model region displays 3D models from the game, including creatures, objects, and player characters. Models can be static or animated.
+
+## Region Type
+
+```lua
+regionType = "model"
+```
+
+## Default Configuration
+
+```lua
+local default = {
+  model_path = "Creature/Arthaslichking/arthaslichking.m2",
+  modelIsUnit = false,
+  model_x = 0,
+  model_y = 0,
+  model_z = 0,
+  width = 200,
+  height = 200,
+  sequence = 1,
+  advance = false,
+  rotation = 0,
+  scale = 1,
+  selfPoint = "CENTER",
+  anchorPoint = "CENTER",
+  anchorFrameType = "SCREEN",
+  xOffset = 0,
+  yOffset = 0,
+  frameStrata = 1,
+  border = false,
+  borderColor = {1.0, 1.0, 1.0, 0.5},
+  backdropColor = {1.0, 1.0, 1.0, 0.5},
+  borderEdge = "None",
+  borderOffset = 5,
+  borderInset = 11,
+  borderSize = 16,
+  borderBackdrop = "Blizzard Tooltip"
+}
+```
+
+## Model Sources
+
+### File Path Models
+
+Direct path to M2 model files:
+
+```lua
+data.modelIsUnit = false
+data.model_path = "Creature/Arthaslichking/arthaslichking.m2"
+```
+
+### Unit Models
+
+Display a unit's current model:
+
+```lua
+data.modelIsUnit = true
+data.model_path = "player"  -- or "target", "focus", "party1", etc.
+```
+
+### Display Info Models
+
+Use a display info ID:
+
+```lua
+data.modelDisplayInfo = 12345
+```
+
+## Functions
+
+### SetAlpha
+
+Sets the transparency of the model.
+
+```lua
+region:SetAlpha(alpha)
+```
+
+<ParamField path="alpha" type="number">
+  Alpha transparency (0-1)
+</ParamField>
+
+**Example:**
+```lua
+-- Set model to 50% transparent
+region:SetAlpha(0.5)
+```
+
+### SetRegionWidth
+
+Sets the width of the model region.
+
+```lua
+region:SetRegionWidth(width)
+```
+
+<ParamField path="width" type="number">
+  Width in pixels
+</ParamField>
+
+### SetRegionHeight
+
+Sets the height of the model region.
+
+```lua
+region:SetRegionHeight(height)
+```
+
+<ParamField path="height" type="number">
+  Height in pixels
+</ParamField>
+
+### Scale
+
+Scales the region by the given factors.
+
+```lua
+region:Scale(scalex, scaley)
+```
+
+<ParamField path="scalex" type="number">
+  Horizontal scale factor (negative mirrors horizontally)
+</ParamField>
+
+<ParamField path="scaley" type="number">
+  Vertical scale factor (negative mirrors vertically)
+</ParamField>
+
+**Example:**
+```lua
+-- Double the size
+region:Scale(2, 2)
+
+-- Mirror horizontally
+region:Scale(-1, 1)
+```
+
+### SetRotation
+
+Sets the base rotation of the model.
+
+```lua
+region:SetRotation(degrees)
+```
+
+<ParamField path="degrees" type="number">
+  Rotation in degrees
+</ParamField>
+
+**Example:**
+```lua
+-- Rotate 90 degrees
+region:SetRotation(90)
+```
+
+### SetAnimRotation
+
+Sets the animated rotation that overrides base rotation.
+
+```lua
+region:SetAnimRotation(degrees)
+```
+
+<ParamField path="degrees" type="number">
+  Rotation in degrees
+</ParamField>
+
+### UpdateEffectiveRotation
+
+Recalculates and applies the effective rotation (base + animation).
+
+```lua
+region:UpdateEffectiveRotation()
+```
+
+### GetBaseRotation
+
+Returns the base rotation value (excluding animation).
+
+```lua
+local rotation = region:GetBaseRotation()
+```
+
+<ResponseField name="rotation" type="number">
+  Base rotation in degrees
+</ResponseField>
+
+### PreShow
+
+Called before showing the region to initialize the model.
+
+```lua
+region:PreShow()
+```
+
+### PreHide
+
+Called before hiding the region to release the model.
+
+```lua
+region:PreHide()
+```
+
+### Update
+
+Refreshes the model region (placeholder function).
+
+```lua
+region:Update()
+```
+
+## Model Frame Functions
+
+The underlying model frame (`region.model`) supports PlayerModel API:
+
+### SetPosition
+
+Positions the model camera:
+
+```lua
+region.model:SetPosition(z, x, y)
+```
+
+<ParamField path="z" type="number">
+  Distance from camera (closer = larger)
+</ParamField>
+
+<ParamField path="x" type="number">
+  Horizontal position offset
+</ParamField>
+
+<ParamField path="y" type="number">
+  Vertical position offset
+</ParamField>
+
+**Example:**
+```lua
+-- Zoom in and center
+region.model:SetPosition(0, 0, 0)
+
+-- Zoom out and shift right
+region.model:SetPosition(1, -0.5, 0)
+```
+
+### SetFacing
+
+Sets the model's facing direction:
+
+```lua
+region.model:SetFacing(radians)
+```
+
+<ParamField path="radians" type="number">
+  Facing angle in radians
+</ParamField>
+
+### SetSequence
+
+Sets which animation sequence to play:
+
+```lua
+region.model:SetSequence(sequence)
+```
+
+<ParamField path="sequence" type="number">
+  Animation sequence ID
+</ParamField>
+
+### SetSequenceTime
+
+Sets the time position in the current animation:
+
+```lua
+region.model:SetSequenceTime(sequence, time)
+```
+
+<ParamField path="sequence" type="number">
+  Animation sequence ID
+</ParamField>
+
+<ParamField path="time" type="number">
+  Time in milliseconds
+</ParamField>
+
+## Animation
+
+To enable animated models:
+
+```lua
+data.advance = true
+data.sequence = 1 -- Animation sequence ID
+```
+
+This creates an OnUpdate script that advances the animation automatically.
+
+**Example - Custom Animation Speed:**
+```lua
+function()
+  local region = aura_env.region
+  if region.model then
+    local elapsed = (GetTime() - (aura_env.startTime or GetTime())) * 1000
+    region.model:SetSequenceTime(data.sequence, elapsed * 2) -- 2x speed
+  end
+end
+```
+
+## Unit Model Events
+
+When `modelIsUnit` is true, the model automatically updates when the unit's appearance changes:
+
+- `UNIT_MODEL_CHANGED` - Unit's model changed
+- `PLAYER_TARGET_CHANGED` - Target unit changed (when model_path is "target")
+- `PLAYER_FOCUS_CHANGED` - Focus unit changed (when model_path is "focus")
+
+## Model Pooling
+
+Model regions use object pooling for performance:
+
+- Models are acquired from a pool when shown
+- Models are released back to the pool when hidden
+- Separate pools for unit models and file path models
+
+## Border Configuration
+
+Optional border frame around the model:
+
+```lua
+data.border = true
+data.borderEdge = "Blizzard Tooltip" -- Border texture
+data.borderSize = 16                 -- Border thickness
+data.borderOffset = 5                -- Distance from model
+data.borderInset = 11                -- Backdrop inset
+data.borderColor = {1, 1, 1, 0.5}   -- Border RGBA
+data.backdropColor = {0, 0, 0, 0.8} -- Background RGBA
+```
+
+## Properties
+
+| Property | Type | Setter | Description |
+|----------|------|--------|-------------|
+| width | number | SetRegionWidth | Model region width |
+| height | number | SetRegionHeight | Model region height |
+
+## Code Examples
+
+### Display Player Model
+
+```lua
+data.modelIsUnit = true
+data.model_path = "player"
+data.model_x = 0
+data.model_y = 0
+data.model_z = 0
+```
+
+### Display Target with Animation
+
+```lua
+data.modelIsUnit = true
+data.model_path = "target"
+data.advance = true
+data.sequence = 4 -- Often the "ready" animation
+```
+
+### Specific Creature Model
+
+```lua
+data.modelIsUnit = false
+data.model_path = "Creature/Deathwing/deathwing.m2"
+data.model_z = 1.5  -- Zoom out to see whole model
+data.rotation = 45  -- Rotate to show profile
+```
+
+### Rotating Model Animation
+
+```lua
+-- In TSU or custom trigger
+function()
+  local region = aura_env.region
+  local time = GetTime()
+  local rotation = (time * 45) % 360 -- 45 degrees per second
+  region:SetAnimRotation(rotation)
+end
+```
+
+### Dynamic Model Based on Class
+
+```lua
+function()
+  local region = aura_env.region
+  local _, class = UnitClass("player")
+  
+  local models = {
+    WARRIOR = "Creature/Warrior/warrior.m2",
+    MAGE = "Creature/Mage/mage.m2",
+    -- etc...
+  }
+  
+  if models[class] then
+    data.model_path = models[class]
+    region:PreShow() -- Reload model
+  end
+end
+```
+
+### Model Position Adjustment
+
+```lua
+function()
+  local region = aura_env.region
+  if region.model then
+    -- Adjust based on some state
+    local zoom = aura_env.state.value or 1
+    region.model:SetPosition(zoom, 0, 0)
+  end
+end
+```
+
+### Boss Model Display
+
+```lua
+-- Show current boss model
+data.modelIsUnit = true
+data.model_path = "boss1"
+data.width = 300
+data.height = 300
+data.model_z = 2.0  -- Zoom out for large models
+data.border = true
+data.borderColor = {1, 0, 0, 1}  -- Red border
+```
+
+### Model Fade In/Out
+
+```lua
+-- Custom animation
+function()
+  local region = aura_env.region
+  local elapsed = GetTime() - (aura_env.showTime or GetTime())
+  local alpha = math.min(1, elapsed / 2) -- Fade in over 2 seconds
+  region:SetAlpha(alpha)
+end
+```
+
+## Performance Notes
+
+1. Models are more expensive than textures - use sparingly
+2. Unit models update automatically but can cause performance impact
+3. Model pooling helps with show/hide performance
+4. Animated models (advance = true) require OnUpdate handlers
+5. Models are hidden during cinematics and world map to prevent Blizzard UI issues
+
+## Common Model Paths
+
+Some useful model paths:
+
+```lua
+-- Player races
+"Character/Human/Male/HumanMale.m2"
+"Character/Orc/Male/OrcMale.m2"
+
+-- Creatures
+"Creature/Deathwing/deathwing.m2"
+"Creature/Arthaslichking/arthaslichking.m2"
+"Creature/Ragnaros/ragnaros.m2"
+
+-- Objects
+"Spells/Arcane_missile.m2"
+"World/Expansion02/Doodads/generic/bloodelf/tables/be_table01.m2"
+```

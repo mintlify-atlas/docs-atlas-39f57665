@@ -1,0 +1,578 @@
+---
+title: Client Extensions
+description: Enhance your WotLK 3.3.5a client with Large Address Aware and Awesome WotLK patches for better performance and advanced features
+---
+
+## Overview
+
+WeakAuras for WotLK can be significantly enhanced with two important client patches that improve stability, performance, and unlock modern features not available in the base 3.3.5a client.
+
+<CardGroup cols={2}>
+  <Card title="Large Address Aware" icon="memory">
+    Enables 4GB RAM usage instead of 2GB
+    
+    **Status**: Highly Recommended
+  </Card>
+  
+  <Card title="Awesome WotLK" icon="wand-sparkle">
+    Adds retail-style features to WotLK
+    
+    **Status**: Optional but Powerful
+  </Card>
+</CardGroup>
+
+<Warning>
+  These patches modify your WoW.exe. **Always back up your original executable** before applying any patches.
+</Warning>
+
+## Large Address Aware
+
+The Large Address Aware (LAA) patch is one of the most important modifications you can make to your WotLK client.
+
+### What is Large Address Aware?
+
+By default, the 32-bit WotLK client is limited to using 2GB of RAM due to Windows memory management. When you have many addons (especially WeakAuras with many displays), the client can easily exceed this limit, causing:
+
+- Crashes with "Memory could not be read" errors
+- Freezing and stuttering
+- Disconnects during raids
+- Addon errors
+
+The LAA patch modifies the WoW.exe header to enable usage of up to **4GB of RAM**, doubling the available memory.
+
+### Why You Need This for WeakAuras
+
+<AccordionGroup>
+  <Accordion title="Stability" icon="shield" defaultOpen>
+    WeakAuras loads textures, models, and maintains state for all active displays. With complex setups (especially imported raid packages), memory usage can spike.
+    
+    **Without LAA**: 2GB limit → frequent crashes
+    
+    **With LAA**: 4GB limit → stable gameplay
+  </Accordion>
+  
+  <Accordion title="Performance" icon="gauge-high">
+    When the client approaches the 2GB limit, Windows begins aggressive memory paging, causing:
+    - Frame rate drops
+    - Addon loading delays
+    - Increased stuttering
+    
+    Extra headroom prevents these performance issues.
+  </Accordion>
+  
+  <Accordion title="Raid Readiness" icon="users">
+    25-man raids with DBM, WeakAuras, and other addons routinely exceed 2GB:
+    
+    - WeakAuras displays: ~200-500MB
+    - Textures and models: ~300-600MB  
+    - Other addons: ~200-400MB
+    - Base client: ~800MB-1.2GB
+    
+    **Total**: Often 1.5GB-2.5GB → crashes without LAA
+  </Accordion>
+</AccordionGroup>
+
+### How to Apply Large Address Aware
+
+<Steps>
+  <Step title="Backup Your Executable">
+    Navigate to your WoW installation folder and copy `Wow.exe` to `Wow.exe.backup`
+    
+    ```bash Backup Command (Windows)
+    cd "C:\Program Files\World of Warcraft"
+    copy Wow.exe Wow.exe.backup
+    ```
+    
+    <Warning>
+      This backup lets you restore if anything goes wrong!
+    </Warning>
+  </Step>
+  
+  <Step title="Download LAA Tool">
+    Download a Large Address Aware patching tool:
+    
+    **Option 1**: [4GB Patch by NTCore](http://www.ntcore.com/4gb_patch.php)
+    
+    **Option 2**: [CFF Explorer](https://ntcore.com/?page_id=388) (more advanced)
+    
+    **Option 3**: Command-line with `editbin` (Visual Studio)
+  </Step>
+  
+  <Step title="Apply the Patch">
+    <Tabs>
+      <Tab title="4GB Patch (Easiest)">
+        1. Extract `4gb_patch.exe`
+        2. Drag `Wow.exe` onto `4gb_patch.exe`
+        3. Wait for "Successfully patched" message
+        
+        Done! Your client now supports 4GB.
+      </Tab>
+      
+      <Tab title="CFF Explorer (Advanced)">
+        1. Open `CFF Explorer.exe`
+        2. File → Open → Select `Wow.exe`
+        3. Click **File Header** in left panel
+        4. Click **Characteristics** button
+        5. Check **App can handle >2GB address space**
+        6. Save the file
+      </Tab>
+      
+      <Tab title="editbin (Developers)">
+        ```bash Command Line
+        editbin /LARGEADDRESSAWARE Wow.exe
+        ```
+        
+        Requires Visual Studio or Windows SDK installed.
+      </Tab>
+    </Tabs>
+  </Step>
+  
+  <Step title="Verify the Patch">
+    Launch WoW and check memory usage:
+    
+    1. Log into the game
+    2. Open Task Manager (Ctrl+Shift+Esc)
+    3. Find `Wow.exe` process
+    4. Watch memory usage - it should be able to exceed 2GB
+    
+    Or use this WeakAuras custom code:
+    
+    ```lua Memory Check
+    function()
+      local memory = collectgarbage("count") / 1024 -- MB
+      return true, string.format("%.1f MB", memory)
+    end
+    ```
+  </Step>
+</Steps>
+
+<Check>
+  After applying LAA, you should notice improved stability, especially during raids or with many addons loaded.
+</Check>
+
+### Server Compatibility
+
+The LAA patch is **client-side only** and works with all WotLK 3.3.5a servers:
+
+- Warmane
+- ChromieCraft
+- Dalaran-WoW  
+- Azerothcore servers
+- TrinityCore servers
+- All other 3.3.5a servers
+
+<Note>
+  The patch only modifies how your client manages memory. It doesn't change network protocol or game data.
+</Note>
+
+## Awesome WotLK
+
+The Awesome WotLK patch brings modern retail features to WotLK 3.3.5a, significantly expanding WeakAuras capabilities.
+
+### What is Awesome WotLK?
+
+[Awesome WotLK](https://github.com/NoM0Re/WeakAuras-WotLK/wiki/awesome_wotlk) is a custom client patch that backports modern WoW API features to WotLK, including:
+
+<CardGroup cols={2}>
+  <Card title="Nameplate API" icon="id-badge">
+    `C_NamePlate.GetNamePlateForUnit()`
+    
+    Track and modify enemy nameplates
+  </Card>
+  
+  <Card title="Text-to-Speech" icon="volume-high">
+    `C_VoiceChat.SpeakText()`
+    
+    In-game spoken alerts and callouts
+  </Card>
+  
+  <Card title="Unit Tracking" icon="crosshairs">
+    Modern unit tracking functions
+    
+    Enhanced target and focus tracking
+  </Card>
+  
+  <Card title="Modern Events" icon="bolt">
+    Retail-style game events
+    
+    More precise trigger conditions
+  </Card>
+</CardGroup>
+
+### WeakAuras Features Unlocked
+
+With Awesome WotLK installed, WeakAuras gains access to:
+
+#### Nameplate Integration
+
+```lua WeakAuras Code Detection
+if WeakAuras.IsAwesomeEnabled() then
+  Private.glow_frame_types.NAMEPLATE = L["Nameplate"]
+end
+```
+
+When Awesome WotLK is detected, WeakAuras enables:
+
+- **Nameplate Glow**: Highlight enemy nameplates based on conditions
+- **Nameplate Tracking**: Create displays that attach to specific nameplates
+- **Dynamic Nameplate Auras**: Show icons above enemy nameplates
+
+**Example Use Cases:**
+- Highlight high-priority targets in raids
+- Mark enemies with your DoTs
+- Show cooldown availability above arena opponents
+
+#### Text-to-Speech Alerts
+
+Create audible spoken warnings:
+
+```lua TTS Action Example
+C_VoiceChat.SpeakText("Bloodlust activated", Enum.VoiceOverPriority.Normal, 0)
+```
+
+**Example Use Cases:**
+- "Interrupt ready" when interrupt is off cooldown
+- "Low health" warnings
+- Boss mechanic callouts
+- Proc notifications
+
+<Tip>
+  TTS is especially powerful for accessibility or when you can't easily see your screen (complex mechanics, AoE dodging, etc.)
+</Tip>
+
+### How Awesome WotLK is Detected
+
+```lua WeakAuras Detection Code (Init.lua:15-17)
+local isAwesomeEnabled = C_VoiceChat and C_VoiceChat.SpeakText and 2 -- TTS available
+                        or C_NamePlate and C_NamePlate.GetNamePlateForUnit and 1 -- Nameplates available
+                        or false
+
+function WeakAuras.IsAwesomeEnabled()
+  return isAwesomeEnabled
+end
+```
+
+WeakAuras automatically detects Awesome WotLK features at startup and enables corresponding functionality.
+
+### Installing Awesome WotLK
+
+<Steps>
+  <Step title="Check Server Compatibility">
+    Awesome WotLK requires **server-side support**. Verify your server supports custom client patches:
+    
+    **Supported Servers:**
+    - Stormforge (Mistblade)
+    - Select custom servers with Awesome patches
+    
+    **Not Supported:**
+    - Most public servers (Warmane, Dalaran-WoW, etc.)
+    
+    <Warning>
+      Using a modified client on unsupported servers may result in detection or bans. Always check your server's policy!
+    </Warning>
+  </Step>
+  
+  <Step title="Backup Your Client">
+    Backup your entire WoW folder or at minimum:
+    - `Wow.exe`
+    - `Data/` folder
+  </Step>
+  
+  <Step title="Download Awesome WotLK Patch">
+    Visit the [Awesome WotLK wiki page](https://github.com/NoM0Re/WeakAuras-WotLK/wiki/awesome_wotlk) for download links and installation instructions.
+    
+    <Note>
+      Installation varies by patch version and server. Follow the specific instructions for your server.
+    </Note>
+  </Step>
+  
+  <Step title="Apply the Patch">
+    Typically involves:
+    1. Replacing `Wow.exe` with patched version
+    2. Adding/replacing files in `Data/` folder
+    3. Possibly modifying DLL files
+    
+    **Follow the official guide carefully!**
+  </Step>
+  
+  <Step title="Verify Installation">
+    Launch WoW and run this command:
+    
+    ```lua Test in Chat
+    /run print(C_NamePlate and "NamePlate: Yes" or "NamePlate: No"); print(C_VoiceChat and C_VoiceChat.SpeakText and "TTS: Yes" or "TTS: No")
+    ```
+    
+    Or in WeakAuras custom code:
+    
+    ```lua WeakAuras Detection
+    function()
+      local level = WeakAuras.IsAwesomeEnabled()
+      if level == 2 then
+        return true, "TTS + Nameplates"
+      elseif level == 1 then
+        return true, "Nameplates Only"
+      else
+        return false
+      end
+    end
+    ```
+  </Step>
+</Steps>
+
+### Using Awesome Features in WeakAuras
+
+<Tabs>
+  <Tab title="Nameplate Glows">
+    Create an aura that glows nameplates:
+    
+    1. Create any aura with a trigger
+    2. Go to **Actions** tab
+    3. **On Show**: Glow → Frame Type: **Nameplate**
+    4. Configure glow style and color
+    
+    **Example**: Glow nameplates of enemies below 20% health
+    
+    ```lua Trigger
+    Trigger Type: Status
+    Unit: Nameplate Units
+    Health Percent: <= 20
+    ```
+  </Tab>
+  
+  <Tab title="TTS Alerts">
+    Add spoken alerts to any aura:
+    
+    1. Create an aura with a trigger
+    2. Go to **Actions** tab
+    3. **On Show**: Custom Code
+    
+    ```lua Custom Action Code
+    if C_VoiceChat and C_VoiceChat.SpeakText then
+      C_VoiceChat.SpeakText(
+        "Bloodlust active",
+        Enum.VoiceOverPriority.Normal,
+        0
+      )
+    end
+    ```
+    
+    <Tip>
+      Keep TTS messages short and clear. Long messages take time to speak and can overlap.
+    </Tip>
+  </Tab>
+  
+  <Tab title="Advanced Nameplate Tracking">
+    Create dynamic auras for multiple nameplate units:
+    
+    1. Create a **Dynamic Group**
+    2. **Trigger**: Status → Health
+    3. **Unit**: Custom → Nameplate units
+    4. Add conditions for filtering
+    
+    This creates one child aura per visible nameplate matching conditions.
+    
+    **Example**: Show a skull icon above enemies you've DoTed
+    
+    ```lua Trigger
+    Trigger Type: Aura
+    Unit: Nameplate Units
+    Debuff Name: Corruption
+    Caster: Player
+    ```
+  </Tab>
+</Tabs>
+
+## Comparison Table
+
+<table>
+  <thead>
+    <tr>
+      <th>Feature</th>
+      <th>Base WotLK</th>
+      <th>+ LAA</th>
+      <th>+ Awesome</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Memory Limit</td>
+      <td>2GB</td>
+      <td>4GB ✓</td>
+      <td>4GB ✓</td>
+    </tr>
+    <tr>
+      <td>Crash Resistance</td>
+      <td>Low</td>
+      <td>High ✓</td>
+      <td>High ✓</td>
+    </tr>
+    <tr>
+      <td>Nameplate API</td>
+      <td>✗</td>
+      <td>✗</td>
+      <td>✓</td>
+    </tr>
+    <tr>
+      <td>Text-to-Speech</td>
+      <td>✗</td>
+      <td>✗</td>
+      <td>✓</td>
+    </tr>
+    <tr>
+      <td>Unit Tracking</td>
+      <td>Basic</td>
+      <td>Basic</td>
+      <td>Advanced ✓</td>
+    </tr>
+    <tr>
+      <td>Server Compatibility</td>
+      <td>All</td>
+      <td>All</td>
+      <td>Limited</td>
+    </tr>
+    <tr>
+      <td>Installation Difficulty</td>
+      <td>None</td>
+      <td>Easy</td>
+      <td>Moderate</td>
+    </tr>
+  </tbody>
+</table>
+
+## Recommendations
+
+<CardGroup cols={2}>
+  <Card title="For Everyone" icon="users">
+    **Apply Large Address Aware**
+    
+    - Easy to apply
+    - Universal compatibility
+    - Massive stability improvement
+    - No downsides
+    
+    <Check>Highly Recommended</Check>
+  </Card>
+  
+  <Card title="For Advanced Users" icon="user-ninja">
+    **Consider Awesome WotLK**
+    
+    - Requires compatible server
+    - More complex installation
+    - Unlocks powerful features
+    - Check server policies first
+    
+    <Info>Optional but Powerful</Info>
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="LAA: Client won't launch after patching" icon="triangle-exclamation">
+    **Cause**: Corrupted patch or incompatible tool
+    
+    **Solution**:
+    1. Restore from backup: `copy Wow.exe.backup Wow.exe`
+    2. Try a different LAA patching tool
+    3. Verify your Wow.exe is version 3.3.5a (build 12340)
+  </Accordion>
+  
+  <Accordion title="LAA: How to verify it's working?" icon="circle-question">
+    **Method 1**: Task Manager
+    - Watch Wow.exe memory usage
+    - Should be able to exceed 2GB (2048MB)
+    
+    **Method 2**: Process Explorer
+    - Right-click Wow.exe → Properties → Image tab
+    - Look for "Large address aware: Yes"
+    
+    **Method 3**: In-game
+    - Load many addons and textures
+    - Monitor for crashes (should be stable)
+  </Accordion>
+  
+  <Accordion title="Awesome: Features not detected in WeakAuras" icon="triangle-exclamation">
+    **Check detection**:
+    
+    ```lua Test Script
+    /run local enabled = WeakAuras.IsAwesomeEnabled(); print(enabled and "Awesome: " .. enabled or "Not detected")
+    ```
+    
+    **If not detected**:
+    - Verify patch was installed correctly
+    - Check server supports Awesome features
+    - Reload UI: `/reload`
+    - Restart game client
+  </Accordion>
+  
+  <Accordion title="Awesome: Server disconnects after patching" icon="triangle-exclamation">
+    **Cause**: Server doesn't support modified clients
+    
+    **Solution**:
+    1. Restore original client from backup
+    2. Verify server supports Awesome WotLK
+    3. Check if you need a server-specific patch version
+    
+    <Warning>
+      Never use modified clients on servers that explicitly prohibit them!
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+## Performance Impact
+
+<Tabs>
+  <Tab title="Large Address Aware">
+    **CPU Impact**: None - LAA is just a memory flag
+    
+    **RAM Impact**: Positive - allows more efficient memory management
+    
+    **FPS Impact**: Positive - reduces memory-related stuttering
+    
+    **Load Time**: No change
+    
+    <Check>Pure benefit with no downsides</Check>
+  </Tab>
+  
+  <Tab title="Awesome WotLK">
+    **CPU Impact**: Minimal - new APIs are lightweight
+    
+    **RAM Impact**: Minimal (~10-20MB for new features)
+    
+    **FPS Impact**: Negligible to slightly positive
+    
+    **Load Time**: Slightly longer (additional API initialization)
+    
+    <Info>Benefits far outweigh minimal overhead</Info>
+  </Tab>
+</Tabs>
+
+## Additional Resources
+
+<CardGroup cols={3}>
+  <Card title="LAA Guide" icon="book" href="https://github.com/NoM0Re/WeakAuras-WotLK/wiki/Large-Address-Aware">
+    Official wiki documentation
+  </Card>
+  
+  <Card title="Awesome WotLK Guide" icon="book" href="https://github.com/NoM0Re/WeakAuras-WotLK/wiki/awesome_wotlk">
+    Official wiki documentation  
+  </Card>
+  
+  <Card title="Discord Support" icon="discord" href="https://discord.gg/UXSc7nt">
+    Get help from the community
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+With your client optimized, you're ready to create advanced auras:
+
+<CardGroup cols={2}>
+  <Card title="Core Concepts" href="/core-concepts/overview" icon="book">
+    Learn the fundamentals of WeakAuras architecture
+  </Card>
+  
+  <Card title="Advanced Triggers" href="/core-concepts/triggers/custom-lua" icon="code">
+    Create custom triggers with Lua
+  </Card>
+</CardGroup>

@@ -1,0 +1,647 @@
+---
+title: "Custom Code Integration"
+description: "Extend WeakAuras with Lua code for custom triggers, actions, and advanced functionality"
+icon: "code"
+---
+
+## Overview
+
+Custom code in WeakAuras allows you to write Lua scripts for triggers, actions, animations, and display logic. This provides unlimited flexibility for creating sophisticated, custom behavior.
+
+<Warning>
+Custom code runs in the WoW Lua environment. Bugs can cause errors or performance issues. Test thoroughly!
+</Warning>
+
+## Code Execution Contexts
+
+WeakAuras provides several places for custom code:
+
+<CardGroup cols={2}>
+  <Card title="Custom Triggers" icon="bolt">
+    Detect when to show/hide displays
+  </Card>
+  <Card title="Custom Actions" icon="play">
+    Execute code on trigger/untrigger
+  </Card>
+  <Card title="Custom Functions" icon="function">
+    Generate dynamic values (icon, name, etc.)
+  </Card>
+  <Card title="Custom Conditions" icon="code-branch">
+    Advanced condition checking
+  </Card>
+</CardGroup>
+
+## Aura Environment
+
+Custom code runs in an isolated environment:
+
+```lua
+// aura_env - Persistent storage for your aura
+aura_env.myVariable = "persistent value"
+aura_env.counter = (aura_env.counter or 0) + 1
+
+// Access trigger state
+aura_env.state = {
+  show = true,
+  value = 100
+}
+
+// Access region
+aura_env.region = region  -- Display region
+aura_env.id = "MyAura"    -- Aura ID
+aura_env.cloneId = ""     -- Clone identifier
+```
+
+<Info>
+`aura_env` persists for the lifetime of the aura. Use it to store state between function calls.
+</Info>
+
+## Custom Trigger Functions
+
+### Basic Trigger
+
+```lua
+function()
+  local health = UnitHealth("player")
+  local maxHealth = UnitHealthMax("player")
+  return health < maxHealth * 0.3
+end
+```
+
+### With Event
+
+```lua
+function(event, unit)
+  if unit ~= "player" then 
+    return false 
+  end
+  
+  return UnitAffectingCombat("player")
+end
+```
+
+### With State Management
+
+```lua
+function(allStates, event, ...)
+  allStates[""] = allStates[""] or {}
+  local state = allStates[""]
+  
+  state.show = true
+  state.changed = true
+  state.value = UnitHealth("player")
+  state.total = UnitHealthMax("player")
+  
+  return true
+end
+```
+
+## Custom Actions
+
+### On Show
+
+```lua
+// Executes when display appears
+function()
+  print("Display shown!")
+  PlaySoundFile("Sound\\Interface\\RaidWarning.wav")
+end
+```
+
+### On Hide
+
+```lua
+// Executes when display hides
+function()
+  aura_env.wasActive = false
+  // Reset state, timers, etc.
+end
+```
+
+### Every Frame
+
+```lua
+function()
+  // Runs every frame while shown
+  local elapsed = GetTime() - (aura_env.lastUpdate or 0)
+  if elapsed > 1 then
+    aura_env.lastUpdate = GetTime()
+    // Do periodic work
+  end
+end
+```
+
+<Tip>
+Throttle every frame code to avoid performance impact.
+</Tip>
+
+## Custom Functions
+
+### Custom Name
+
+```lua
+function()
+  local target = UnitName("target")
+  if target then
+    return "Targeting: " .. target
+  end
+  return "No Target"
+end
+```
+
+### Custom Icon
+
+```lua
+function()
+  local _, class = UnitClass("player")
+  if class == "PRIEST" then
+    return "Interface\\Icons\\Spell_Holy_PowerWordShield"
+  elseif class == "WARRIOR" then
+    return "Interface\\Icons\\Ability_Warrior_ShieldMastery"
+  end
+  return "Interface\\Icons\\INV_Misc_QuestionMark"
+end
+```
+
+### Custom Duration
+
+```lua
+function()
+  local start, duration = GetSpellCooldown(12345)
+  if duration > 0 then
+    return duration, start + duration
+  end
+  return 0, 0
+end
+```
+
+### Custom Stacks
+
+```lua
+function()
+  local comboPoints = GetComboPoints("player", "target")
+  local soulShards = UnitPower("player", SPELL_POWER_SOUL_SHARDS)
+  return comboPoints + soulShards
+end
+```
+
+## Custom Text
+
+Create complex formatted text:
+
+```lua
+function()
+  local health = UnitHealth("player")
+  local maxHealth = UnitHealthMax("player")
+  local percent = floor((health / maxHealth) * 100)
+  
+  // Format with separators
+  local formatted = string.format("%d", health)
+  formatted = formatted:reverse():gsub("(%d%d%d)", "%1,")
+  formatted = formatted:reverse():gsub("^,", "")
+  
+  return formatted .. " (" .. percent .. "%)"
+end
+```
+
+## WeakAuras API
+
+### Core Functions
+
+```lua
+// Region access
+WeakAuras.GetRegion(id)
+WeakAuras.GetRegion(id, cloneId)
+
+// Display data
+WeakAuras.GetData(id)
+
+// State access
+WeakAuras.GetTriggerStateForTrigger(id, triggernum)
+WeakAuras.GetActiveStates(id)
+
+// Event handling
+WeakAuras.ScanEvents(event, ...)
+```
+
+### Region Methods
+
+```lua
+region:Expand()
+region:Collapse()
+region:SetDurationInfo(duration, expirationTime)
+region:SetIcon(texture)
+region:SetRegionWidth(width)
+region:SetRegionHeight(height)
+```
+
+### Utility Functions
+
+```lua
+// Time formatting
+WeakAuras.TimeToString(seconds)  -- "1m 30s"
+
+// Text replacement
+WeakAuras.ReplaceRaidMarkerSymbols(text)
+
+// Model loading
+WeakAuras.SetModel(model, path, isUnit, displayInfo)
+```
+
+## Common Patterns
+
+### Tracking Multiple Values
+
+```lua
+aura_env.values = aura_env.values or {}
+
+function(allStates, event, ...)
+  // Track up to 5 combo points
+  for i = 1, 5 do
+    local cloneId = "cp" .. i
+    allStates[cloneId] = allStates[cloneId] or {}
+    
+    local active = i <= GetComboPoints("player", "target")
+    allStates[cloneId].show = active
+    allStates[cloneId].changed = true
+  end
+  
+  return true
+end
+```
+
+### Cooldown Grouping
+
+```lua
+aura_env.spells = {12345, 23456, 34567}
+
+function(allStates, event, ...)
+  for _, spellId in ipairs(aura_env.spells) do
+    local start, duration = GetSpellCooldown(spellId)
+    local cloneId = "spell_" .. spellId
+    
+    allStates[cloneId] = allStates[cloneId] or {}
+    
+    if duration > 1.5 then  // On cooldown
+      allStates[cloneId].show = true
+      allStates[cloneId].duration = duration
+      allStates[cloneId].expirationTime = start + duration
+      allStates[cloneId].progressType = "timed"
+    else
+      allStates[cloneId].show = false
+    end
+    
+    allStates[cloneId].changed = true
+  end
+  
+  return true
+end
+```
+
+### Damage Meter
+
+```lua
+aura_env.damage = aura_env.damage or {}
+
+function(event, timestamp, subevent, ...)
+  if subevent ~= "SPELL_DAMAGE" then return end
+  
+  local sourceGUID = select(1, ...)
+  local amount = select(12, ...)
+  
+  if sourceGUID == UnitGUID("player") then
+    aura_env.damage.total = (aura_env.damage.total or 0) + amount
+    aura_env.damage.lastAmount = amount
+    aura_env.damage.lastTime = GetTime()
+  end
+end
+```
+
+### Buff Tracking with Priorities
+
+```lua
+aura_env.priority = {
+  ["Bloodlust"] = 100,
+  ["Power Infusion"] = 90,
+  ["Heroism"] = 80
+}
+
+function(allStates, event, ...)
+  local bestBuff = nil
+  local bestPriority = 0
+  
+  for buffName, priority in pairs(aura_env.priority) do
+    local name, _, _, count, _, duration, expires = 
+      UnitBuff("player", buffName)
+    
+    if name and priority > bestPriority then
+      bestBuff = {
+        name = name,
+        stacks = count,
+        duration = duration,
+        expirationTime = expires
+      }
+      bestPriority = priority
+    end
+  end
+  
+  if bestBuff then
+    allStates[""] = {
+      show = true,
+      changed = true,
+      name = bestBuff.name,
+      stacks = bestBuff.stacks,
+      duration = bestBuff.duration,
+      expirationTime = bestBuff.expirationTime,
+      progressType = "timed"
+    }
+    return true
+  end
+  
+  return false
+end
+```
+
+## Advanced Techniques
+
+### Creating Timers
+
+```lua
+aura_env.timers = aura_env.timers or {}
+
+function createTimer(name, duration, callback)
+  local timerId = C_Timer.NewTimer(duration, function()
+    callback()
+    aura_env.timers[name] = nil
+  end)
+  
+  aura_env.timers[name] = timerId
+end
+
+function cancelTimer(name)
+  if aura_env.timers[name] then
+    aura_env.timers[name]:Cancel()
+    aura_env.timers[name] = nil
+  end
+end
+```
+
+### Addon Communication
+
+```lua
+// Init code
+local addonPrefix = "MyWA"
+C_ChatInfo.RegisterAddonMessagePrefix(addonPrefix)
+
+// Send message
+function sendMessage(message)
+  C_ChatInfo.SendAddonMessage(addonPrefix, message, "RAID")
+end
+
+// Receive message (in event trigger)
+function(event, prefix, message, channel, sender)
+  if prefix == "MyWA" then
+    // Process message
+    aura_env.lastMessage = message
+    return true
+  end
+end
+```
+
+### Frame Creation
+
+```lua
+// Init code
+aura_env.frame = aura_env.frame or CreateFrame("Frame", nil, UIParent)
+local f = aura_env.frame
+
+f:SetSize(200, 100)
+f:SetPoint("CENTER")
+f:SetBackdrop({
+  bgFile = "Interface\\Buttons\\WHITE8X8"
+})
+f:SetBackdropColor(0, 0, 0, 0.8)
+f:Show()
+```
+
+### SavedVariables Integration
+
+```lua
+// Access saved variables
+local myAddonData = MyAddonDB or {}
+
+// Use in trigger
+function()
+  if myAddonData.someValue > 100 then
+    return true
+  end
+  return false
+end
+```
+
+## Debugging
+
+### Print Debugging
+
+```lua
+function(...)
+  print("WeakAuras Debug:", ...)
+  
+  local args = {...}
+  for i, v in ipairs(args) do
+    print(i, v, type(v))
+  end
+end
+```
+
+### Error Handling
+
+```lua
+function()
+  local success, result = pcall(function()
+    // Your code here
+    return UnitHealth("player") < 1000
+  end)
+  
+  if not success then
+    print("WeakAuras Error:", result)
+    return false
+  end
+  
+  return result
+end
+```
+
+### State Inspection
+
+```lua
+// Custom action
+function()
+  print("Current State:")
+  for k, v in pairs(aura_env.state or {}) do
+    print("  ", k, "=", v)
+  end
+end
+```
+
+### Profiling
+
+```lua
+aura_env.profile = aura_env.profile or {}
+
+function profileStart(name)
+  aura_env.profile[name] = debugprofilestop()
+end
+
+function profileEnd(name)
+  local elapsed = debugprofilestop() - (aura_env.profile[name] or 0)
+  print(name, "took", elapsed, "ms")
+end
+
+// Usage
+profileStart("myFunction")
+// ... code ...
+profileEnd("myFunction")
+```
+
+## WeakAuras Debug Tools
+
+```lua
+// Enable profiling
+/wa pstart
+
+// Stop profiling
+/wa pstop
+
+// View debug log
+/wa debuglog
+
+// Reload all auras
+/wa reload
+
+// Test aura (options open)
+// Triggers OPTIONS event
+```
+
+## Security and Limitations
+
+<AccordionGroup>
+  <Accordion title="Protected Functions" icon="shield">
+    Some WoW API functions are protected and cannot be called from addons:
+    - CastSpellByID/CastSpellByName (in combat)
+    - Target functions (in combat)
+    - Some UI functions
+  </Accordion>
+  
+  <Accordion title="Taint" icon="exclamation">
+    Code that modifies Blizzard UI can cause taint, breaking default UI functionality. Be careful with frame hooks.
+  </Accordion>
+  
+  <Accordion title="Performance" icon="gauge">
+    Custom code runs frequently. Keep it optimized:
+    - Cache API results
+    - Avoid expensive operations
+    - Throttle updates
+    - Profile with /wa pstart
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CheckGroup>
+  - <Check>Use aura_env for persistent storage</Check>
+  - <Check>Cache API calls in local variables</Check>
+  - <Check>Add error handling for robustness</Check>
+  - <Check>Comment complex logic</Check>
+  - <Check>Test edge cases (nil values, etc.)</Check>
+  - <Check>Profile performance-critical code</Check>
+  - <Check>Use specific events instead of polling</Check>
+  - <Check>Clean up resources (timers, frames) on hide</Check>
+</CheckGroup>
+
+## Code Templates
+
+### Throttled Frame Update
+
+```lua
+aura_env.throttle = 0.5  // seconds
+aura_env.lastUpdate = 0
+
+function()
+  local now = GetTime()
+  if now - aura_env.lastUpdate >= aura_env.throttle then
+    aura_env.lastUpdate = now
+    // Do work
+    return true
+  end
+  return false
+end
+```
+
+### Addon Detector
+
+```lua
+function()
+  local loaded, finished = IsAddOnLoaded("MyAddon")
+  return loaded and finished
+end
+```
+
+### Multi-Criteria Trigger
+
+```lua
+function()
+  local criteria = {
+    UnitHealth("player") < 10000,
+    UnitPower("player", 0) > 5000,
+    UnitAffectingCombat("player"),
+    GetComboPoints("player", "target") >= 5
+  }
+  
+  local count = 0
+  for _, met in ipairs(criteria) do
+    if met then count = count + 1 end
+  end
+  
+  return count >= 3  // At least 3 criteria met
+end
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Code Not Running" icon="ban">
+    - Check for Lua errors in chat
+    - Verify function syntax
+    - Ensure return value is correct type
+    - Check /wa debuglog for errors
+  </Accordion>
+  
+  <Accordion title="Performance Issues" icon="turtle">
+    - Profile with /wa pstart and /wa pstop
+    - Check for expensive API calls
+    - Reduce update frequency
+    - Cache repeated calculations
+  </Accordion>
+  
+  <Accordion title="State Not Updating" icon="rotate">
+    - Ensure `changed = true` is set
+    - Verify trigger is returning correct value
+    - Check if state properties are valid
+    - Inspect state with print debugging
+  </Accordion>
+</AccordionGroup>
+
+## Related Topics
+
+<CardGroup cols={3}>
+  <Card title="Custom Triggers" icon="bolt" href="/core-concepts/triggers/custom-lua">
+    Full custom trigger guide
+  </Card>
+  <Card title="Conditions" icon="code-branch" href="/core-concepts/conditions">
+    Advanced condition logic
+  </Card>
+  <Card title="Animations" icon="wand-magic-sparkles" href="/core-concepts/animations">
+    Custom animation functions
+  </Card>
+</CardGroup>

@@ -1,0 +1,522 @@
+---
+title: SharedMedia
+description: Expand WeakAuras with custom fonts, textures, sounds, and more
+icon: image
+---
+
+SharedMedia (also known as LibSharedMedia-3.0) is a library that allows addons to share media resources like fonts, textures, sounds, and statusbar textures. WeakAuras integrates with SharedMedia to give you access to hundreds of additional customization options.
+
+## Overview
+
+SharedMedia provides:
+
+<CardGroup cols={2}>
+  <Card title="Statusbar Textures" icon="bars">
+    Hundreds of bar textures for Aura Bars and progress displays
+  </Card>
+  <Card title="Fonts" icon="font">
+    Custom fonts for text displays
+  </Card>
+  <Card title="Sounds" icon="volume-high">
+    Sound effects for alerts and notifications
+  </Card>
+  <Card title="Border Textures" icon="border-all">
+    Frame borders and edges
+  </Card>
+</CardGroup>
+
+## Available Versions
+
+There are several SharedMedia packages for WotLK:
+
+### 1. SharedMedia (Retail Version)
+
+**Link**: [GitHub - NoM0Re/SharedMedia](https://github.com/NoM0Re/SharedMedia)
+
+- Clean, retail-style media library
+- Focus on modern, minimalist designs
+- Regular updates
+- Good compatibility
+
+### 2. bKader Shared Media (Popular Version)
+
+**Link**: [GitHub - bkader/SharedMedia](https://github.com/bkader/SharedMedia)
+
+- **Most popular** for WotLK
+- Extensive custom content
+- Hundreds of statusbar textures
+- Many custom fonts
+- Additional sounds
+- Community-contributed media
+
+### 3. SharedMediaAdditionalFonts
+
+**Link**: [GitHub - NoM0Re/SharedMediaAdditionalFonts](https://github.com/NoM0Re/SharedMediaAdditionalFonts)
+
+- **Font-focused** addon
+- Dozens of additional fonts
+- Works alongside other SharedMedia versions
+- Can be combined with bKader or retail version
+
+### 4. MerfinPlus
+
+**Link**: [Google Drive](https://drive.google.com/file/d/1xDCpDpStRbXdSBKYOeZHpYBt_dRDqb3g/view?usp=sharing)
+
+- Predefined TTS (text-to-speech) sounds
+- Custom sound effects  
+- Additional statusbar textures
+- Extra fonts
+- All-in-one media pack
+
+<Tip>
+You can install **multiple** SharedMedia addons. They all work together, giving you access to their combined media libraries.
+</Tip>
+
+## Installation
+
+<Steps>
+  <Step title="Choose Your Version(s)">
+    Pick one or more from the options above. **bKader** is recommended for the largest selection.
+  </Step>
+  
+  <Step title="Download">
+    Download the addon(s) from their respective links
+  </Step>
+  
+  <Step title="Extract to AddOns">
+    Place in your WoW AddOns folder:
+    ```
+    World of Warcraft\_classic_\Interface\AddOns\SharedMedia
+    World of Warcraft\_classic_\Interface\AddOns\SharedMediaAdditionalFonts
+    ```
+  </Step>
+  
+  <Step title="Enable in Game">
+    Character Select -> AddOns -> Enable SharedMedia (and any variants)
+  </Step>
+  
+  <Step title="Reload and Verify">
+    `/reload` in-game, then check WeakAuras - you should see many more options in:
+    - Display -> Statusbar Texture dropdown
+    - Display -> Font dropdown  
+    - Actions -> Sound dropdown
+  </Step>
+</Steps>
+
+## Using SharedMedia in WeakAuras
+
+### Statusbar Textures
+
+For Aura Bars and Progress Textures:
+
+<Steps>
+  <Step title="Create/Edit Aura Bar">
+    Display Type: Aura Bar or Progress Texture
+  </Step>
+  
+  <Step title="Open Display Tab">
+    Click Display in the WeakAuras configuration
+  </Step>
+  
+  <Step title="Choose Texture">
+    Statusbar Texture dropdown now shows:
+    - **Default**: Blizzard's default bar
+    - **WeakAuras**: Built-in textures
+    - **SharedMedia**: Hundreds of options from installed SharedMedia addons
+    
+    Popular choices:
+    - Aluminium
+    - BantoBar
+    - Glamour
+    - Smooth
+    - Minimalist
+  </Step>
+  
+  <Step title="Preview">
+    The bar updates in real-time as you select different textures
+  </Step>
+</Steps>
+
+#### Statusbar Texture Categories
+
+SharedMedia textures are often organized by style:
+
+- **Smooth**: Gradient bars (Aluminium, Smooth, Otravi)
+- **Minimal**: Clean, flat bars (Minimalist, Flat)
+- **Glossy**: Shiny, reflective bars (Glamour, Gloss)  
+- **Textured**: Patterned bars (Striped, Hatched, Grid)
+- **Themed**: Specific aesthetics (BantoBar, LiteStep)
+
+### Fonts
+
+For Text displays:
+
+<Steps>
+  <Step title="Create/Edit Text Display">
+    Display Type: Text, or text elements in Icon/Aura Bar
+  </Step>
+  
+  <Step title="Text Settings">
+    Display -> Text -> Font Face
+  </Step>
+  
+  <Step title="Choose Font">
+    Font dropdown shows:
+    - System fonts (Arial, Courier, etc.)
+    - WeakAuras fonts
+    - **SharedMedia fonts**: All fonts from installed addons
+    
+    Popular choices:
+    - PT Sans Narrow (clean, readable)
+    - Expressway (bold, modern)
+    - Accidental Presidency (unique style)
+    - Homespun (pixel art style)
+  </Step>
+  
+  <Step title="Adjust Size & Outline">
+    - Font Size: Adjust for readability
+    - Outline: None, Outline, Thick Outline, Monochrome
+  </Step>
+</Steps>
+
+### Sounds
+
+For alerts and notifications:
+
+<Steps>
+  <Step title="Edit Aura Actions">
+    Actions tab -> On Show / On Hide
+  </Step>
+  
+  <Step title="Enable Sound">
+    Check "Play Sound" and choose from:
+    - **Built-in**: WeakAuras default sounds
+    - **SharedMedia**: Community sounds (if using MerfinPlus or bKader)
+  </Step>
+  
+  <Step title="Or Use Custom Sound Path">
+    Actions -> Custom:
+    ```lua
+    PlaySoundFile("Interface\\AddOns\\SharedMedia\\sounds\\mySound.ogg")
+    ```
+  </Step>
+</Steps>
+
+## Popular Media Choices
+
+### Best Statusbar Textures
+
+<Tabs>
+  <Tab title="Clean & Modern">
+    - **Aluminium**: Sleek gradient
+    - **Smooth**: Simple gradient  
+    - **Minimalist**: Flat, no frills
+    - **Flat**: Completely flat color
+  </Tab>
+  
+  <Tab title="Glossy & Shiny">
+    - **Glamour**: High gloss finish
+    - **Gloss**: Subtle shine
+    - **BantoBar**: Glossy with depth
+  </Tab>
+  
+  <Tab title="Textured">
+    - **Striped**: Diagonal lines
+    - **Hatched**: Crosshatch pattern
+    - **Grid**: Grid pattern
+    - **Rocks**: Stone texture
+  </Tab>
+  
+  <Tab title="Unique">
+    - **LiteStep**: Segmented bar
+    - **Otravi**: Animated shimmer
+    - **Perl**: Classic look
+  </Tab>
+</Tabs>
+
+### Best Fonts
+
+<Tabs>
+  <Tab title="Readable & Clean">
+    - **PT Sans Narrow**: Modern, very readable
+    - **Roboto**: Clean sans-serif
+    - **Expressway**: Bold and clear
+    - **Myriad Pro**: Professional look
+  </Tab>
+  
+  <Tab title="Fantasy/RPG">
+    - **Morpheus**: Warcraft-style
+    - **Friz Quadrata TT**: Classic fantasy
+    - **Skurri**: Medieval feel
+  </Tab>
+  
+  <Tab title="Stylized">
+    - **Accidental Presidency**: Unique
+    - **Adventure**: Bold display font
+    - **Homespun**: Pixel art
+  </Tab>
+  
+  <Tab title="Monospace">
+    - **Courier**: System monospace
+    - **PT Mono**: Modern monospace
+    - **Consolas**: Code-style font
+  </Tab>
+</Tabs>
+
+## Adding Your Own Media
+
+You can add custom media to SharedMedia:
+
+### Adding Custom Statusbar Textures
+
+<Steps>
+  <Step title="Create Texture File">
+    - Size: Usually 256x32 pixels (power of 2)
+    - Format: TGA or BLP
+    - Gradient or pattern as desired
+  </Step>
+  
+  <Step title="Add to SharedMedia Folder">
+    ```
+    SharedMedia/statusbar/MyTexture.tga
+    ```
+  </Step>
+  
+  <Step title="Register in Lua">
+    Edit `SharedMedia/SharedMedia.lua` or create a separate addon:
+    
+    ```lua
+    local LSM = LibStub("LibSharedMedia-3.0")
+    
+    LSM:Register("statusbar", "My Custom Texture", 
+      [[Interface\\AddOns\\SharedMedia\\statusbar\\MyTexture.tga]])
+    ```
+  </Step>
+  
+  <Step title="Reload">
+    `/reload` to see your texture in WeakAuras
+  </Step>
+</Steps>
+
+### Adding Custom Fonts
+
+<Steps>
+  <Step title="Get Font File">
+    - Format: TTF (TrueType Font)
+    - License: Ensure you can use it
+  </Step>
+  
+  <Step title="Add to Fonts Folder">
+    ```
+    SharedMedia/fonts/MyFont.ttf
+    ```
+  </Step>
+  
+  <Step title="Register Font">
+    ```lua
+    local LSM = LibStub("LibSharedMedia-3.0")
+    
+    LSM:Register("font", "My Custom Font",
+      [[Interface\\AddOns\\SharedMedia\\fonts\\MyFont.ttf]])
+    ```
+  </Step>
+  
+  <Step title="Reload">
+    `/reload` and select your font in WeakAuras
+  </Step>
+</Steps>
+
+### Adding Custom Sounds
+
+<Steps>
+  <Step title="Prepare Sound File">
+    - Format: OGG or MP3 (OGG recommended)
+    - Quality: Reasonable bitrate (128-192 kbps)
+    - Length: Keep alerts short (1-3 seconds)
+  </Step>
+  
+  <Step title="Add to Sounds Folder">
+    ```
+    SharedMedia/sounds/MySound.ogg
+    ```
+  </Step>
+  
+  <Step title="Register Sound">
+    ```lua
+    local LSM = LibStub("LibSharedMedia-3.0")
+    
+    LSM:Register("sound", "My Alert Sound",
+      [[Interface\\AddOns\\SharedMedia\\sounds\\MySound.ogg]])
+    ```
+  </Step>
+  
+  <Step title="Use in WeakAuras">
+    Actions -> Sound -> Choose "My Alert Sound"
+  </Step>
+</Steps>
+
+## Creating a Media Addon
+
+For distributing your custom media:
+
+### Basic Structure
+
+```
+MyCustomMedia/
+  MyCustomMedia.toc
+  MyCustomMedia.lua
+  statusbar/
+    texture1.tga
+    texture2.tga
+  fonts/
+    font1.ttf
+    font2.ttf  
+  sounds/
+    sound1.ogg
+    sound2.ogg
+```
+
+### TOC File
+
+```ini
+## Interface: 30300
+## Title: My Custom Media
+## Notes: Custom SharedMedia content
+## Author: YourName
+## Version: 1.0
+## RequiredDeps: SharedMedia
+
+MyCustomMedia.lua
+```
+
+### Lua File
+
+```lua
+local LSM = LibStub("LibSharedMedia-3.0")
+
+if not LSM then return end
+
+-- Register statusbar textures
+LSM:Register("statusbar", "My Texture 1",
+  [[Interface\\AddOns\\MyCustomMedia\\statusbar\\texture1.tga]])
+LSM:Register("statusbar", "My Texture 2",
+  [[Interface\\AddOns\\MyCustomMedia\\statusbar\\texture2.tga]])
+
+-- Register fonts
+LSM:Register("font", "My Font 1",
+  [[Interface\\AddOns\\MyCustomMedia\\fonts\\font1.ttf]])
+LSM:Register("font", "My Font 2",
+  [[Interface\\AddOns\\MyCustomMedia\\fonts\\font2.ttf]])
+
+-- Register sounds
+LSM:Register("sound", "My Alert 1",
+  [[Interface\\AddOns\\MyCustomMedia\\sounds\\sound1.ogg]])
+LSM:Register("sound", "My Alert 2",
+  [[Interface\\AddOns\\MyCustomMedia\\sounds\\sound2.ogg]])
+```
+
+## Compatibility
+
+SharedMedia works with many addons:
+
+<CardGroup cols={2}>
+  <Card title="WeakAuras" icon="wand-magic-sparkles">
+    Full support for all media types
+  </Card>
+  <Card title="Bartender4" icon="bars">
+    Uses statusbar textures
+  </Card>
+  <Card title="X-Perl / Perl Classic" icon="user">
+    Unit frame textures and fonts
+  </Card>
+  <Card title="Skada / Recount" icon="chart-bar">
+    Meter bar textures and fonts
+  </Card>
+  <Card title="Masque" icon="mask">
+    Border textures
+  </Card>
+  <Card title="Quartz" icon="clock">
+    Cast bar textures
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="No New Media in WeakAuras">
+    **Possible Causes:**
+    - SharedMedia not installed
+    - SharedMedia not enabled
+    - Need to `/reload`
+    
+    **Solution:**
+    1. Verify SharedMedia is in AddOns folder
+    2. Enable at character select
+    3. `/reload` in-game
+  </Accordion>
+  
+  <Accordion title="Custom Media Not Showing">
+    **Check:**
+    - File paths correct (double backslashes in Lua)
+    - Files in right format (TGA/BLP for textures, TTF for fonts, OGG for sounds)
+    - LSM:Register() called correctly
+    - `/reload` after changes
+  </Accordion>
+  
+  <Accordion title="Font Not Displaying Correctly">
+    **Issues:**
+    - Font file corrupt
+    - Unsupported font format
+    - Size too small/large
+    
+    **Solution:**
+    - Re-download font
+    - Convert to TTF if needed
+    - Adjust font size in WeakAuras
+  </Accordion>
+  
+  <Accordion title="Texture Looks Stretched">
+    **Cause:** Incorrect aspect ratio
+    
+    **Solution:**
+    - Statusbar textures should be wide (e.g., 256x32)
+    - Adjust bar width/height in WeakAuras to match texture ratio
+  </Accordion>
+</AccordionGroup>
+
+## Resources
+
+<CardGroup cols={3}>
+  <Card title="bKader SharedMedia" icon="download" href="https://github.com/bkader/SharedMedia">
+    Most popular collection
+  </Card>
+  <Card title="Retail SharedMedia" icon="download" href="https://github.com/NoM0Re/SharedMedia">
+    Clean, modern version
+  </Card>
+  <Card title="Additional Fonts" icon="font" href="https://github.com/NoM0Re/SharedMediaAdditionalFonts">
+    Font-focused addon
+  </Card>
+  <Card title="MerfinPlus" icon="box" href="https://drive.google.com/file/d/1xDCpDpStRbXdSBKYOeZHpYBt_dRDqb3g/view">
+    All-in-one media pack
+  </Card>
+  <Card title="Font Resources" icon="download" href="https://www.dafont.com">
+    Free fonts (check license)
+  </Card>
+  <Card title="Texture Resources" icon="image" href="https://www.wowinterface.com/downloads/fileinfo.php?id=9214">
+    Community texture packs
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Creating Auras" icon="wand-magic-sparkles" href="/development/creating-auras">
+    Use your new media in auras
+  </Card>
+  <Card title="Stop Motion" icon="film" href="/development/extensions/stop-motion">
+    Add animated textures
+  </Card>
+  <Card title="Templates" icon="layer-group" href="/development/templates">
+    Pre-made aura templates
+  </Card>
+</CardGroup>

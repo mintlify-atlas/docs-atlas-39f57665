@@ -1,0 +1,400 @@
+---
+title: "Trigger System Overview"
+description: "Understanding how triggers activate and control your displays"
+icon: "bolt"
+---
+
+## What Are Triggers?
+
+Triggers are the core detection system in WeakAuras. They monitor game events and states to determine when your displays should appear, update, or hide.
+
+<Info>
+Every display needs at least one trigger to function. Triggers define **when** and **why** a display becomes active.
+</Info>
+
+## Trigger Architecture
+
+WeakAuras implements two main trigger systems:
+
+<CardGroup cols={2}>
+  <Card title="Aura Triggers" icon="sparkles">
+    Specialized system for buffs, debuffs, and auras using `BuffTrigger2.lua`
+  </Card>
+  <Card title="Generic Triggers" icon="gear">
+    Event-based system for everything else using `GenericTrigger.lua`
+  </Card>
+</CardGroup>
+
+## Trigger Types
+
+### Status Triggers
+
+Monitor ongoing conditions that have duration:
+
+```lua
+-- Buff/Debuff status trigger
+{
+  type = "aura2",
+  auranames = {"Power Word: Shield"},
+  unit = "player",
+  debuffType = "HELPFUL"
+}
+```
+
+**Examples:** Buffs, debuffs, health percentage, power levels
+
+### Event Triggers
+
+Respond to instantaneous game events:
+
+```lua
+-- Combat log event trigger
+{
+  type = "event",
+  event = "COMBAT_LOG_EVENT_UNFILTERED",
+  subeventPrefix = "SPELL_CAST_SUCCESS",
+  spellIds = {"12345"}
+}
+```
+
+**Examples:** Spell casts, damage events, chat messages
+
+### Custom Triggers
+
+Use Lua code for complete control:
+
+```lua
+-- Custom trigger function
+function()
+  local health = UnitHealth("player")
+  local maxHealth = UnitHealthMax("player")
+  return health < maxHealth * 0.3
+end
+```
+
+## Trigger States
+
+Triggers generate **states** that contain information about what activated:
+
+<Tabs>
+  <Tab title="State Structure">
+    ```lua
+    state = {
+      show = true,           -- Whether to show display
+      changed = true,        -- State has changed
+      name = "Spell Name",   -- Spell/aura name
+      icon = "path/to/icon",
+      stacks = 5,            -- Stack count
+      duration = 30,         -- Total duration
+      expirationTime = time, -- When expires
+      progressType = "timed",
+      -- Custom properties based on trigger type
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Multiple States">
+    Some triggers create multiple states (clones):
+    ```lua
+    allStates = {
+      [""] = state1,              -- Primary state
+      ["player"] = state2,        -- Per-unit state
+      ["unit123 spell456"] = state3  -- Clone state
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Trigger Loading
+
+WeakAuras loads triggers in phases:
+
+<Steps>
+  <Step title="Add Phase">
+    Trigger configuration is parsed and validated
+  </Step>
+  <Step title="Compile Phase">
+    Trigger functions are compiled from configuration
+  </Step>
+  <Step title="Load Phase">
+    Events are registered and trigger becomes active
+  </Step>
+  <Step title="Scan Phase">
+    Initial state is established by scanning current conditions
+  </Step>
+</Steps>
+
+## Event Registration
+
+Triggers automatically register for relevant game events:
+
+```lua
+-- Event registration in GenericTrigger.lua
+if data.events then
+  for index, event in pairs(data.events) do
+    loaded_events[event] = loaded_events[event] or {}
+    loaded_events[event][id] = loaded_events[event][id] or {}
+    loaded_events[event][id][triggernum] = data
+  end
+end
+```
+
+<Warning>
+Each active trigger registers for game events. Too many complex triggers can impact performance.
+</Warning>
+
+## Trigger Evaluation
+
+When events fire, triggers evaluate conditions:
+
+<CodeGroup>
+```lua Simple Check
+-- Event fires -> Test condition -> Update state
+function(event, unit)
+  if unit == "player" then
+    return UnitHealth("player") < 1000
+  end
+end
+```
+
+```lua With State Parameter
+-- Trigger with state management
+function(allStates, event, unit)
+  allStates[""] = allStates[""] or {}
+  local state = allStates[""]
+  
+  state.value = UnitHealth("player")
+  state.total = UnitHealthMax("player")
+  state.changed = true
+  
+  return true
+end
+```
+</CodeGroup>
+
+## Multi-Trigger Logic
+
+Combine multiple triggers with boolean logic:
+
+<Tabs>
+  <Tab title="AND Logic">
+    ```lua
+    -- All triggers must be active
+    {
+      disjunctive = "all",  -- AND
+      triggers = {
+        {1} = trigger1,
+        {2} = trigger2
+      }
+    }
+    ```
+  </Tab>
+  
+  <Tab title="OR Logic">
+    ```lua
+    -- Any trigger can activate
+    {
+      disjunctive = "any",  -- OR
+      triggers = {
+        {1} = trigger1,
+        {2} = trigger2
+      }
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Custom Logic">
+    ```lua
+    -- Complex boolean expressions
+    {
+      disjunctive = "custom",
+      customTriggerLogic = "1 and (2 or 3)",
+      triggers = {trigger1, trigger2, trigger3}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Trigger Duration
+
+Control how long displays stay visible:
+
+```lua
+{
+  duration = 10,              -- Fixed duration
+  automaticAutoHide = true    -- Auto-hide when duration ends
+}
+```
+
+### Duration Sources
+
+<CardGroup cols={2}>
+  <Card title="Timed" icon="clock">
+    Fixed or variable duration with expiration time
+  </Card>
+  <Card title="Static" icon="square">
+    Progress bar showing value/total
+  </Card>
+</CardGroup>
+
+## Untriggers
+
+Define when displays should hide:
+
+```lua
+{
+  trigger = function() 
+    return UnitAffectingCombat("player")
+  end,
+  untrigger = function()
+    return not UnitAffectingCombat("player")
+  end
+}
+```
+
+<Info>
+If no untrigger is specified, the display hides when the trigger condition becomes false.
+</Info>
+
+## Overlays and Additional Progress
+
+Triggers can provide multiple progress sources:
+
+```lua
+{
+  overlays = {
+    {
+      type = "progressbar",
+      min = 0,
+      max = 100,
+      value = 50
+    }
+  }
+}
+```
+
+## Performance Optimization
+
+<AccordionGroup>
+  <Accordion title="Event Throttling" icon="gauge">
+    High-frequency events are automatically throttled:
+    ```lua
+    {
+      event = "FRAME_UPDATE",
+      onUpdateThrottle = 0.1  -- Update every 0.1 seconds
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Trigger Delay" icon="hourglass">
+    Delay trigger evaluation to reduce CPU usage:
+    ```lua
+    {
+      triggerDelay = 0.5  -- Wait 0.5s before evaluating
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Efficient Conditions" icon="filter">
+    Use specific events instead of polling:
+    ```lua
+    -- Good: Event-based
+    { event = "UNIT_HEALTH", unit = "player" }
+    
+    -- Bad: Polling
+    { event = "FRAME_UPDATE" }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Trigger API
+
+### Core Functions
+
+```lua
+-- Add a new trigger
+GenericTrigger.Add(data)
+
+-- Load triggers for display
+GenericTrigger.LoadDisplay(id)
+
+-- Unload all triggers
+GenericTrigger.UnloadAll()
+
+-- Scan for trigger matches
+WeakAuras.ScanEvents(event, ...)
+```
+
+### Trigger State Access
+
+```lua
+-- Get current trigger state
+local states = WeakAuras.GetTriggerStateForTrigger(id, triggernum)
+
+-- Check if trigger is active
+local active = states[""] and states[""].show
+```
+
+## Common Patterns
+
+### Health Threshold
+
+```lua
+{
+  type = "status",
+  event = "UNIT_HEALTH",
+  unit = "player",
+  use_percenthealth = true,
+  percenthealth = "30",
+  percenthealth_operator = "<"
+}
+```
+
+### Cooldown Tracking
+
+```lua
+{
+  type = "spell",
+  event = "Cooldown Progress (Spell)",
+  use_spellName = true,
+  spellName = 12345,
+  use_track = true,
+  track = "cooldown"
+}
+```
+
+### Proc Detection
+
+```lua
+{
+  type = "event",
+  event = "COMBAT_LOG_EVENT_UNFILTERED",
+  subeventPrefix = "SPELL_AURA_APPLIED",
+  sourceUnit = "player",
+  spellIds = {"12345"}
+}
+```
+
+## Best Practices
+
+<CheckGroup>
+  - <Check>Use the most specific trigger type for your needs</Check>
+  - <Check>Minimize use of FRAME_UPDATE events</Check>
+  - <Check>Combine related checks in a single trigger when possible</Check>
+  - <Check>Use event-based triggers over polling when available</Check>
+  - <Check>Test triggers in combat scenarios for performance</Check>
+</CheckGroup>
+
+## Related Topics
+
+<CardGroup cols={3}>
+  <Card title="Buff/Debuff Triggers" icon="sparkles" href="/core-concepts/triggers/buff-debuff">
+    Track auras on units
+  </Card>
+  <Card title="Combat Events" icon="sword" href="/core-concepts/triggers/combat-events">
+    Monitor combat log events
+  </Card>
+  <Card title="Custom Lua" icon="code" href="/core-concepts/triggers/custom-lua">
+    Write custom trigger code
+  </Card>
+</CardGroup>

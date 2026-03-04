@@ -1,0 +1,241 @@
+---
+title: 'Event System'
+description: 'WeakAuras event system and callback API'
+---
+
+## Overview
+
+The WeakAuras event system manages trigger events, custom events, and callback registration. It provides a flexible way to respond to game events and custom triggers.
+
+## Event Scanning
+
+### ScanEvents
+
+Triggers an event scan for all registered triggers.
+
+<ParamField path="event" type="string" required>
+  The event name to scan
+</ParamField>
+
+<ParamField path="..." type="any" optional>
+  Event arguments passed to trigger functions
+</ParamField>
+
+```lua
+-- Trigger a custom event
+WeakAuras.ScanEvents("CUSTOM_EVENT", data1, data2)
+
+-- Trigger a game event
+WeakAuras.ScanEvents("PLAYER_REGEN_DISABLED")
+```
+
+### ScanEventsByID
+
+Triggers an event scan with a specific ID parameter.
+
+<ParamField path="event" type="string" required>
+  The base event name
+</ParamField>
+
+<ParamField path="id" type="string" required>
+  The ID to append to the event
+</ParamField>
+
+<ParamField path="..." type="any" optional>
+  Additional event arguments
+</ParamField>
+
+```lua
+-- Scan for both "EVENT" and "EVENT:id"
+WeakAuras.ScanEventsByID("SPELL_AURA_APPLIED", "12345", unit, spellId)
+```
+
+### ScanUnitEvents
+
+Scans events specific to a unit.
+
+<ParamField path="event" type="string" required>
+  The unit event name
+</ParamField>
+
+<ParamField path="unit" type="string" required>
+  The unit identifier
+</ParamField>
+
+<ParamField path="..." type="any" optional>
+  Additional event arguments
+</ParamField>
+
+```lua
+WeakAuras.ScanUnitEvents("UNIT_HEALTH", "player")
+```
+
+## Callback System
+
+### RegisterCallback
+
+Registers a callback for an event.
+
+<ParamField path="event" type="string" required>
+  The event to listen for
+</ParamField>
+
+<ParamField path="handler" type="function" required>
+  The callback function to execute
+</ParamField>
+
+```lua
+local Private = select(2, ...)
+Private.callbacks:RegisterCallback("MY_EVENT", function(event, ...)
+  print("Event fired:", event)
+end)
+```
+
+### Fire
+
+Fires a callback event.
+
+<ParamField path="event" type="string" required>
+  The event name to fire
+</ParamField>
+
+<ParamField path="..." type="any" optional>
+  Arguments to pass to callbacks
+</ParamField>
+
+```lua
+local Private = select(2, ...)
+Private.callbacks:Fire("MY_EVENT", arg1, arg2)
+```
+
+## Internal Events
+
+WeakAuras uses several internal events for system communication:
+
+### Frame Update Events
+
+- **FRAME_UPDATE**: Fires every frame for on-update triggers
+- **WA_DELAYED_PLAYER_ENTERING_WORLD**: Fires shortly after login
+
+### Unit Change Events
+
+- **UNIT_CHANGED_{unit}**: Fires when a unit changes (internal)
+- **UNIT_IS_UNIT_CHANGED_{unit1}_{unit2}**: Fires when unit identity changes
+
+### Trigger Events
+
+- **TRIGGER**: Fires when observed trigger state changes
+- **OPTIONS**: Special event for preview mode
+
+## Event Prototypes
+
+Event prototypes define how triggers respond to events.
+
+### Event Prototype Structure
+
+```lua
+Private.event_prototypes["Event Name"] = {
+  type = "category",  -- Event category
+  events = { "GAME_EVENT" },  -- WoW events to register
+  internal_events = { "INTERNAL_EVENT" },  -- WeakAuras internal events
+  name = "Display Name",
+  init = function(trigger)
+    -- Initialization code
+    return "local var = value"
+  end,
+  args = {
+    -- Trigger arguments
+  },
+  statesParameter = "one", -- "one", "all", "unit", "full"
+}
+```
+
+### States Parameters
+
+<ParamField path="one" type="string">
+  Single state trigger (most common)
+</ParamField>
+
+<ParamField path="all" type="string">
+  Multiple states, trigger manages all clones
+</ParamField>
+
+<ParamField path="unit" type="string">
+  One state per unit
+</ParamField>
+
+<ParamField path="full" type="string">
+  Full control over state table
+</ParamField>
+
+## Combat Log Events
+
+WeakAuras provides special handling for COMBAT_LOG_EVENT_UNFILTERED.
+
+```lua
+-- Combat log events are automatically parsed
+Private.event_prototypes["Combat Log"] = {
+  events = { "COMBAT_LOG_EVENT_UNFILTERED" },
+  -- Subevents are automatically handled
+}
+```
+
+## Custom Event Examples
+
+### Simple Custom Event
+
+```lua
+-- Define a custom event trigger
+function()
+  -- Check condition
+  if someCondition then
+    -- Fire custom event
+    WeakAuras.ScanEvents("MY_CUSTOM_EVENT", data)
+    return true
+  end
+  return false
+end
+```
+
+### Event with State Management
+
+```lua
+function(states, event, ...)
+  if event == "CUSTOM_EVENT" then
+    local arg1, arg2 = ...
+    states[""] = states[""] or {}
+    local state = states[""]
+    state.show = true
+    state.changed = true
+    state.value = arg1
+    return true
+  end
+  return false
+end
+```
+
+### Watched Trigger Events
+
+Listen to other trigger state changes:
+
+```lua
+function(states, event, triggernum, updatedStates)
+  if event == "TRIGGER" then
+    -- triggernum contains the watched trigger number
+    -- updatedStates contains its current states
+    for cloneId, state in pairs(updatedStates) do
+      if state.show then
+        -- React to watched trigger
+        return true
+      end
+    end
+  end
+  return false
+end
+```
+
+## See Also
+
+- [Core Functions](/api/functions)
+- [Generic Trigger System](/api/systems/generic-trigger)
+- [Buff Trigger System](/api/systems/buff-trigger)

@@ -1,0 +1,395 @@
+---
+title: "Texture Display"
+description: "Display custom textures and images for backgrounds and decorations"
+icon: "image"
+---
+
+## Overview
+
+Texture displays show static or dynamic textures, perfect for backgrounds, borders, decorative elements, and custom UI components.
+
+<Info>
+Texture displays are essentially simplified progress bars without progress tracking.
+</Info>
+
+## Basic Configuration
+
+```lua
+{
+  regionType = "texture",
+  texture = "Interface\\\\Buttons\\\\WHITE8X8",
+  color = {1, 1, 1, 1},
+  width = 200,
+  height = 100,
+  desaturate = false,
+  blendMode = "BLEND"
+}
+```
+
+## Texture Selection
+
+### WoW Interface Textures
+
+```lua
+{
+  texture = "Interface\\\\Buttons\\\\WHITE8X8",  -- Solid color
+  texture = "Interface\\\\DialogFrame\\\\UI-DialogBox-Background",  -- Frame bg
+  texture = "Interface\\\\Tooltips\\\\UI-Tooltip-Background"  -- Tooltip bg
+}
+```
+
+### SharedMedia Textures
+
+```lua
+{
+  texture = "Blizzard Tooltip",  -- LSM texture name
+  texture = "Solid"              -- Solid fill
+}
+```
+
+### Custom Textures
+
+```lua
+{
+  texture = "Interface\\\\AddOns\\\\MyAddon\\\\Textures\\\\Custom.tga"
+}
+```
+
+<Warning>
+Custom textures must be in TGA or BLP format and placed in your AddOns folder.
+</Warning>
+
+## Color and Effects
+
+### Color Tint
+
+```lua
+{
+  color = {1, 0, 0, 0.5}  -- Semi-transparent red (R, G, B, A)
+}
+```
+
+### Desaturation
+
+```lua
+{
+  desaturate = true  -- Convert to grayscale
+}
+```
+
+### Blend Modes
+
+<Tabs>
+  <Tab title="Blend">
+    ```lua
+    {
+      blendMode = "BLEND"  -- Normal blending
+    }
+    ```
+    Standard alpha blending.
+  </Tab>
+  
+  <Tab title="Add">
+    ```lua
+    {
+      blendMode = "ADD"  -- Additive blending
+    }
+    ```
+    Brightens underlying pixels.
+  </Tab>
+  
+  <Tab title="Mod">
+    ```lua
+    {
+      blendMode = "MOD"  -- Multiply blending
+    }
+    ```
+    Darkens underlying pixels.
+  </Tab>
+  
+  <Tab title="Alpha Key">
+    ```lua
+    {
+      blendMode = "ALPHAKEY"  -- Alpha keying
+    }
+    ```
+    Binary transparency.
+  </Tab>
+</Tabs>
+
+## Size and Position
+
+```lua
+{
+  width = 200,
+  height = 100,
+  
+  selfPoint = "CENTER",
+  anchorPoint = "CENTER",
+  anchorFrameType = "SCREEN",
+  xOffset = 0,
+  yOffset = 0
+}
+```
+
+## Texture Coordinates
+
+For displaying portions of textures:
+
+```lua
+-- Custom texture coordinates (advanced)
+-- ULx, ULy, LLx, LLy, URx, URy, LRx, LRy
+texture:SetTexCoord(0, 0, 0, 1, 1, 0, 1, 1)
+```
+
+<Info>
+Texture coordinates range from 0 to 1, where (0,0) is top-left and (1,1) is bottom-right.
+</Info>
+
+## Common Patterns
+
+### Solid Background
+
+```lua
+{
+  regionType = "texture",
+  texture = "Interface\\\\Buttons\\\\WHITE8X8",
+  color = {0, 0, 0, 0.8},  -- Black, 80% opacity
+  width = 300,
+  height = 200,
+  
+  // Behind other elements
+  frameStrata = 1  -- LOW
+}
+```
+
+### Border Effect
+
+```lua
+{
+  regionType = "texture",
+  texture = "Interface\\\\DialogFrame\\\\UI-DialogBox-Border",
+  color = {1, 1, 1, 1},
+  width = 256,
+  height = 256,
+  blendMode = "BLEND"
+}
+```
+
+### Glow Effect
+
+```lua
+{
+  regionType = "texture",
+  texture = "Interface\\\\Buttons\\\\WHITE8X8",
+  color = {1, 0.5, 0, 0.3},  -- Orange glow
+  width = 150,
+  height = 150,
+  blendMode = "ADD",  -- Additive for glow
+  
+  // Animate
+  animation = {
+    main = {
+      type = "preset",
+      preset = "pulse"
+    }
+  }
+}
+```
+
+### Status Indicator
+
+```lua
+{
+  regionType = "texture",
+  texture = "Interface\\\\Buttons\\\\WHITE8X8",
+  width = 20,
+  height = 20,
+  
+  // Change color based on state
+  conditions = {
+    {
+      check = {
+        trigger = 1,
+        variable = "show",
+        op = "==",
+        value = 1
+      },
+      changes = {{
+        property = "color",
+        value = {0, 1, 0, 1}  // Green when active
+      }}
+    }
+  }
+}
+```
+
+### Decorative Element
+
+```lua
+{
+  regionType = "texture",
+  texture = "Interface\\\\Glues\\\\CharacterCreate\\\\UI-CharacterCreate-Factions",
+  width = 64,
+  height = 64,
+  color = {1, 1, 1, 1},
+  desaturate = false
+}
+```
+
+## Dynamic Textures
+
+Change textures via conditions:
+
+```lua
+{
+  conditions = {
+    {
+      check = {
+        trigger = 1,
+        variable = "stacks",
+        op = ">=",
+        value = 5
+      },
+      changes = {{
+        property = "texture",
+        value = "Interface\\\\Buttons\\\\WHITE8X8"
+      }}
+    }
+  }
+}
+```
+
+<Tip>
+Texture changes via conditions allow creating dynamic visual indicators.
+</Tip>
+
+## Texture Wrapping
+
+For tiled textures:
+
+```lua
+-- Set wrap mode (requires custom code)
+texture:SetHorizTile(true)
+texture:SetVertTile(true)
+```
+
+## Properties Reference
+
+### Modifiable via Conditions
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `color` | color | RGBA color tint |
+| `desaturate` | boolean | Grayscale effect |
+| `width` | number | Texture width |
+| `height` | number | Texture height |
+| `texture` | texture | Texture path |
+
+## Texture Formats
+
+<CardGroup cols={2}>
+  <Card title="TGA" icon="file-image">
+    **Targa Image File**
+    - Supports alpha channel
+    - Uncompressed
+    - Best for custom textures
+  </Card>
+  <Card title="BLP" icon="file">
+    **Blizzard Picture**
+    - Blizzard's format
+    - Compressed
+    - Used for game textures
+  </Card>
+</CardGroup>
+
+## Performance
+
+<AccordionGroup>
+  <Accordion title="Texture Size" icon="expand">
+    Use power-of-2 dimensions (64x64, 128x128, 256x256) for optimal memory usage.
+  </Accordion>
+  
+  <Accordion title="Texture Count" icon="layer-group">
+    Each unique texture loads into memory. Reuse textures when possible.
+  </Accordion>
+  
+  <Accordion title="Blend Modes" icon="wand-magic-sparkles">
+    Additive and multiply blend modes may impact performance with many overlapping textures.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Texture Not Showing" icon="eye-slash">
+    - Verify texture path is correct (case-sensitive)
+    - Check texture file exists
+    - Ensure alpha is not 0
+    - Verify texture is in TGA or BLP format
+  </Accordion>
+  
+  <Accordion title="Texture Stretched" icon="up-right-and-down-left-from-center">
+    - Adjust width/height to match texture aspect ratio
+    - Use keepAspectRatio if available
+    - Check texture coordinate settings
+  </Accordion>
+  
+  <Accordion title="Color Wrong" icon="palette">
+    - Check color RGBA values
+    - Verify blend mode
+    - Check desaturate setting
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CheckGroup>
+  - <Check>Use power-of-2 texture dimensions</Check>
+  - <Check>Reuse textures across multiple displays</Check>
+  - <Check>Set appropriate blend modes for effect</Check>
+  - <Check>Use alpha channel for transparency</Check>
+  - <Check>Test with different UI scales</Check>
+  - <Check>Consider file size for custom textures</Check>
+</CheckGroup>
+
+## Common Texture Paths
+
+### Backgrounds
+
+```lua
+"Interface\\\\Buttons\\\\WHITE8X8"  -- Solid color
+"Interface\\\\DialogFrame\\\\UI-DialogBox-Background"
+"Interface\\\\Tooltips\\\\UI-Tooltip-Background"
+"Interface\\\\FrameGeneral\\\\UI-Background-Rock"
+```
+
+### Borders
+
+```lua
+"Interface\\\\DialogFrame\\\\UI-DialogBox-Border"
+"Interface\\\\Tooltips\\\\UI-Tooltip-Border"
+"Interface\\\\FrameGeneral\\\\UIFrameInnards"
+```
+
+### Effects
+
+```lua
+"Interface\\\\Glues\\\\Models\\\\UI_"
+"Interface\\\\Spellbook\\\\UI-Glyph-Rune"
+"Interface\\\\QuestFrame\\\\UI-QuestLog-BookIcon"
+```
+
+## Related Topics
+
+<CardGroup cols={3}>
+  <Card title="Progress Bar" icon="chart-simple" href="/core-concepts/display-types/progress-bar">
+    Textured progress displays
+  </Card>
+  <Card title="Icon Display" icon="image" href="/core-concepts/display-types/icon">
+    Icon-specific features
+  </Card>
+  <Card title="Conditions" icon="code-branch" href="/core-concepts/conditions">
+    Dynamic texture changes
+  </Card>
+</CardGroup>

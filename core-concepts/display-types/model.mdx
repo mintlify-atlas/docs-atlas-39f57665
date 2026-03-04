@@ -1,0 +1,445 @@
+---
+title: "Model Display"
+description: "Display 3D models from WoW's game files or unit models"
+icon: "cube"
+---
+
+## Overview
+
+Model displays render 3D models from World of Warcraft, including creatures, items, characters, and spell effects. They can show static models or track specific units.
+
+<Warning>
+Models are more resource-intensive than other display types. Use sparingly for best performance.
+</Warning>
+
+## Basic Configuration
+
+```lua
+{
+  regionType = "model",
+  model_path = "Creature/Arthaslichking/arthaslichking.m2",
+  modelIsUnit = false,
+  width = 200,
+  height = 200,
+  
+  model_x = 0,
+  model_y = 0,
+  model_z = 0,
+  rotation = 0,
+  scale = 1
+}
+```
+
+## Model Sources
+
+<Tabs>
+  <Tab title="File Path">
+    ```lua
+    {
+      modelIsUnit = false,
+      model_path = "Creature/Arthaslichking/arthaslichking.m2"
+    }
+    ```
+    Direct path to M2 model file.
+  </Tab>
+  
+  <Tab title="Unit">
+    ```lua
+    {
+      modelIsUnit = true,
+      model_path = "player",  -- or "target", "focus", etc.
+    }
+    ```
+    Display a unit's current model.
+  </Tab>
+  
+  <Tab title="Display Info ID">
+    ```lua
+    {
+      modelIsUnit = false,
+      modelDisplayInfo = 25871  -- Specific model ID
+    }
+    ```
+    Use WoW's display info database.
+  </Tab>
+</Tabs>
+
+## Position and Camera
+
+### Model Position
+
+```lua
+{
+  model_x = 0,   -- Left/Right offset
+  model_y = 0,   -- Forward/Back offset  
+  model_z = 0    // Up/Down offset
+}
+```
+
+<Info>
+Positive X moves right, positive Y moves forward, positive Z moves up.
+</Info>
+
+### Rotation
+
+```lua
+{
+  rotation = 90  -- Degrees (0-360)
+}
+```
+
+### Scale
+
+```lua
+{
+  scale = 1.5  -- 150% size
+}
+```
+
+## Dimensions
+
+```lua
+{
+  width = 200,
+  height = 200
+}
+```
+
+<Tip>
+Model dimensions define the viewport size, not the model size. Use `scale` to resize the model itself.
+</Tip>
+
+## Animation
+
+### Animation Sequence
+
+```lua
+{
+  sequence = 1,    -- Animation ID
+  advance = true   // Advance animation automatically
+}
+```
+
+<Warning>
+Not all models have animation sequences. Invalid sequence IDs may cause the model to freeze.
+</Warning>
+
+## Border and Background
+
+```lua
+{
+  border = true,
+  borderEdge = "Blizzard Tooltip",
+  borderSize = 16,
+  borderOffset = 5,
+  borderInset = 11,
+  borderColor = {1, 1, 1, 0.5},
+  backdropColor = {0, 0, 0, 0.8},
+  borderBackdrop = "Blizzard Tooltip"
+}
+```
+
+## Unit Model Tracking
+
+When `modelIsUnit = true`, the model automatically updates:
+
+```lua
+{
+  modelIsUnit = true,
+  model_path = "target",  -- Track target's model
+  
+  // Auto-updates on:
+  // - UNIT_MODEL_CHANGED
+  // - PLAYER_TARGET_CHANGED (for target)
+  // - PLAYER_FOCUS_CHANGED (for focus)
+}
+```
+
+<CardGroup cols={3}>
+  <Card title="Player" icon="user">
+    `model_path = "player"`
+  </Card>
+  <Card title="Target" icon="crosshairs">
+    `model_path = "target"`
+  </Card>
+  <Card title="Focus" icon="bullseye">
+    `model_path = "focus"`
+  </Card>
+</CardGroup>
+
+## Common Model Paths
+
+### Creatures
+
+```lua
+"Creature/Arthaslichking/arthaslichking.m2"
+"Creature/Illidan/Illidan.m2"
+"Creature/Lordofoutland/Lordofoutland.m2"
+"Creature/Dragon/BlackDragon.m2"
+```
+
+### Characters
+
+```lua
+-- Use unit models instead:
+modelIsUnit = true
+model_path = "player"
+```
+
+### Spells and Effects
+
+```lua
+"Spells/Generic_Holy_Precast_Base.m2"
+"Spells/Shadow_Missile.m2"
+"Spells/Genericglow_High.m2"
+```
+
+## Common Patterns
+
+### Player Model Display
+
+```lua
+{
+  regionType = "model",
+  modelIsUnit = true,
+  model_path = "player",
+  width = 150,
+  height = 300,
+  
+  model_x = 0,
+  model_y = 0,
+  model_z = 0,
+  rotation = 180,  // Face forward
+  scale = 1.0
+}
+```
+
+### Target Portrait
+
+```lua
+{
+  regionType = "model",
+  modelIsUnit = true,
+  model_path = "target",
+  width = 100,
+  height = 100,
+  
+  model_x = 0,
+  model_y = 0,
+  model_z = -0.5,  // Zoom to face
+  rotation = 0,
+  scale = 2.0,  // Closer view
+  
+  border = true,
+  borderEdge = "Blizzard Tooltip"
+}
+```
+
+### Boss Model Display
+
+```lua
+{
+  regionType = "model",
+  modelIsUnit = true,
+  model_path = "boss1",
+  width = 200,
+  height = 300,
+  
+  model_x = 0,
+  model_y = 1,  // Pull back
+  model_z = 0,
+  rotation = 180,
+  scale = 1.0
+}
+```
+
+### Static Decoration
+
+```lua
+{
+  regionType = "model",
+  modelIsUnit = false,
+  model_path = "Creature/Dragon/BlackDragon.m2",
+  width = 300,
+  height = 300,
+  
+  model_x = 0,
+  model_y = 2,  // Distant view
+  model_z = 0,
+  rotation = 45,
+  scale = 0.8,
+  
+  sequence = 0,  // Idle animation
+  advance = true
+}
+```
+
+## Advanced Techniques
+
+### Dynamic Model Selection
+
+Use conditions to change models:
+
+```lua
+{
+  conditions = {
+    {
+      check = {
+        trigger = 1,
+        variable = "value",
+        op = ">",
+        value = 50
+      },
+      changes = {{
+        property = "model_path",
+        value = "Creature/Illidan/Illidan.m2"
+      }}
+    }
+  }
+}
+```
+
+### Camera Animation
+
+Animate model position via animations:
+
+```lua
+{
+  animation = {
+    main = {
+      type = "custom",
+      use_rotate = true,
+      rotate = 360,
+      duration = 10  // Full rotation in 10s
+    }
+  }
+}
+```
+
+### Custom Positioning Function
+
+```lua
+-- Custom code action
+local model = region.model
+if model then
+  model:SetPosition(0.5, 0, -1)
+  model:SetFacing(math.rad(45))
+end
+```
+
+## Model Loading
+
+Models use an object pool for efficiency:
+
+```lua
+-- Internal: Models acquired from pool on show
+local model = AcquireModel(region, data)
+
+-- Released back to pool on hide
+ReleaseModel(model)
+```
+
+<Info>
+Models are automatically managed. They're created when the display shows and recycled when hidden.
+</Info>
+
+## Properties Reference
+
+### Modifiable via Conditions
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `width` | number | Viewport width |
+| `height` | number | Viewport height |
+
+<Warning>
+Model positioning (model_x, model_y, model_z, rotation, scale) cannot be modified via conditions. Use custom code actions instead.
+</Warning>
+
+## Performance Considerations
+
+<AccordionGroup>
+  <Accordion title="Model Complexity" icon="cubes">
+    Complex models (high polygon count) impact performance. Limit number of visible models.
+  </Accordion>
+  
+  <Accordion title="Animation" icon="film">
+    Animated models (advance=true) require more processing. Use only when needed.
+  </Accordion>
+  
+  <Accordion title="Unit Tracking" icon="rotate">
+    Unit models update on events. Many unit-tracked models may cause lag in raids.
+  </Accordion>
+  
+  <Accordion title="Hidden Updates" icon="eye-slash">
+    Models are hidden when display hides, stopping updates. World map and cinematics also hide all models.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Model Not Showing" icon="cube">
+    - Verify model path is correct (case-sensitive)
+    - Check modelIsUnit matches your model source
+    - Ensure width/height are set
+    - Check if model file exists in game
+    - Models hidden during world map/cinematics
+  </Accordion>
+  
+  <Accordion title="Model Too Large/Small" icon="maximize">
+    - Adjust scale value
+    - Modify model_y to move closer/farther
+    - Change viewport width/height
+  </Accordion>
+  
+  <Accordion title="Model Rotated Wrong" icon="rotate">
+    - Adjust rotation value
+    - Try rotation = 180 to face forward
+    - Check model's natural facing
+  </Accordion>
+  
+  <Accordion title="Unit Model Not Updating" icon="user">
+    - Verify modelIsUnit = true
+    - Check unit exists (target, focus, etc.)
+    - Unit model events may have delay
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CheckGroup>
+  - <Check>Use unit tracking sparingly for performance</Check>
+  - <Check>Disable advance unless animation needed</Check>
+  - <Check>Test model paths before deployment</Check>
+  - <Check>Set appropriate viewport size for model</Check>
+  - <Check>Use model_y to adjust camera distance</Check>
+  - <Check>Limit total number of visible models</Check>
+  - <Check>Consider using icons instead for simpler displays</Check>
+</CheckGroup>
+
+## Finding Model Paths
+
+Model paths can be found in:
+- WoW Model Viewer tools
+- ListFile.txt from WoW client
+- Model path databases online
+- In-game experimentation
+
+<Tip>
+Many creature models are in `Creature/[CreatureName]/[CreatureName].m2` format.
+</Tip>
+
+## Related Topics
+
+<CardGroup cols={3}>
+  <Card title="Icon Display" icon="image" href="/core-concepts/display-types/icon">
+    Lighter alternative for portraits
+  </Card>
+  <Card title="Animations" icon="wand-magic-sparkles" href="/core-concepts/animations">
+    Animate model displays
+  </Card>
+  <Card title="Custom Code" icon="code" href="/core-concepts/custom-code">
+    Advanced model manipulation
+  </Card>
+</CardGroup>

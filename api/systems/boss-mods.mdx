@@ -1,0 +1,448 @@
+---
+title: Boss Mod Integration
+description: API for integrating with DBM and BigWigs boss mods
+---
+
+WeakAuras provides seamless integration with boss mod addons (DBM and BigWigs), allowing triggers to respond to boss timers, announcements, and stage changes.
+
+## DBM Integration
+
+### Timer Functions
+
+Access DBM timer information through `Private.ExecEnv.BossMods.DBM`.
+
+#### GetTimer
+
+Finds the next matching timer.
+
+```lua
+Private.ExecEnv.BossMods.DBM:GetTimer(message, operator, spellId, extendTimer, count, triggerId, dbmType, noCastBar, isBarEnabled, isPullTimer, isBreakTimer, isTimer)
+```
+
+<ParamField path="message" type="string">
+  Timer message to match
+</ParamField>
+<ParamField path="operator" type="string">
+  String comparison operator ("==", "find('%s')", "match('%s')")
+</ParamField>
+<ParamField path="spellId" type="string">
+  Spell ID to match
+</ParamField>
+<ParamField path="extendTimer" type="number">
+  Time extension in seconds
+</ParamField>
+<ParamField path="count" type="table">
+  Counter object for occurrence matching
+</ParamField>
+<ParamField path="triggerId" type="string">
+  Specific timer ID
+</ParamField>
+<ParamField path="dbmType" type="number">
+  DBM timer type (1=Add, 2=AoE, 3=Targeted, etc.)
+</ParamField>
+<ParamField path="noCastBar" type="boolean">
+  Exclude cast bars
+</ParamField>
+<ParamField path="isBarEnabled" type="boolean">
+  Check if bar is enabled in DBM settings
+</ParamField>
+<ParamField path="isPullTimer" type="boolean">
+  Match only pull timers
+</ParamField>
+<ParamField path="isBreakTimer" type="boolean">
+  Match only break timers
+</ParamField>
+<ParamField path="isTimer" type="boolean">
+  Match only regular timers
+</ParamField>
+
+<ResponseField name="bar" type="table">
+  Timer bar data:
+  - `message` - Timer text
+  - `icon` - Icon texture
+  - `duration` - Total duration
+  - `expirationTime` - Expiration timestamp
+  - `spellId` - Associated spell ID
+  - `count` - Occurrence count
+  - `timerType` - Type ("timer", "cast", "pull", "break")
+  - `dbmType` - DBM-specific type
+  - `dbmColor` - Color table {r, g, b}
+  - `isBarEnabled` - Whether enabled in DBM
+</ResponseField>
+
+#### GetAllTimers
+
+Returns all active DBM timers.
+
+```lua
+Private.ExecEnv.BossMods.DBM:GetAllTimers()
+```
+
+<ResponseField name="timers" type="table">
+  Map of timer ID to timer data
+</ResponseField>
+
+#### GetTimerById
+
+Gets a specific timer by ID.
+
+```lua
+Private.ExecEnv.BossMods.DBM:GetTimerById(timerId)
+```
+
+<ParamField path="timerId" type="string" required>
+  The timer ID
+</ParamField>
+
+<ResponseField name="bar" type="table">
+  Timer bar data or nil
+</ResponseField>
+
+#### GetStage
+
+Returns the current encounter stage.
+
+```lua
+Private.ExecEnv.BossMods.DBM.GetStage()
+```
+
+<ResponseField name="stage" type="number">
+  Current stage number (including 0.5 for intermissions)
+</ResponseField>
+<ResponseField name="stageTotal" type="number">
+  Total stage counter (increments by 1 per stage/intermission)
+</ResponseField>
+
+### Event Registration
+
+#### RegisterTimer
+
+Registers for DBM timer events.
+
+```lua
+Private.ExecEnv.BossMods.DBM:RegisterTimer()
+```
+
+Registers for events:
+- `DBM_TimerStart` / `DBM_TimerBegin`
+- `DBM_TimerStop`
+- `DBM_TimerUpdate`
+- `DBM_TimerPause` / `DBM_TimerResume` (newer DBM versions)
+
+#### RegisterMessage
+
+Registers for DBM announcement events.
+
+```lua
+Private.ExecEnv.BossMods.DBM:RegisterMessage()
+```
+
+Registers for `DBM_Announce` events.
+
+#### RegisterStage
+
+Registers for DBM stage change events.
+
+```lua
+Private.ExecEnv.BossMods.DBM:RegisterStage()
+```
+
+Registers for:
+- `DBM_SetStage`
+- `DBM_Pull`
+- `DBM_Kill`
+- `DBM_Wipe`
+
+## BigWigs Integration
+
+### Timer Functions
+
+Access BigWigs timer information through `Private.ExecEnv.BossMods.BigWigs`.
+
+#### GetTimer
+
+Finds the next matching timer.
+
+```lua
+Private.ExecEnv.BossMods.BigWigs:GetTimer(text, operator, spellId, extendTimer, counter, cast, cooldown, isBarEnabled, isPullTimer, isBreakTimer, isTimer)
+```
+
+<ParamField path="text" type="string">
+  Timer text to match
+</ParamField>
+<ParamField path="operator" type="string">
+  String comparison operator
+</ParamField>
+<ParamField path="spellId" type="string">
+  Spell ID to match
+</ParamField>
+<ParamField path="extendTimer" type="number">
+  Time extension
+</ParamField>
+<ParamField path="counter" type="table">
+  Counter for occurrence matching
+</ParamField>
+<ParamField path="cast" type="boolean">
+  Match only cast timers
+</ParamField>
+<ParamField path="cooldown" type="boolean">
+  Match only cooldown timers
+</ParamField>
+<ParamField path="isBarEnabled" type="boolean">
+  Check if bar is enabled
+</ParamField>
+<ParamField path="isPullTimer" type="boolean">
+  Match only pull timers
+</ParamField>
+<ParamField path="isBreakTimer" type="boolean">
+  Match only break timers
+</ParamField>
+<ParamField path="isTimer" type="boolean">
+  Match only regular timers
+</ParamField>
+
+<ResponseField name="bar" type="table">
+  Timer bar data:
+  - `text` - Timer text
+  - `icon` - Icon texture
+  - `duration` - Total duration
+  - `expirationTime` - Expiration timestamp
+  - `spellId` - Associated spell ID
+  - `count` - Occurrence count
+  - `timerType` - Type ("timer", "cast", "pull", "break")
+  - `cast` - Whether it's a cast timer
+  - `isCooldown` - Whether it's a cooldown
+  - `bwBarColor` - Bar color table
+  - `bwTextColor` - Text color table
+  - `bwBackgroundColor` - Background color table
+  - `isBarEnabled` - Whether enabled in BigWigs
+</ResponseField>
+
+#### GetAllTimers
+
+Returns all active BigWigs timers.
+
+```lua
+Private.ExecEnv.BossMods.BigWigs:GetAllTimers()
+```
+
+<ResponseField name="timers" type="table">
+  Map of timer text to timer data
+</ResponseField>
+
+#### GetTimerById
+
+Gets a specific timer by text.
+
+```lua
+Private.ExecEnv.BossMods.BigWigs:GetTimerById(timerId)
+```
+
+<ParamField path="timerId" type="string" required>
+  The timer text (used as ID)
+</ParamField>
+
+<ResponseField name="bar" type="table">
+  Timer bar data or nil
+</ResponseField>
+
+#### GetStage
+
+Returns the current encounter stage.
+
+```lua
+Private.ExecEnv.BossMods.BigWigs:GetStage()
+```
+
+<ResponseField name="stage" type="number">
+  Current stage number
+</ResponseField>
+
+### Event Registration
+
+#### RegisterTimer
+
+Registers for BigWigs timer events.
+
+```lua
+Private.ExecEnv.BossMods.BigWigs:RegisterTimer()
+```
+
+Registers for events:
+- `BigWigs_StartBar`
+- `BigWigs_Timer`
+- `BigWigs_TargetTimer`
+- `BigWigs_CastTimer`
+- `BigWigs_StartPull`
+- `BigWigs_StartBreak`
+- `BigWigs_StopBar`
+- `BigWigs_PauseBar`
+- `BigWigs_ResumeBar`
+
+#### RegisterMessage
+
+Registers for BigWigs message events.
+
+```lua
+Private.ExecEnv.BossMods.BigWigs:RegisterMessage()
+```
+
+Registers for `BigWigs_Message` events.
+
+#### RegisterStage
+
+Registers for BigWigs stage change events.
+
+```lua
+Private.ExecEnv.BossMods.BigWigs:RegisterStage()
+```
+
+Registers for:
+- `BigWigs_SetStage`
+- `BigWigs_OnBossWipe`
+- `BigWigs_OnBossWin`
+
+## Generic Boss Mod API
+
+Both DBM and BigWigs expose generic methods:
+
+### GetTimerGeneric
+
+Generic timer query (excludes cast bars).
+
+```lua
+BossMod:GetTimerGeneric(message, operator, spellId, extendTimer, count, isBarEnabled, isPullTimer, isBreakTimer, isTimer)
+```
+
+### TimerMatchesGeneric
+
+Generic timer matching (excludes cast bars).
+
+```lua
+BossMod:TimerMatchesGeneric(timerId, message, operator, spellId, counter, isBarEnabled, isPullTimer, isBreakTimer, isTimer)
+```
+
+## Examples
+
+### DBM Timer Trigger
+
+```lua
+-- Check for specific DBM timer
+local bar = Private.ExecEnv.BossMods.DBM:GetTimer(
+  "Massive Crash",  -- message
+  "find('%s')",      -- operator
+  "12345",           -- spellId
+  0,                 -- extendTimer
+  nil,               -- count
+  nil,               -- triggerId
+  nil,               -- dbmType
+  true,              -- noCastBar
+  nil,               -- isBarEnabled
+  false,             -- isPullTimer
+  false,             -- isBreakTimer
+  true               -- isTimer
+)
+
+if bar then
+  print("Timer found: " .. bar.message)
+  print("Expires in: " .. (bar.expirationTime - GetTime()))
+end
+```
+
+### Stage Tracking
+
+```lua
+-- Track boss stage changes
+local stage, total = Private.ExecEnv.BossMods.DBM.GetStage()
+print("Stage: " .. stage .. " (" .. total .. " total)")
+
+-- Stage 1.5 indicates an intermission
+if stage % 1 ~= 0 then
+  print("In intermission phase")
+end
+```
+
+### BigWigs Timer Colors
+
+```lua
+-- Get timer with color information
+local bar = Private.ExecEnv.BossMods.BigWigs:GetTimer(
+  "Tank Buster",
+  "==",
+  nil,
+  0,
+  nil,
+  false,  -- not cast
+  false,  -- not cooldown
+  nil,
+  false,
+  false,
+  true
+)
+
+if bar and bar.bwBarColor then
+  local r, g, b = unpack(bar.bwBarColor)
+  -- Use color for display
+end
+```
+
+### Timer Countdown
+
+```lua
+-- Create a countdown for next timer
+local bar = Private.ExecEnv.BossMods.DBM:GetTimer(
+  "Big Ability",
+  "find('%s')",
+  nil,
+  5,  -- Show 5 seconds earlier
+  nil, nil, nil, true
+)
+
+if bar then
+  local remaining = (bar.expirationTime + 5) - GetTime()
+  if remaining > 0 then
+    return true, remaining
+  end
+end
+```
+
+## Timer Type Reference
+
+### DBM Timer Types
+
+- `1` - Add spawn
+- `2` - AoE damage
+- `3` - Targeted ability
+- `4` - Interrupt
+- `5` - Role (tank/healer specific)
+- `6` - Phase change
+- `7` - Important
+- `8` - User-defined
+
+### Timer Categories
+
+- **Regular Timer** - Standard encounter ability
+- **Cast Timer** - Active spell cast
+- **Pull Timer** - Countdown to pull (spellId: -2)
+- **Break Timer** - Break/intermission countdown (spellId: -1)
+
+## Compatibility Notes
+
+### DBM Versions
+
+- **Latest** - Full support (2025.03.12+)
+- **Compatible** - Most features (2025.02.09+)
+- **Legacy** - Limited support
+- **Unsupported** - No integration
+
+Check `dbmSupportStatus` for current support level.
+
+### BigWigs
+
+Requires `BigWigsLoader` addon to be loaded.
+
+## See Also
+
+- [GenericTrigger System](/api/systems/generic-trigger) - Event trigger management
+- [Events](/api/events) - Core event system
+- [Tables](/api/tables) - Data structures

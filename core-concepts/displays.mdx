@@ -1,0 +1,286 @@
+---
+title: "Displays"
+description: "Understanding display types and how they render information on screen"
+---
+
+## What are Displays?
+
+Displays are the visual elements that WeakAuras shows on your screen. Each display has a type that determines how it appears and what kind of information it can show.
+
+## Display Types
+
+WeakAuras supports multiple display types, each optimized for different use cases:
+
+<CardGroup cols={2}>
+  <Card title="Icon" icon="image" href="/core-concepts/display-types/icon">
+    Circular or square texture with optional cooldown overlay
+  </Card>
+  <Card title="Progress Bar" icon="bars-progress" href="/core-concepts/display-types/progress-bar">
+    Horizontal or vertical bar showing progress with text labels
+  </Card>
+  <Card title="Text" icon="font" href="/core-concepts/display-types/text">
+    Dynamic text that can display any game information
+  </Card>
+  <Card title="Texture" icon="palette" href="/core-concepts/display-types/texture">
+    Custom textures with progress fill options
+  </Card>
+  <Card title="Model" icon="cube" href="/core-concepts/display-types/model">
+    3D models from the game's model files
+  </Card>
+  <Card title="Group" icon="layer-group" href="/core-concepts/groups">
+    Container for organizing multiple displays
+  </Card>
+</CardGroup>
+
+## Display Properties
+
+All displays share common properties:
+
+### Position and Size
+
+```lua
+-- From Types.lua
+region:SetWidth(width)
+region:SetHeight(height)
+region:ClearAllPoints()
+region:SetPoint("CENTER", UIParent, "CENTER", xOffset, yOffset)
+```
+
+<Tabs>
+  <Tab title="Anchoring">
+    Displays can be anchored to:
+    - Screen positions (CENTER, TOP, BOTTOM, etc.)
+    - Other displays or frames
+    - Screen coordinates (x, y)
+    
+    <Tip>Anchor to other WeakAuras to create complex multi-element displays.</Tip>
+  </Tab>
+  
+  <Tab title="Sizing">
+    - Width and height in pixels
+    - Scale percentage
+    - Aspect ratio options
+    
+    <Note>Group displays automatically size based on their children.</Note>
+  </Tab>
+</Tabs>
+
+### Display State
+
+Displays can be in several states:
+
+- **Hidden** - Not shown on screen
+- **Showing** - Visible with full opacity
+- **Loading** - Being initialized
+- **Error** - Configuration error
+
+## Display Configuration
+
+Each display has extensive configuration options:
+
+<Accordion title="Visual Properties">
+  - Color and transparency
+  - Border and background
+  - Glow effects
+  - Textures and icons
+  - Font and text formatting
+</Accordion>
+
+<Accordion title="Behavior">
+  - Show/hide triggers
+  - Update frequency
+  - Stacking behavior
+  - Tooltip configuration
+</Accordion>
+
+<Accordion title="Animation">
+  - Start animation
+  - Main animation (while active)
+  - Finish animation
+  - Animation type and duration
+</Accordion>
+
+## Creating a Display
+
+Displays are created through the WeakAuras interface:
+
+<Steps>
+  <Step title="Open WeakAuras">
+    Type `/wa` in chat to open the configuration interface.
+  </Step>
+  
+  <Step title="Click New">
+    Click the "New" button to start creating a display.
+  </Step>
+  
+  <Step title="Select Display Type">
+    Choose the display type that best fits your needs:
+    - Icon for buff/debuff tracking
+    - Progress Bar for resource monitoring
+    - Text for numeric information
+    - Texture for custom graphics
+  </Step>
+  
+  <Step title="Configure Properties">
+    Set up the display's appearance, position, and size.
+  </Step>
+  
+  <Step title="Add Triggers">
+    Configure when the display should show and what data it displays.
+  </Step>
+</Steps>
+
+## Display Data
+
+Displays receive data from their triggers:
+
+```lua
+-- Example display data structure
+local displayData = {
+  show = true,
+  changed = true,
+  icon = "Interface\\Icons\\Spell_Nature_Bloodlust",
+  duration = 40,
+  expirationTime = GetTime() + 40,
+  value = 100,
+  total = 100,
+  stacks = 1,
+  name = "Bloodlust"
+}
+```
+
+## Sub-Regions
+
+Displays can have sub-regions that add additional elements:
+
+<CardGroup cols={3}>
+  <Card title="Sub Text" icon="text">
+    Additional text overlays with custom positioning
+  </Card>
+  <Card title="Border" icon="border-all">
+    Custom borders around the display
+  </Card>
+  <Card title="Glow" icon="star">
+    Glow effects (pixel, autocast, proc, etc.)
+  </Card>
+  <Card title="Background" icon="square">
+    Background texture behind the display
+  </Card>
+  <Card title="Tick" icon="ruler">
+    Progress markers on bars
+  </Card>
+  <Card title="Sub-Texture" icon="image">
+    Additional textures overlaid
+  </Card>
+</CardGroup>
+
+## Display Updates
+
+Displays update when:
+
+1. **Trigger state changes** - Show/hide
+2. **Data values change** - Progress, text, icon
+3. **Manual updates** - Via custom code
+4. **Frame updates** - Animation frames
+
+```lua
+-- From RegionTypes/RegionPrototype.lua
+function region:UpdateDisplayState()
+  if self.state.show then
+    self:Show()
+  else
+    self:Hide()
+  end
+end
+```
+
+## Performance Considerations
+
+<Warning>Too many complex displays can impact game performance!</Warning>
+
+### Best Practices
+
+1. **Use load conditions** to limit when displays are active
+2. **Avoid frequent updates** - Use appropriate trigger types
+3. **Minimize custom code** - Use built-in options when possible
+4. **Group related displays** - Improves organization and performance
+5. **Disable unused displays** - Don't just hide them
+
+### Performance Metrics
+
+```lua
+-- WeakAuras tracks performance internally
+Private.profiling = {
+  startTime = 0,
+  endTime = 0,
+  cpuTime = 0
+}
+```
+
+<Tip>Use `/wa profile` to see which auras use the most CPU time.</Tip>
+
+## Common Display Patterns
+
+### Resource Tracker
+
+```lua
+-- Icon display for class resource
+{
+  regionType = "icon",
+  triggers = {
+    { trigger = { type = "status", event = "Power" } }
+  },
+  icon = "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Blood"
+}
+```
+
+### Cooldown Monitor
+
+```lua
+-- Progress bar for ability cooldown
+{
+  regionType = "aurabar",
+  triggers = {
+    { trigger = { type = "spell", event = "Cooldown Progress (Spell)" } }
+  },
+  bar = {
+    foregroundColor = {1, 0.5, 0, 1}
+  }
+}
+```
+
+### Buff Reminder
+
+```lua
+-- Icon that shows when buff is missing
+{
+  regionType = "icon",
+  triggers = {
+    {
+      trigger = {
+        type = "aura2",
+        auranames = "Battle Shout",
+        useName = true,
+        matchesShowOn = "showOnMissing"
+      }
+    }
+  }
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Icon Displays" icon="image" href="/core-concepts/display-types/icon">
+    Learn about icon display configuration and cooldown overlays
+  </Card>
+  <Card title="Progress Bars" icon="bars-progress" href="/core-concepts/display-types/progress-bar">
+    Create dynamic progress bars for resources and timers
+  </Card>
+  <Card title="Text Displays" icon="font" href="/core-concepts/display-types/text">
+    Display dynamic text with custom formatting
+  </Card>
+  <Card title="Groups" icon="layer-group" href="/core-concepts/groups">
+    Organize multiple displays with groups
+  </Card>
+</CardGroup>

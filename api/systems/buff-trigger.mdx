@@ -1,0 +1,385 @@
+---
+title: 'BuffTrigger System'
+description: 'BuffTrigger2 API for buff and debuff triggers'
+---
+
+## Overview
+
+The BuffTrigger system (BuffTrigger2) manages all "aura2" type triggers for buffs and debuffs. It provides efficient tracking of unit auras across single units, groups, and multi-target scenarios.
+
+## System API
+
+The BuffTrigger system is accessed through the global `BuffTrigger` table or `Private.triggerTypes["aura2"]`.
+
+### Add
+
+Adds an aura, setting up internal data structures for all buff triggers.
+
+<ParamField path="data" type="table" required>
+  The aura data configuration
+</ParamField>
+
+```lua
+local Private = select(2, ...)
+local BuffTrigger = Private.triggerTypes["aura2"]
+BuffTrigger:Add(auraData)
+```
+
+### LoadDisplays
+
+Loads and enables all buff triggers for an aura.
+
+<ParamField path="id" type="string" required>
+  The aura identifier
+</ParamField>
+
+```lua
+BuffTrigger:LoadDisplays("MyAuraID")
+```
+
+### UnloadDisplays
+
+Unloads and disables all buff triggers for an aura.
+
+<ParamField path="id" type="string" required>
+  The aura identifier
+</ParamField>
+
+```lua
+BuffTrigger:UnloadDisplays("MyAuraID")
+```
+
+### UnloadAll
+
+Unloads all buff triggers.
+
+```lua
+BuffTrigger:UnloadAll()
+```
+
+### Delete
+
+Removes all data for an aura.
+
+<ParamField path="id" type="string" required>
+  The aura identifier to delete
+</ParamField>
+
+```lua
+BuffTrigger:Delete("MyAuraID")
+```
+
+### Rename
+
+Renames an aura, updating all internal references.
+
+<ParamField path="oldid" type="string" required>
+  The current aura ID
+</ParamField>
+
+<ParamField path="newid" type="string" required>
+  The new aura ID
+</ParamField>
+
+```lua
+BuffTrigger:Rename("OldID", "NewID")
+```
+
+### Modernize
+
+Updates all buff triggers in aura data to the latest format.
+
+<ParamField path="data" type="table" required>
+  The aura data to modernize
+</ParamField>
+
+```lua
+BuffTrigger:Modernize(auraData)
+```
+
+## Helper Functions
+
+These functions are primarily used by WeakAuras Options.
+
+### GetOverlayInfo
+
+Returns overlay information for a trigger.
+
+<ParamField path="data" type="table" required>
+  The aura data
+</ParamField>
+
+<ParamField path="triggernum" type="number" required>
+  The trigger number
+</ParamField>
+
+<ResponseField name="overlays" type="table">
+  Table of overlay configurations
+</ResponseField>
+
+```lua
+local overlays = BuffTrigger:GetOverlayInfo(data, 1)
+```
+
+### CanHaveTooltip
+
+Determines the tooltip type for a trigger.
+
+<ParamField path="data" type="table" required>
+  The aura data
+</ParamField>
+
+<ParamField path="triggernum" type="number" required>
+  The trigger number
+</ParamField>
+
+<ResponseField name="tooltipType" type="string">
+  The tooltip type: "SPELL", "UNIT_BUFF", "UNIT_DEBUFF", or nil
+</ResponseField>
+
+```lua
+local tooltipType = BuffTrigger:CanHaveTooltip(data, 1)
+```
+
+### GetNameAndIcon
+
+Returns the display name and icon for a trigger.
+
+<ParamField path="data" type="table" required>
+  The aura data
+</ParamField>
+
+<ParamField path="triggernum" type="number" required>
+  The trigger number
+</ParamField>
+
+<ResponseField name="name" type="string">
+  The display name
+</ResponseField>
+
+<ResponseField name="icon" type="string">
+  The icon texture path
+</ResponseField>
+
+```lua
+local name, icon = BuffTrigger:GetNameAndIcon(data, 1)
+print("Trigger:", name, icon)
+```
+
+### GetAdditionalProperties
+
+Returns tooltip text for additional properties.
+
+<ParamField path="data" type="table" required>
+  The aura data
+</ParamField>
+
+<ParamField path="triggernum" type="number" required>
+  The trigger number
+</ParamField>
+
+<ResponseField name="text" type="string">
+  Formatted tooltip text
+</ResponseField>
+
+```lua
+local tooltip = BuffTrigger:GetAdditionalProperties(data, 1)
+```
+
+### GetTriggerConditions
+
+Returns available conditions for a trigger.
+
+<ParamField path="data" type="table" required>
+  The aura data
+</ParamField>
+
+<ParamField path="triggernum" type="number" required>
+  The trigger number
+</ParamField>
+
+<ResponseField name="conditions" type="table">
+  Array of condition definitions
+</ResponseField>
+
+```lua
+local conditions = BuffTrigger:GetTriggerConditions(data, 1)
+for i, condition in ipairs(conditions) do
+  print(condition.display, condition.type)
+end
+```
+
+## Match Data Structure
+
+Internal match data structure for tracked auras.
+
+<ResponseField name="name" type="string">
+  Aura name
+</ResponseField>
+
+<ResponseField name="icon" type="string">
+  Aura icon
+</ResponseField>
+
+<ResponseField name="stacks" type="number">
+  Stack count
+</ResponseField>
+
+<ResponseField name="debuffClass" type="string">
+  Debuff type: "magic", "curse", "disease", "poison", "enrage", "none"
+</ResponseField>
+
+<ResponseField name="duration" type="number">
+  Aura duration
+</ResponseField>
+
+<ResponseField name="expirationTime" type="number">
+  When the aura expires
+</ResponseField>
+
+<ResponseField name="unitCaster" type="string">
+  Unit ID of the caster
+</ResponseField>
+
+<ResponseField name="casterName" type="string">
+  Name of the caster
+</ResponseField>
+
+<ResponseField name="spellId" type="number">
+  Spell ID of the aura
+</ResponseField>
+
+<ResponseField name="unit" type="string">
+  Unit ID that has the aura
+</ResponseField>
+
+<ResponseField name="unitName" type="string">
+  Name of the unit
+</ResponseField>
+
+<ResponseField name="index" type="number">
+  Aura index from UnitAura
+</ResponseField>
+
+<ResponseField name="filter" type="string">
+  Aura filter: "HELPFUL" or "HARMFUL"
+</ResponseField>
+
+## Trigger Configuration
+
+Buff trigger configuration options.
+
+### Basic Settings
+
+<ParamField path="type" type="string">
+  Must be "aura2" for buff triggers
+</ParamField>
+
+<ParamField path="unit" type="string">
+  Unit to check: "player", "target", "group", "raid", etc.
+</ParamField>
+
+<ParamField path="debuffType" type="string">
+  Filter by debuff type: "HELPFUL", "HARMFUL", or "BOTH"
+</ParamField>
+
+### Aura Matching
+
+<ParamField path="auranames" type="table">
+  Array of aura names to match
+</ParamField>
+
+<ParamField path="useName" type="boolean">
+  Whether to match by name
+</ParamField>
+
+<ParamField path="auraspellids" type="table">
+  Array of spell IDs to match
+</ParamField>
+
+<ParamField path="useSpellId" type="boolean">
+  Whether to match by spell ID
+</ParamField>
+
+### Caster Filtering
+
+<ParamField path="ownOnly" type="boolean">
+  Only match auras cast by player/pet
+</ParamField>
+
+<ParamField path="unitCaster" type="string">
+  Match specific caster unit
+</ParamField>
+
+### Group Options
+
+<ParamField path="matchesShowOn" type="string">
+  Display mode: "showOnActive", "showOnMissing", "showOnMatches"
+</ParamField>
+
+<ParamField path="showClones" type="boolean">
+  Show one clone per match
+</ParamField>
+
+<ParamField path="useMatch_count" type="boolean">
+  Filter by match count
+</ParamField>
+
+<ParamField path="match_count" type="number">
+  Minimum match count
+</ParamField>
+
+<ParamField path="match_countOperator" type="string">
+  Comparison operator: `>=`, `==`, `<=`
+</ParamField>
+
+## Example Usage
+
+### Single Unit Buff Check
+
+```lua
+trigger = {
+  type = "aura2",
+  unit = "player",
+  debuffType = "HELPFUL",
+  useName = true,
+  auranames = { "Power Word: Fortitude" },
+  matchesShowOn = "showOnActive"
+}
+```
+
+### Group Missing Buff
+
+```lua
+trigger = {
+  type = "aura2",
+  unit = "group",
+  debuffType = "HELPFUL",
+  useSpellId = true,
+  auraspellids = { 48161 }, -- Power Word: Fortitude rank 8
+  matchesShowOn = "showOnMissing",
+  useMatch_count = true,
+  match_count = 1,
+  match_countOperator = ">="
+}
+```
+
+### Show Clone Per Affected Unit
+
+```lua
+trigger = {
+  type = "aura2",
+  unit = "group",
+  debuffType = "HARMFUL",
+  useSpellId = true,
+  auraspellids = { 28622 }, -- Web Wrap
+  showClones = true,
+  matchesShowOn = "showOnActive"
+}
+```
+
+## See Also
+
+- [Generic Trigger System](/api/systems/generic-trigger)
+- [Event System](/api/events)
+- [Core Functions](/api/functions)

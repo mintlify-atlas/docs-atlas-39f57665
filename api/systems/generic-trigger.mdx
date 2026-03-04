@@ -1,0 +1,358 @@
+---
+title: GenericTrigger System
+description: API for managing generic triggers in WeakAuras
+---
+
+The GenericTrigger system handles all trigger types except aura triggers. It manages trigger registration, loading, and event handling for various game events.
+
+## Core Functions
+
+### Add
+
+Adds a display and creates all internal data structures for all triggers.
+
+```lua
+GenericTrigger.Add(data)
+```
+
+<ParamField path="data" type="table" required>
+  The aura data structure containing trigger configuration
+</ParamField>
+
+### Delete
+
+Deletes all triggers for a display ID.
+
+```lua
+GenericTrigger.Delete(id)
+```
+
+<ParamField path="id" type="string" required>
+  The display ID to delete
+</ParamField>
+
+### Rename
+
+Updates all trigger information from old ID to new ID.
+
+```lua
+GenericTrigger.Rename(oldid, newid)
+```
+
+<ParamField path="oldid" type="string" required>
+  The old display ID
+</ParamField>
+<ParamField path="newid" type="string" required>
+  The new display ID
+</ParamField>
+
+### LoadDisplay
+
+Loads all triggers of a display ID.
+
+```lua
+GenericTrigger.LoadDisplay(id)
+```
+
+<ParamField path="id" type="string" required>
+  The display ID to load
+</ParamField>
+
+### LoadDisplays
+
+Loads multiple displays and registers necessary events.
+
+```lua
+GenericTrigger.LoadDisplays(toLoad, loadEvent, ...)
+```
+
+<ParamField path="toLoad" type="table" required>
+  Map of display IDs to load
+</ParamField>
+<ParamField path="loadEvent" type="string">
+  Optional event that triggered the load
+</ParamField>
+<ParamField path="..." type="any">
+  Additional event arguments
+</ParamField>
+
+### UnloadAll
+
+Unloads all triggers and clears all data.
+
+```lua
+GenericTrigger.UnloadAll()
+```
+
+### UnloadDisplays
+
+Unloads specific displays.
+
+```lua
+GenericTrigger.UnloadDisplays(toUnload)
+```
+
+<ParamField path="toUnload" type="table" required>
+  Map of display IDs to unload
+</ParamField>
+
+### Modernize
+
+Modernizes all generic triggers in data to current format.
+
+```lua
+GenericTrigger.Modernize(data)
+```
+
+<ParamField path="data" type="table" required>
+  The aura data to modernize
+</ParamField>
+
+## Helper Functions
+
+These functions are mainly for WeakAuras Options.
+
+### GetOverlayInfo
+
+Returns a table containing the names of all overlays.
+
+```lua
+GenericTrigger.GetOverlayInfo(data, triggernum)
+```
+
+<ParamField path="data" type="table" required>
+  The aura data
+</ParamField>
+<ParamField path="triggernum" type="number" required>
+  The trigger number
+</ParamField>
+
+<ResponseField name="overlayInfo" type="table">
+  Table of overlay names
+</ResponseField>
+
+### CanHaveTooltip
+
+Returns the type of tooltip to show for the trigger.
+
+```lua
+GenericTrigger.CanHaveTooltip(data, triggernum)
+```
+
+<ParamField path="data" type="table" required>
+  The aura data
+</ParamField>
+<ParamField path="triggernum" type="number" required>
+  The trigger number
+</ParamField>
+
+<ResponseField name="tooltipType" type="string">
+  Type of tooltip ("spell", "item", "unit", etc.)
+</ResponseField>
+
+### GetNameAndIcon
+
+Returns the name and icon to show in the options.
+
+```lua
+GenericTrigger.GetNameAndIcon(data, triggernum)
+```
+
+<ParamField path="data" type="table" required>
+  The aura data
+</ParamField>
+<ParamField path="triggernum" type="number" required>
+  The trigger number
+</ParamField>
+
+<ResponseField name="name" type="string">
+  Display name for the trigger
+</ResponseField>
+<ResponseField name="icon" type="string">
+  Texture path for the icon
+</ResponseField>
+
+### GetAdditionalProperties
+
+Returns a tooltip for the additional properties.
+
+```lua
+GenericTrigger.GetAdditionalProperties(data, triggernum)
+```
+
+<ParamField path="data" type="table" required>
+  The aura data
+</ParamField>
+<ParamField path="triggernum" type="number" required>
+  The trigger number
+</ParamField>
+
+<ResponseField name="tooltip" type="string">
+  Tooltip text describing additional properties
+</ResponseField>
+
+### GetProgressSources
+
+Fills outValues with the potential progress sources.
+
+```lua
+GenericTrigger.GetProgressSources(data, triggernum, outValues)
+```
+
+<ParamField path="data" type="table" required>
+  The aura data
+</ParamField>
+<ParamField path="triggernum" type="number" required>
+  The trigger number
+</ParamField>
+<ParamField path="outValues" type="table" required>
+  Table to fill with progress sources
+</ParamField>
+
+### GetTriggerConditions
+
+Returns potential conditions that this trigger provides.
+
+```lua
+GenericTrigger.GetTriggerConditions(data, triggernum)
+```
+
+<ParamField path="data" type="table" required>
+  The aura data
+</ParamField>
+<ParamField path="triggernum" type="number" required>
+  The trigger number
+</ParamField>
+
+<ResponseField name="conditions" type="table">
+  Array of condition definitions
+</ResponseField>
+
+## Event Scanning Functions
+
+### ScanEvents
+
+Scans for matching triggers on a game event.
+
+```lua
+WeakAuras.ScanEvents(event, arg1, arg2, ...)
+```
+
+<ParamField path="event" type="string" required>
+  The event name
+</ParamField>
+<ParamField path="..." type="any">
+  Event arguments
+</ParamField>
+
+### ScanUnitEvents
+
+Scans for matching triggers on a unit-specific event.
+
+```lua
+WeakAuras.ScanUnitEvents(event, unit, ...)
+```
+
+<ParamField path="event" type="string" required>
+  The event name
+</ParamField>
+<ParamField path="unit" type="string" required>
+  The unit token
+</ParamField>
+<ParamField path="..." type="any">
+  Additional event arguments
+</ParamField>
+
+### CreateFakeStates
+
+Creates fake trigger states for options preview.
+
+```lua
+GenericTrigger.CreateFakeStates(id, triggernum)
+```
+
+<ParamField path="id" type="string" required>
+  The display ID
+</ParamField>
+<ParamField path="triggernum" type="number" required>
+  The trigger number
+</ParamField>
+
+## Trigger Counter
+
+Trigger counters track event occurrences and can match specific counts or patterns.
+
+### CreateTriggerCounter
+
+Creates a new trigger counter with optional pattern matching.
+
+```lua
+Private.ExecEnv.CreateTriggerCounter(pattern)
+```
+
+<ParamField path="pattern" type="string">
+  Cron-like pattern for matching counts (e.g., "2,5,6" or "2-6" or "2/3")
+</ParamField>
+
+<ResponseField name="counter" type="table">
+  Counter object with methods:
+  - `Reset()` - Resets count to 0
+  - `GetNext()` - Increments and returns current count
+  - `SetCount(count)` - Sets current count
+  - `Match()` - Returns true if current count matches pattern
+</ResponseField>
+
+## Examples
+
+### Basic Trigger Setup
+
+```lua
+-- Add a display with triggers
+local data = {
+  id = "MyAura",
+  triggers = {
+    {
+      trigger = {
+        type = "event",
+        event = "PLAYER_ENTERING_WORLD"
+      }
+    }
+  }
+}
+
+GenericTrigger.Add(data)
+GenericTrigger.LoadDisplay("MyAura")
+```
+
+### Event Counter Pattern
+
+```lua
+-- Match every 3rd event starting from the 2nd
+local counter = Private.ExecEnv.CreateTriggerCounter("2-11/3")
+
+-- This will match counts: 2, 5, 8, 11
+counter:SetCount(2)
+print(counter:Match()) -- true
+
+counter:SetCount(5)
+print(counter:Match()) -- true
+
+counter:SetCount(3)
+print(counter:Match()) -- false
+```
+
+### Custom Event Handling
+
+```lua
+-- Scan for custom events
+WeakAuras.ScanEvents("MY_CUSTOM_EVENT", "arg1", "arg2")
+
+-- With unit events
+WeakAuras.ScanUnitEvents("UNIT_HEALTH", "player")
+```
+
+## See Also
+
+- [BuffTrigger System](/api/systems/buff-trigger) - Specialized buff/debuff triggers
+- [Events](/api/events) - Core event system
+- [Tables](/api/tables) - Data structures including trigger states

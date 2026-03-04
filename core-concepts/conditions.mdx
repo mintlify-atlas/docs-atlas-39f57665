@@ -1,0 +1,553 @@
+---
+title: "Condition System"
+description: "Dynamically modify display properties based on trigger states and game conditions"
+icon: "code-branch"
+---
+
+## Overview
+
+Conditions allow you to change display properties dynamically based on trigger states, game conditions, or custom logic. They're perfect for color-coding, showing/hiding elements, and responsive UI behavior.
+
+<Info>
+Conditions are evaluated and applied efficiently using `Conditions.lua`, checking only when relevant state changes occur.
+</Info>
+
+## Basic Condition
+
+```lua
+{
+  conditions = {
+    {
+      check = {
+        trigger = 1,
+        variable = "value",
+        op = "<",
+        value = 30
+      },
+      changes = {
+        {
+          property = "color",
+          value = {1, 0, 0, 1}  // Red when low
+        }
+      }
+    }
+  }
+}
+```
+
+## Condition Structure
+
+<Tabs>
+  <Tab title="Simple Check">
+    ```lua
+    {
+      check = {
+        trigger = 1,           // Which trigger
+        variable = "stacks",   // State property
+        op = ">=",             // Operator
+        value = 5              // Comparison value
+      },
+      changes = {              // What to change
+        {property = "color", value = {0, 1, 0, 1}}
+      }
+    }
+    ```
+  </Tab>
+  
+  <Tab title="AND Logic">
+    ```lua
+    {
+      check = {
+        trigger = -2,  // Logical group
+        variable = "AND",
+        checks = {
+          {trigger = 1, variable = "value", op = "<", value = 50},
+          {trigger = 1, variable = "stacks", op = ">=", value = 3}
+        }
+      },
+      changes = {{property = "color", value = {1, 1, 0, 1}}}
+    }
+    ```
+  </Tab>
+  
+  <Tab title="OR Logic">
+    ```lua
+    {
+      check = {
+        trigger = -2,
+        variable = "OR",
+        checks = {
+          {trigger = 1, variable = "value", op = "<", value = 20},
+          {trigger = 2, variable = "show", op = "==", value = 1}
+        }
+      },
+      changes = {{property = "alpha", value = 1.0}}
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Comparison Operators
+
+| Operator | Description | Types |
+|----------|-------------|-------|
+| `==` | Equals | All |
+| `<` | Less than | number, timer |
+| `<=` | Less than or equal | number, timer |
+| `>` | Greater than | number, timer |
+| `>=` | Greater than or equal | number, timer |
+| `find('%s')` | Contains substring | string |
+| `match('%s')` | Regex match | string |
+
+## Variable Types
+
+### Number Variables
+
+```lua
+{
+  check = {
+    variable = "value",
+    op = "<",
+    value = 1000
+  }
+}
+```
+
+**Common number variables:**
+- `value` - Current value
+- `total` - Maximum value
+- `stacks` - Stack count
+- `matchCount` - Number of matches
+- `unitCount` - Number of units affected
+
+### Timer Variables
+
+```lua
+{
+  check = {
+    variable = "expirationTime",
+    op = "<",
+    value = 5  // Less than 5 seconds remaining
+  }
+}
+```
+
+**Timer variables:**
+- `expirationTime` - When timer expires
+- `duration` - Total duration
+- `initialTime` - When started
+- `refreshTime` - When refreshed
+
+<Tip>
+Timer comparisons use remaining time, not raw timestamps.
+</Tip>
+
+### Boolean Variables
+
+```lua
+{
+  check = {
+    variable = "show",
+    op = "==",
+    value = 1  // or 0 for false
+  }
+}
+```
+
+### String Variables
+
+```lua
+{
+  check = {
+    variable = "name",
+    op = "find('%s')",
+    value = "Shield"
+  }
+}
+```
+
+## Global Conditions
+
+Check game-wide states:
+
+```lua
+{
+  check = {
+    trigger = -1,  // Global trigger
+    variable = "incombat",
+    op = "==",
+    value = 1
+  }
+}
+```
+
+### Available Global Conditions
+
+<CardGroup cols={2}>
+  <Card title="In Combat" icon="swords">
+    `incombat` - Player in combat
+  </Card>
+  <Card title="Has Target" icon="crosshairs">
+    `hastarget` - Player has target
+  </Card>
+  <Card title="Attackable Target" icon="bullseye">
+    `attackabletarget` - Target can be attacked
+  </Card>
+  <Card title="Range Check" icon="ruler">
+    `rangecheck` - Custom range checking
+  </Card>
+</CardGroup>
+
+### Custom Check
+
+```lua
+{
+  check = {
+    trigger = -1,
+    variable = "customcheck",
+    value = [[
+      function(state)
+        local health = UnitHealth("player")
+        return health < 10000
+      end
+    ]]
+  }
+}
+```
+
+## Property Changes
+
+### Visual Properties
+
+<CodeGroup>
+```lua Color
+{
+  property = "color",
+  value = {1, 0, 0, 1}  // RGBA
+}
+```
+
+```lua Alpha
+{
+  property = "alpha",
+  value = 0.5  // 50% opacity
+}
+```
+
+```lua Size
+{
+  property = "width",
+  value = 100
+}
+```
+</CodeGroup>
+
+### Text Properties
+
+```lua
+{
+  property = "displayText",
+  value = "WARNING: %n"
+}
+
+{
+  property = "fontSize",
+  value = 20
+}
+```
+
+### Icon Properties
+
+```lua
+{
+  property = "desaturate",
+  value = true
+}
+
+{
+  property = "displayIcon",
+  value = "Interface\\\\Icons\\\\Spell_Holy_PowerWordShield"
+}
+```
+
+### Progress Properties
+
+```lua
+{
+  property = "inverse",
+  value = true
+}
+
+{
+  property = "orientation",
+  value = "VERTICAL"
+}
+```
+
+## Linked Conditions
+
+Chain conditions with else-if logic:
+
+```lua
+conditions = {
+  {
+    // First condition
+    check = {trigger = 1, variable = "value", op = "<", value = 20},
+    changes = {{property = "color", value = {1, 0, 0, 1}}}  // Red
+  },
+  {
+    linked = true,  // Else-if
+    check = {trigger = 1, variable = "value", op = "<", value = 50},
+    changes = {{property = "color", value = {1, 1, 0, 1}}}  // Yellow
+  },
+  {
+    linked = true,  // Else-if  
+    check = {trigger = 1, variable = "value", op = ">=", value = 50},
+    changes = {{property = "color", value = {0, 1, 0, 1}}}  // Green
+  }
+}
+```
+
+<Info>
+Linked conditions create if-elseif chains. Only the first matching condition applies.
+</Info>
+
+## Common Patterns
+
+### Health Color Coding
+
+```lua
+conditions = {
+  {
+    check = {trigger = 1, variable = "value", op = "<", value = 30},
+    changes = {{property = "color", value = {1, 0, 0, 1}}}  // Red < 30%
+  },
+  {
+    linked = true,
+    check = {trigger = 1, variable = "value", op = "<", value = 60},
+    changes = {{property = "color", value = {1, 1, 0, 1}}}  // Yellow < 60%
+  },
+  {
+    linked = true,
+    check = {trigger = 1, variable = "value", op = ">=", value = 60},
+    changes = {{property = "color", value = {0, 1, 0, 1}}}  // Green >= 60%
+  }
+}
+```
+
+### Timer Warning
+
+```lua
+{
+  check = {
+    trigger = 1,
+    variable = "expirationTime",
+    op = "<",
+    value = 5  // < 5 seconds
+  },
+  changes = {
+    {property = "color", value = {1, 0, 0, 1}},
+    {property = "fontSize", value = 20}
+  }
+}
+```
+
+### Stack-Based Size
+
+```lua
+{
+  check = {
+    trigger = 1,
+    variable = "stacks",
+    op = ">=",
+    value = 5
+  },
+  changes = {
+    {property = "width", value = 80},
+    {property = "height", value = 80}
+  }
+}
+```
+
+### Desaturate on Cooldown
+
+```lua
+{
+  check = {
+    trigger = 1,
+    variable = "show",
+    op = "==",
+    value = 1
+  },
+  changes = {
+    {property = "desaturate", value = true}
+  }
+}
+```
+
+### Show Text for Stacks
+
+```lua
+{
+  check = {
+    trigger = 1,
+    variable = "stacks",
+    op = ">",
+    value = 1
+  },
+  changes = {
+    {property = "displayText", value = "%n (%s)"}
+  }
+}
+```
+
+## Advanced Features
+
+### Scheduled Rechecks
+
+Conditions auto-schedule rechecks for timer-based checks:
+
+```lua
+// Internal: Automatically scheduled
+if nextTime and nextTime >= now then
+  Private.ExecEnv.ScheduleConditionCheck(nextTime, uid, cloneId)
+end
+```
+
+### Sub-Region Properties
+
+Modify sub-region properties:
+
+```lua
+{
+  property = "sub.1.text_color",  // Sub-region 1's text color
+  value = {1, 0, 0, 1}
+}
+```
+
+### Progress Source Changes
+
+```lua
+{
+  property = "progressSource",
+  value = {2, "auto", "value", "total"}  // Switch to trigger 2
+}
+```
+
+### Custom Code Properties
+
+Some properties use custom code:
+
+```lua
+{
+  property = "customcode",
+  value = {
+    custom = [[
+      region:SetSize(100, 100)
+      region:SetAlpha(0.5)
+    ]]
+  }
+}
+```
+
+## Condition Evaluation
+
+Conditions are evaluated when:
+- Trigger state changes
+- Timer thresholds are reached
+- Global game state changes
+- Manual recheck triggered
+
+```lua
+// Internal evaluation
+function checkConditions(region, hideRegion)
+  local state = region.states
+  
+  // Check each condition
+  for conditionNumber, condition in ipairs(data.conditions) do
+    if (check matches) then
+      // Apply changes
+      region:SetProperty(property, value)
+    end
+  end
+end
+```
+
+## Performance
+
+<AccordionGroup>
+  <Accordion title="Condition Checks" icon="check">
+    Conditions only evaluate when relevant states change. Avoid custom checks that don't depend on state.
+  </Accordion>
+  
+  <Accordion title="Timer Conditions" icon="clock">
+    Timer-based conditions schedule future rechecks. Many timer conditions may create overhead.
+  </Accordion>
+  
+  <Accordion title="Property Changes" icon="pen">
+    Property changes trigger redraws. Avoid conditions that change frequently.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Condition Not Applying" icon="xmark">
+    - Verify trigger number matches
+    - Check variable name is correct
+    - Ensure operator and value are appropriate
+    - Check if linked condition is blocking it
+    - Verify trigger provides that property
+  </Accordion>
+  
+  <Accordion title="Wrong Order" icon="sort">
+    - Conditions evaluate top-to-bottom
+    - Use linked conditions for if-elseif logic
+    - First matching condition wins for linked chains
+  </Accordion>
+  
+  <Accordion title="Timer Not Working" icon="hourglass">
+    - Ensure comparison value is in seconds
+    - Check trigger provides expirationTime
+    - Verify trigger has timed progress
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CheckGroup>
+  - <Check>Use linked conditions for multi-tier thresholds</Check>
+  - <Check>Order conditions from most to least restrictive</Check>
+  - <Check>Avoid duplicate checks across conditions</Check>
+  - <Check>Use global conditions for game-wide states</Check>
+  - <Check>Test all condition branches</Check>
+  - <Check>Keep custom checks simple and fast</Check>
+  - <Check>Group related property changes together</Check>
+</CheckGroup>
+
+## Condition Types Reference
+
+| Type | Description | Example Variables |
+|------|-------------|-------------------|
+| `number` | Numeric comparison | value, stacks, matchCount |
+| `timer` | Time-based check | expirationTime, duration |
+| `elapsedTimer` | Elapsed time | initialTime, refreshTime |
+| `bool` | Boolean check | show, active, paused |
+| `string` | String matching | name, unitName, casterName |
+| `select` | List selection | debuffClass, unit |
+| `customcheck` | Custom Lua | Any custom logic |
+| `alwaystrue` | Always matches | N/A |
+
+## Related Topics
+
+<CardGroup cols={3}>
+  <Card title="Triggers" icon="bolt" href="/core-concepts/triggers/overview">
+    What generates the states
+  </Card>
+  <Card title="Animations" icon="wand-magic-sparkles" href="/core-concepts/animations">
+    Trigger animations conditionally
+  </Card>
+  <Card title="Custom Code" icon="code" href="/core-concepts/custom-code">
+    Advanced condition logic
+  </Card>
+</CardGroup>

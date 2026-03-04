@@ -1,0 +1,661 @@
+---
+title: "Custom Lua Triggers"
+description: "Write powerful custom triggers using Lua scripting for complete control"
+icon: "code"
+---
+
+## Overview
+
+Custom Lua triggers provide unlimited flexibility by allowing you to write your own trigger logic in Lua. They can monitor any game state, process complex conditions, and create sophisticated detection systems.
+
+<Warning>
+Custom triggers run frequently and can impact performance. Profile and optimize your code.
+</Warning>
+
+## Basic Custom Trigger
+
+```lua
+function()
+  -- Return true to activate the display
+  local health = UnitHealth("player")
+  local maxHealth = UnitHealthMax("player")
+  return health < maxHealth * 0.3
+end
+```
+
+## Trigger Types
+
+<Tabs>
+  <Tab title="Event Trigger">
+    ```lua
+    -- Trigger function
+    function(event, ...)
+      if event == "PLAYER_REGEN_DISABLED" then
+        return true  -- Show on combat start
+      end
+      return false
+    end
+    
+    -- Untrigger function (optional)
+    function(event, ...)
+      if event == "PLAYER_REGEN_ENABLED" then
+        return true  -- Hide on combat end  
+      end
+      return false
+    end
+    ```
+  </Tab>
+  
+  <Tab title="Status Trigger">
+    ```lua
+    -- Check continuously
+    function()
+      local mana = UnitPower("player", 0)
+      local maxMana = UnitPowerMax("player", 0)
+      local percent = (mana / maxMana) * 100
+      return percent < 20
+    end
+    ```
+  </Tab>
+  
+  <Tab title="State Update">
+    ```lua
+    function(allStates, event, ...)
+      allStates[""] = allStates[""] or {}
+      local state = allStates[""]
+      
+      state.value = UnitHealth("player")
+      state.total = UnitHealthMax("player")
+      state.changed = true
+      
+      return true
+    end
+    ```
+  </Tab>
+</Tabs>
+
+## State Management
+
+### Single State
+
+```lua
+function(allStates, event, ...)
+  allStates[""] = allStates[""] or {}
+  local state = allStates[""]
+  
+  -- Update state properties
+  state.show = true
+  state.changed = true
+  state.value = UnitHealth("player")
+  state.total = UnitHealthMax("player")
+  state.progressType = "static"
+  
+  return true
+end
+```
+
+### Multiple States (Clones)
+
+```lua
+function(allStates, event, ...)
+  -- Create state for each combo point
+  local comboPoints = GetComboPoints("player", "target")
+  
+  for i = 1, 5 do
+    local cloneId = "cp" .. i
+    allStates[cloneId] = allStates[cloneId] or {}
+    
+    allStates[cloneId].show = i <= comboPoints
+    allStates[cloneId].changed = true
+    allStates[cloneId].index = i
+  end
+  
+  return true
+end
+```
+
+### Unit States
+
+```lua
+function(allStates, event, unit)
+  if not unit then return false end
+  
+  allStates[unit] = allStates[unit] or {}
+  local state = allStates[unit]
+  
+  state.show = UnitExists(unit)
+  state.changed = true
+  state.unit = unit
+  state.name = UnitName(unit)
+  state.health = UnitHealth(unit)
+  
+  return true
+end
+```
+
+## Event Selection
+
+### Single Event
+
+```lua
+-- Events (comma-separated)
+PLAYER_REGEN_DISABLED, PLAYER_REGEN_ENABLED
+
+-- Trigger function
+function(event)
+  return event == "PLAYER_REGEN_DISABLED"
+end
+```
+
+### Multiple Events
+
+```lua
+-- Events
+UNIT_HEALTH, UNIT_MAXHEALTH
+
+-- Trigger function  
+function(event, unit)
+  if unit ~= "player" then return false end
+  
+  local health = UnitHealth("player")
+  local maxHealth = UnitHealthMax("player")
+  return (health / maxHealth) < 0.5
+end
+```
+
+### Frame Update (Polling)
+
+```lua
+-- Event
+FRAME_UPDATE
+
+-- Trigger function
+function()
+  -- Called every frame - use sparingly!
+  return UnitCastingInfo("player") ~= nil
+end
+```
+
+<Tip>
+Use specific events instead of FRAME_UPDATE whenever possible for better performance.
+</Tip>
+
+## Duration and Progress
+
+### Fixed Duration
+
+```lua
+function(allStates, event)
+  allStates[""] = {
+    show = true,
+    changed = true,
+    duration = 10,  -- 10 second duration
+    expirationTime = GetTime() + 10,
+    progressType = "timed",
+    autoHide = true
+  }
+  return true
+end
+```
+
+### Custom Duration Function
+
+```lua
+-- Duration function (separate from trigger)
+function()
+  local start, duration = GetSpellCooldown(12345)
+  if duration and duration > 0 then
+    return duration, start + duration
+  end
+  return 0, 0
+end
+```
+
+### Static Progress
+
+```lua
+function(allStates, event)
+  local state = allStates[""] or {}
+  
+  state.show = true
+  state.changed = true
+  state.value = UnitHealth("player")
+  state.total = UnitHealthMax("player")
+  state.progressType = "static"
+  
+  allStates[""] = state
+  return true
+end
+```
+
+## Custom Functions
+
+### Name Function
+
+```lua
+function()
+  return UnitName("target") or "No Target"
+end
+```
+
+### Icon Function
+
+```lua
+function()
+  local texture = GetSpellTexture(12345)
+  return texture or "Interface\\Icons\\INV_Misc_QuestionMark"
+end
+```
+
+### Texture Function
+
+```lua
+function()
+  local _, class = UnitClass("player")
+  return "Interface\\TargetingFrame\\UI-Classes-Circles",
+         CLASS_ICON_TCOORDS[class]
+end
+```
+
+### Stacks Function
+
+```lua
+function()
+  return GetComboPoints("player", "target")
+end
+```
+
+## Advanced Techniques
+
+### Persistent Variables
+
+```lua
+-- Use aura_env for persistent storage
+aura_env.lastValue = aura_env.lastValue or 0
+
+function(allStates, event)
+  local currentValue = UnitHealth("player")
+  local changed = currentValue ~= aura_env.lastValue
+  aura_env.lastValue = currentValue
+  
+  if changed then
+    allStates[""] = { show = true, changed = true }
+    return true
+  end
+  return false
+end
+```
+
+### Throttling Updates
+
+```lua
+aura_env.lastUpdate = aura_env.lastUpdate or 0
+
+function(allStates, event)
+  local now = GetTime()
+  
+  -- Only update every 0.5 seconds
+  if now - aura_env.lastUpdate < 0.5 then
+    return false
+  end
+  
+  aura_env.lastUpdate = now
+  -- Process trigger logic...
+  return true
+end
+```
+
+### Watching Other Triggers
+
+```lua
+function(allStates, event, triggerId, states)
+  if event ~= "TRIGGER" then return false end
+  
+  -- React to trigger 1's state changes
+  if triggerId == 1 then
+    allStates[""] = {
+      show = true,
+      changed = true,
+      otherShow = states[""] and states[""].show
+    }
+    return true
+  end
+  return false
+end
+```
+
+<Info>
+Use "Watched Trigger Events" in the advanced trigger options to enable trigger watching.
+</Info>
+
+### Table State Properties
+
+```lua
+function(allStates, event)
+  allStates[""] = {
+    show = true,
+    changed = true,
+    customData = {
+      targets = {"target1", "target2"},
+      values = {100, 200, 300}
+    }
+  }
+  return true
+end
+```
+
+## WeakAuras API
+
+### Unit Functions
+
+```lua
+-- Unit info
+UnitName("player")
+UnitClass("player")
+UnitLevel("player")
+UnitRace("player")
+
+-- Unit state
+UnitHealth("player")
+UnitHealthMax("player")
+UnitPower("player", 0)  -- 0 = mana
+UnitPowerMax("player", 0)
+
+-- Unit status
+UnitExists("target")
+UnitIsDeadOrGhost("player")
+UnitAffectingCombat("player")
+UnitIsPlayer("target")
+```
+
+### Spell Functions
+
+```lua
+-- Spell info
+GetSpellInfo(12345)
+GetSpellTexture(12345)
+IsSpellKnown(12345)
+
+-- Cooldowns
+GetSpellCooldown(12345)
+GetSpellCharges(12345)
+
+-- Casting
+UnitCastingInfo("player")
+UnitChannelInfo("player")
+```
+
+### Aura Functions
+
+```lua
+-- Check auras
+UnitAura("player", "Renew", nil, "HELPFUL")
+UnitBuff("player", 1)  -- By index
+UnitDebuff("target", "Shadow Word: Pain")
+```
+
+### Combat Functions
+
+```lua
+-- Combo points / Holy Power / etc
+GetComboPoints("player", "target")
+UnitPower("player", SPELL_POWER_HOLY_POWER)
+
+-- Runes (Death Knight)
+GetRuneCooldown(1)
+GetRuneType(1)
+```
+
+### WeakAuras-Specific
+
+```lua
+-- Region access
+WeakAuras.GetRegion(id)
+
+-- State access  
+WeakAuras.GetTriggerStateForTrigger(id, triggernum)
+
+-- Scanning
+WeakAuras.ScanEvents(event, ...)
+```
+
+## Performance Optimization
+
+<AccordionGroup>
+  <Accordion title="Cache API Calls" icon="database">
+    ```lua
+    -- Bad: Multiple API calls
+    function()
+      if UnitHealth("player") < UnitHealthMax("player") * 0.3 then
+        return UnitHealth("player") > 0
+      end
+    end
+    
+    -- Good: Cache values
+    function()
+      local health = UnitHealth("player")
+      local maxHealth = UnitHealthMax("player")
+      if health < maxHealth * 0.3 then
+        return health > 0
+      end
+    end
+    ```
+  </Accordion>
+  
+  <Accordion title="Early Returns" icon="door-open">
+    ```lua
+    function(event, unit)
+      -- Filter early
+      if unit ~= "player" then
+        return false
+      end
+      
+      -- Expensive checks only if needed
+      local comboPoints = GetComboPoints("player", "target")
+      return comboPoints >= 5
+    end
+    ```
+  </Accordion>
+  
+  <Accordion title="Avoid Table Creation" icon="table">
+    ```lua
+    -- Bad: Creates table every call
+    function(allStates)
+      allStates[""] = {  -- New table!
+        show = true,
+        changed = true
+      }
+    end
+    
+    -- Good: Reuse table
+    function(allStates)
+      allStates[""] = allStates[""] or {}
+      local state = allStates[""]
+      state.show = true
+      state.changed = true
+    end
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Common Patterns
+
+### Resource Monitor
+
+```lua
+function(allStates, event, unit)
+  if unit and unit ~= "player" then return false end
+  
+  local state = allStates[""] or {}
+  state.show = true
+  state.changed = true
+  state.value = UnitPower("player", 0)
+  state.total = UnitPowerMax("player", 0)
+  state.progressType = "static"
+  
+  allStates[""] = state
+  return true
+end
+```
+
+### Cooldown Tracker
+
+```lua
+function(allStates, event)
+  local start, duration = GetSpellCooldown(12345)
+  
+  if duration and duration > 1.5 then  -- On cooldown
+    allStates[""] = {
+      show = true,
+      changed = true,
+      duration = duration,
+      expirationTime = start + duration,
+      progressType = "timed"
+    }
+    return true
+  else  -- Ready
+    allStates[""] = {
+      show = false,
+      changed = true
+    }
+    return true
+  end
+end
+```
+
+### Multi-Target DoT Tracker
+
+```lua
+aura_env.targets = aura_env.targets or {}
+
+function(allStates, event, ...)
+  -- Scan nameplates for your DoTs
+  for i = 1, 40 do
+    local unit = "nameplate" .. i
+    if UnitExists(unit) then
+      local name, _, _, count, _, duration, expires = 
+        UnitDebuff(unit, "Shadow Word: Pain", nil, "player")
+      
+      local guid = UnitGUID(unit)
+      if name and guid then
+        allStates[guid] = {
+          show = true,
+          changed = true,
+          name = UnitName(unit),
+          stacks = count,
+          duration = duration,
+          expirationTime = expires,
+          progressType = "timed"
+        }
+      elseif allStates[guid] then
+        allStates[guid].show = false
+        allStates[guid].changed = true
+      end
+    end
+  end
+  
+  return true
+end
+```
+
+## Debugging
+
+### Print Debugging
+
+```lua
+function(allStates, event, ...)
+  print("Event:", event)
+  print("Args:", ...)
+  
+  local health = UnitHealth("player")
+  print("Health:", health)
+  
+  return health < 1000
+end
+```
+
+### State Inspection
+
+```lua
+function(allStates, event)
+  -- Print current states
+  for cloneId, state in pairs(allStates) do
+    print("Clone:", cloneId, "Show:", state.show)
+  end
+  
+  return true
+end
+```
+
+### Error Handling
+
+```lua
+function(allStates, event)
+  local success, result = pcall(function()
+    -- Your trigger code
+    return UnitHealth("player") < 1000
+  end)
+  
+  if not success then
+    print("Trigger error:", result)
+    return false
+  end
+  
+  return result
+end
+```
+
+<Warning>
+WeakAuras automatically wraps trigger functions in pcall. Errors will be logged but won't break the addon.
+</Warning>
+
+## Best Practices
+
+<CheckGroup>
+  - <Check>Use specific events instead of FRAME_UPDATE</Check>
+  - <Check>Cache API call results in local variables</Check>
+  - <Check>Return early when conditions don't match</Check>
+  - <Check>Reuse state tables instead of creating new ones</Check>
+  - <Check>Use aura_env for persistent data</Check>
+  - <Check>Test performance with /wa pstart and /wa pstop</Check>
+  - <Check>Comment complex logic for maintainability</Check>
+</CheckGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Trigger Not Firing" icon="ban">
+    - Check events are registered correctly
+    - Verify return value is boolean
+    - Use print() to debug logic flow
+    - Check for Lua errors in /wa debuglog
+  </Accordion>
+  
+  <Accordion title="Performance Issues" icon="gauge">
+    - Profile with /wa pstart and /wa pstop
+    - Avoid FRAME_UPDATE if possible
+    - Cache repeated API calls
+    - Use early returns to skip unnecessary work
+  </Accordion>
+  
+  <Accordion title="State Not Updating" icon="rotate">
+    - Ensure `changed = true` is set
+    - Verify trigger is returning true
+    - Check if display has load conditions blocking it
+    - Inspect state with custom code action
+  </Accordion>
+</AccordionGroup>
+
+## Related Topics
+
+<CardGroup cols={3}>
+  <Card title="Trigger Overview" icon="bolt" href="/core-concepts/triggers/overview">
+    Trigger system fundamentals
+  </Card>
+  <Card title="Custom Code" icon="wand-magic-sparkles" href="/core-concepts/custom-code">
+    Custom actions and functions
+  </Card>
+  <Card title="Conditions" icon="code-branch" href="/core-concepts/conditions">
+    Dynamic property changes
+  </Card>
+</CardGroup>

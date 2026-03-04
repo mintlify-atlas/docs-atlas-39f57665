@@ -1,0 +1,490 @@
+---
+title: Stop Motion
+description: Add animated textures and effects to WeakAuras with the Stop Motion addon
+icon: film
+---
+
+WeakAuras_StopMotion is an addon that extends WeakAuras with support for stop motion animations - sequences of frames that play like a flipbook to create animated effects.
+
+## Overview
+
+The Stop Motion addon adds:
+
+<CardGroup cols={2}>
+  <Card title="New Region Type" icon="image">
+    Stop Motion region for frame-based animations
+  </Card>
+  <Card title="Pre-Made Animations" icon="box">
+    Ships with dozens of animations ready to use
+  </Card>
+  <Card title="Custom Animations" icon="paintbrush">
+    Support for your own custom frame sequences
+  </Card>
+  <Card title="Animation Controls" icon="sliders">
+    Playback speed, direction, and looping options
+  </Card>
+</CardGroup>
+
+## Installation
+
+### Download
+
+<Steps>
+  <Step title="Get the Addon">
+    Download from:
+    - [CurseForge](https://www.curseforge.com/wow/addons/weakauras-stop-motion)
+    - [GitHub Releases](https://github.com/WeakAuras/WeakAuras-StopMotion)
+  </Step>
+  
+  <Step title="Extract to AddOns">
+    Place `WeakAuras_StopMotion` folder in:
+    ```
+    World of Warcraft\_classic_\Interface\AddOns\WeakAuras_StopMotion
+    ```
+  </Step>
+  
+  <Step title="Enable in Game">
+    Character Select -> AddOns -> Enable WeakAuras_StopMotion
+  </Step>
+  
+  <Step title="Verify Installation">
+    `/wa` -> New -> Display Type -> Stop Motion should be available
+  </Step>
+</Steps>
+
+<Tip>
+WeakAuras must be installed for Stop Motion to work. It's an extension, not a standalone addon.
+</Tip>
+
+## Creating Stop Motion Auras
+
+### Basic Setup
+
+<Steps>
+  <Step title="Create New Aura">
+    `/wa` -> New -> From Scratch
+  </Step>
+  
+  <Step title="Choose Stop Motion">
+    Display Type: **Stop Motion**
+  </Step>
+  
+  <Step title="Select Animation">
+    Display tab -> Model -> Choose from dropdown:
+    - Arrows
+    - Glows  
+    - Runes
+    - Swirls
+    - And many more...
+  </Step>
+  
+  <Step title="Configure Playback">
+    Adjust animation settings:
+    - Frame count
+    - Animation speed
+    - Loop behavior
+  </Step>
+</Steps>
+
+### Display Settings
+
+<AccordionGroup>
+  <Accordion title="Animation Selection">
+    Choose the stop motion animation:
+    
+    **Built-in Categories:**
+    - **Arrows**: Directional indicators
+    - **Circles**: Radial effects
+    - **Glows**: Pulsing glow effects
+    - **Runes**: Magical runes and sigils
+    - **Sparkles**: Particle effects
+    - **Swirls**: Spiral animations
+    - **Textures**: Miscellaneous effects
+    
+    Each animation has a preview image to help you choose.
+  </Accordion>
+  
+  <Accordion title="Playback Options">
+    Control how the animation plays:
+    
+    - **Animation Speed**: Frames per second (1-60)
+    - **Start Frame**: Which frame to begin at
+    - **End Frame**: Which frame to end at (for partial animations)
+    - **Loop**: Repeat the animation indefinitely
+    - **Ping Pong**: Play forward then backward
+    - **Reverse**: Play the animation backwards
+  </Accordion>
+  
+  <Accordion title="Size & Position">
+    Like other WeakAuras regions:
+    
+    - **Width/Height**: Animation size
+    - **X/Y Offset**: Position on screen
+    - **Anchor**: Attachment point
+    - **Frame Strata**: Rendering layer
+  </Accordion>
+  
+  <Accordion title="Color & Alpha">
+    Customize appearance:
+    
+    - **Color**: Tint the animation
+    - **Alpha**: Transparency (0-1)
+    - **Blend Mode**: How it blends with background
+      - Normal
+      - Add (brighter, good for glows)
+      - Mod (multiply)
+  </Accordion>
+</AccordionGroup>
+
+## Common Use Cases
+
+### Proc Alert Animation
+
+Show a flashy animation when a proc occurs:
+
+```
+Display Type: Stop Motion
+Animation: Runes/RuneGlow (or any eye-catching animation)
+
+Trigger:
+  Type: Aura
+  Spell: Your Proc Buff
+  Unit: player
+
+Display Settings:
+  Animation Speed: 30 FPS
+  Loop: Yes
+  Blend Mode: Add (for extra brightness)
+  Color: Class color or proc-specific color
+```
+
+### Cooldown Available Indicator
+
+Pulse animation when ability is ready:
+
+```
+Display Type: Stop Motion  
+Animation: Glows/PulseGlow
+
+Trigger:
+  Type: Spell Cooldown
+  Spell: Your Ability
+  Cooldown Ready: Yes
+
+Display Settings:
+  Animation Speed: 20 FPS
+  Loop: Yes
+  Ping Pong: Yes (smooth pulsing)
+```
+
+### Directional Indicator
+
+Point to a location or direction:
+
+```
+Display Type: Stop Motion
+Animation: Arrows/AnimatedArrow
+
+Trigger:
+  Custom trigger based on positioning logic
+
+Display Settings:
+  Rotation: Calculated based on direction
+  Animation Speed: 15 FPS
+  Loop: Yes
+```
+
+### Buff Duration with Animation
+
+Combine with icon for animated buff tracking:
+
+```
+Group: Buff Tracker
+  Child 1: Icon (buff icon)
+  Child 2: Stop Motion (glow around icon)
+  
+Both children:
+  Same trigger (buff active)
+  Positioned to overlap
+  
+Stop Motion settings:
+  Animation: Glows/CircleGlow
+  Slightly larger than icon
+  Blend Mode: Add
+```
+
+## Advanced Techniques
+
+### Animation Sequencing
+
+Chain multiple animations:
+
+1. **First Animation**: Plays on trigger show
+   - Animation: Initial effect
+   - On Finish: Sets flag in `aura_env`
+
+2. **Second Animation**: Triggers when first finishes
+   - Trigger: Custom, checks `aura_env` flag
+   - Animation: Follow-up effect
+
+```lua
+-- First animation On Finish action:
+aura_env.phase2 = true
+WeakAuras.ScanEvents("ANIMATION_PHASE_2")
+
+-- Second animation trigger:
+function()
+  return aura_env.phase2
+end
+```
+
+### Dynamic Animation Speed
+
+Change speed based on conditions:
+
+```lua
+-- In Display tab, Custom Code
+function()
+  local health = UnitHealth("player") / UnitHealthMax("player")
+  
+  -- Faster animation at low health
+  if health < 0.35 then
+    return 60 -- FPS
+  elseif health < 0.50 then
+    return 40
+  else
+    return 20
+  end
+end
+```
+
+### Color-Coded Animations
+
+Change color based on state:
+
+```lua
+-- Custom color function
+function()
+  local stacks = aura_env.state.stacks or 0
+  
+  if stacks >= 5 then
+    return {0, 1, 0, 1} -- Green
+  elseif stacks >= 3 then
+    return {1, 1, 0, 1} -- Yellow
+  else
+    return {1, 0, 0, 1} -- Red
+  end
+end
+```
+
+### Rotation Animation
+
+Rotate the animation over time:
+
+```lua
+-- In On Update (use sparingly!)
+local elapsed = aura_env.elapsed or 0
+elapsed = elapsed + 0.016 -- ~60 FPS
+
+local rotation = (elapsed * 90) % 360 -- 90 degrees per second
+region:SetRotation(math.rad(rotation))
+
+aura_env.elapsed = elapsed
+```
+
+## Custom Animations
+
+Create your own stop motion animations:
+
+### Preparing Frames
+
+<Steps>
+  <Step title="Create Frame Sequence">
+    Design individual frames:
+    - Same dimensions (e.g., 256x256)
+    - Transparent background (PNG with alpha)
+    - Sequential numbering: `frame001.png`, `frame002.png`, etc.
+  </Step>
+  
+  <Step title="Optimize Images">
+    - Keep file sizes small
+    - Use power-of-2 dimensions (256, 512, 1024)
+    - Compress without losing transparency
+  </Step>
+  
+  <Step title="Convert to TGA">
+    WoW requires TGA or BLP format:
+    - Convert PNGs to TGA
+    - Maintain alpha channel
+    - Save as 32-bit TGA
+  </Step>
+</Steps>
+
+### Adding to Addon
+
+1. **Create Animation Folder**:
+   ```
+   WeakAuras_StopMotion/Animations/MyAnimation/
+   ```
+
+2. **Add Frame Files**:
+   ```
+   WeakAuras_StopMotion/Animations/MyAnimation/
+     frame001.tga
+     frame002.tga
+     frame003.tga
+     ...
+   ```
+
+3. **Register Animation**:
+   Edit `WeakAuras_StopMotion/Animations.lua`:
+   
+   ```lua
+   animations["MyAnimation"] = {
+     ["name"] = "My Custom Animation",
+     ["path"] = "Interface\\AddOns\\WeakAuras_StopMotion\\Animations\\MyAnimation\\",
+     ["frameCount"] = 30, -- Total number of frames
+     ["frameRate"] = 24,  -- Suggested playback rate
+     ["width"] = 256,
+     ["height"] = 256
+   }
+   ```
+
+4. **Reload UI**: `/reload` to see your animation in the dropdown
+
+### Frame Naming Convention
+
+The addon expects specific naming:
+
+```
+frame001.tga, frame002.tga, ..., frame010.tga, frame011.tga, ...
+```
+
+Always use 3-digit numbers with leading zeros.
+
+## Performance Considerations
+
+<CardGroup cols={2}>
+  <Card title="Limit Active Animations" icon="layer-group">
+    Each stop motion aura updates textures frequently. Limit to 5-10 simultaneous animations.
+  </Card>
+  
+  <Card title="Lower Frame Rates" icon="clock">
+    30 FPS is usually smooth enough. 60 FPS doubles the update frequency.
+  </Card>
+  
+  <Card title="Use Load Conditions" icon="filter">
+    Only load stop motion auras when needed (in combat, in instances, etc.)
+  </Card>
+  
+  <Card title="Smaller Sizes" icon="compress">
+    Larger animations (512x512+) are more expensive than smaller ones (256x256).
+  </Card>
+</CardGroup>
+
+<Warning>
+Stop motion animations are more performance-intensive than static textures or icons. Use them strategically for important alerts.
+</Warning>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Stop Motion Not in Display Types">
+    **Cause:** Addon not installed or not enabled
+    
+    **Solution:**
+    - Check AddOns folder for `WeakAuras_StopMotion`
+    - Enable at character select screen
+    - `/reload` and check again
+  </Accordion>
+  
+  <Accordion title="Animation Not Playing">
+    **Possible Causes:**
+    - Trigger not active
+    - Animation speed set to 0
+    - End frame = Start frame
+    
+    **Solution:**
+    - Test trigger condition
+    - Set animation speed > 0
+    - Check frame range settings
+  </Accordion>
+  
+  <Accordion title="Animation Looks Wrong">
+    **Issues:**
+    - Stretched or squashed
+    - Wrong colors
+    - Choppy playback
+    
+    **Solution:**
+    - Adjust width/height to match animation ratio
+    - Check color/alpha settings
+    - Increase frame rate
+  </Accordion>
+  
+  <Accordion title="Custom Animation Not Showing">
+    **Checklist:**
+    - [ ] Frames in correct folder
+    - [ ] TGA format, not PNG
+    - [ ] Registered in Animations.lua
+    - [ ] Correct frame count
+    - [ ] `/reload` performed
+  </Accordion>
+</AccordionGroup>
+
+## Examples
+
+Pre-made examples included with the addon:
+
+### Rune Glow (Proc Alert)
+```
+Animation: Runes/RuneGlow
+Speed: 30 FPS
+Loop: Yes
+Blend: Add
+Use: Proc alerts, important buffs
+```
+
+### Pulse Glow (Cooldown Ready)
+```
+Animation: Glows/PulseGlow  
+Speed: 20 FPS
+Ping Pong: Yes
+Use: Cooldown indicators, attention-grabbing
+```
+
+### Arrow Indicator (Direction)
+```
+Animation: Arrows/AnimatedArrow
+Speed: 15 FPS
+Rotation: Dynamic
+Use: Directional cues, movement indicators
+```
+
+## Resources
+
+<CardGroup cols={3}>
+  <Card title="Download" icon="download" href="https://www.curseforge.com/wow/addons/weakauras-stop-motion">
+    Get the addon
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/WeakAuras/WeakAuras-StopMotion">
+    Source code
+  </Card>
+  <Card title="Animation Packs" icon="box" href="https://wago.io/weakauras/stopmotion">
+    Browse community animations
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Creating Auras" icon="wand-magic-sparkles" href="/development/creating-auras">
+    Learn aura basics
+  </Card>
+  <Card title="SharedMedia" icon="image" href="/development/extensions/shared-media">
+    More textures and fonts
+  </Card>
+  <Card title="WeakAuras Companion" icon="desktop" href="/development/extensions/weakauras-companion">
+    Manage your auras
+  </Card>
+</CardGroup>

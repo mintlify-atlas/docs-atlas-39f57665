@@ -1,0 +1,277 @@
+---
+title: Creating Custom Auras
+description: Learn how to create custom auras from scratch in WeakAuras WotLK
+icon: wand-magic-sparkles
+---
+
+WeakAuras allows you to create highly customizable displays to track buffs, debuffs, cooldowns, and other game information. This guide will walk you through the process of creating custom auras.
+
+## Opening WeakAuras
+
+To start creating auras, open the WeakAuras interface:
+
+- Type `/wa` or `/weakauras` in chat and press Enter
+- Click the WeakAuras minimap icon
+
+## Creating a New Aura
+
+### Using Templates
+
+The easiest way to create auras is using templates:
+
+1. Click the "New" button in the WeakAuras window
+2. Browse available templates organized by:
+   - **Class**: Templates specific to your class (abilities, buffs, procs)
+   - **General**: Universal templates (cooldowns, resources, alerts)
+   - **Encounters**: Boss-specific mechanics and timers
+3. Select a template and customize it to your needs
+
+See [Templates](/development/templates) for more details on using and customizing templates.
+
+### Creating from Scratch
+
+For full control, create a custom aura:
+
+1. Click "New" → "From Scratch"
+2. Choose a display type:
+   - **Icon**: Shows spell icons, can display cooldowns and stacks
+   - **Aura Bar**: Progress bar with icon and text
+   - **Progress Texture**: Animated texture that fills/drains
+   - **Text**: Display custom text information
+   - **Texture**: Static or animated textures
+   - **Group**: Container for organizing multiple auras
+   - **Dynamic Group**: Automatically arranges child auras
+
+## Configuring Display Settings
+
+### Display Tab
+
+Configure the visual appearance of your aura:
+
+<AccordionGroup>
+  <Accordion title="Icon Settings">
+    - **Icon Source**: Choose from spell, item, or custom texture
+    - **Size**: Width and height of the icon
+    - **Color**: Tint color and transparency
+    - **Cooldown**: Show/hide cooldown swipe
+    - **Stacks**: Display stack count position and styling
+  </Accordion>
+
+  <Accordion title="Aura Bar Settings">
+    - **Bar Texture**: Choose from SharedMedia textures
+    - **Bar Color**: Foreground and background colors
+    - **Icon Position**: Left, right, or hidden
+    - **Text**: Customize name and time displays
+    - **Orientation**: Horizontal or vertical
+  </Accordion>
+
+  <Accordion title="Text Settings">
+    - **Font**: Font face, size, and outline
+    - **Color**: Text color and transparency
+    - **Justification**: Left, center, or right alignment
+    - **Custom Code**: Use Lua for dynamic text
+  </Accordion>
+</AccordionGroup>
+
+### Position and Size
+
+- **Position**: X/Y coordinates or use drag-and-drop
+- **Frame Strata**: Rendering layer (Background to Tooltip)
+- **Anchoring**: Attach to screen regions or other frames
+
+## Setting Up Triggers
+
+Triggers determine when your aura is shown or hidden.
+
+### Trigger Types
+
+<CardGroup cols={2}>
+  <Card title="Aura" icon="sparkles">
+    Track buffs and debuffs on units
+  </Card>
+  <Card title="Status" icon="heart">
+    Monitor health, power, and resources
+  </Card>
+  <Card title="Spell Cooldown" icon="clock">
+    Track ability cooldowns
+  </Card>
+  <Card title="Combat Event" icon="bolt">
+    React to combat log events
+  </Card>
+  <Card title="Custom" icon="code">
+    Use Lua code for complex conditions
+  </Card>
+  <Card title="Item" icon="cube">
+    Track item cooldowns and counts
+  </Card>
+</CardGroup>
+
+### Basic Trigger Setup
+
+1. Select a **Trigger Type**
+2. Configure trigger-specific options:
+   - **Aura**: Unit, buff/debuff name, stack count
+   - **Cooldown**: Spell name or ID
+   - **Status**: Unit, stat type, comparison operator
+3. Set **Load Conditions** to optimize performance (see below)
+
+### Multiple Triggers
+
+Combine multiple conditions:
+
+1. Click "Add New Trigger"
+2. Set the **Activation Logic**:
+   - **All Triggers**: Require all conditions (AND)
+   - **Any Triggers**: Require at least one (OR)
+   - **Custom**: Use custom Lua logic (advanced)
+
+## Load Conditions
+
+Load conditions determine when WeakAuras should check your triggers, optimizing performance.
+
+### Common Load Conditions
+
+- **Class**: Only load for specific classes
+- **Specialization**: Only load in certain specs
+- **In Combat**: Only check during combat
+- **Instance Type**: Only in raids, dungeons, or open world
+- **Zone**: Specific zones or instances
+- **Level**: Player level requirements
+
+<Tip>
+Proper load conditions significantly improve performance. For example, a class-specific aura should have a class load condition.
+</Tip>
+
+## Animations
+
+Add visual feedback when auras show/hide:
+
+### Animation Types
+
+- **Start**: Plays when the aura appears
+- **Main**: Loops while aura is active
+- **Finish**: Plays when aura disappears
+
+### Animation Options
+
+- **Fade**: Fade in/out
+- **Slide**: Slide from a direction
+- **Zoom**: Grow or shrink
+- **Rotate**: Spin the display
+- **Custom**: Define custom animation paths
+
+## Actions
+
+Execute actions when trigger states change:
+
+### Action Types
+
+<AccordionGroup>
+  <Accordion title="On Init">
+    Runs once when the aura is loaded. Useful for setting up variables in `aura_env`.
+  </Accordion>
+
+  <Accordion title="On Show">
+    Runs when the aura becomes visible. Can play sounds, send messages, or run custom code.
+  </Accordion>
+
+  <Accordion title="On Hide">
+    Runs when the aura is hidden.
+  </Accordion>
+
+  <Accordion title="On Every Frame">
+    Runs every frame while active. **Use sparingly** - can impact performance.
+  </Accordion>
+</AccordionGroup>
+
+### Custom Actions
+
+Enable "Custom" to write Lua code:
+
+```lua
+-- Example: Play a sound when aura shows
+PlaySoundFile("Sound\\Interface\\AlarmClockWarning3.ogg")
+
+-- Example: Print to chat
+print("Buff active!")
+
+-- Example: Store data in aura_env
+aura_env.counter = (aura_env.counter or 0) + 1
+```
+
+See [Lua Scripting](/development/lua-scripting) for advanced custom code.
+
+## Organizing Auras
+
+### Groups
+
+Groups help organize related auras:
+
+1. Create a **Group** or **Dynamic Group**
+2. Drag auras onto the group to make them children
+3. Configure group layout:
+   - **Static Group**: Manual positioning
+   - **Dynamic Group**: Automatic grid or list layout
+
+### Naming and Icons
+
+Use clear names and icons to keep your auras organized:
+
+- Use descriptive names: "Warlock - Soul Shards" instead of "Aura 1"
+- Set custom icons in the "Information" section
+- Add notes to document complex configurations
+
+## Testing Your Aura
+
+<Steps>
+  <Step title="Verify the Trigger">
+    Check that the trigger condition actually fires in-game. Cast the spell, enter combat, or create the condition.
+  </Step>
+  
+  <Step title="Check Display Settings">
+    Ensure the aura is visible, properly positioned, and styled as intended.
+  </Step>
+  
+  <Step title="Test Load Conditions">
+    Verify the aura only loads when it should (correct spec, zone, etc.).
+  </Step>
+  
+  <Step title="Performance Check">
+    Use `/wa pstart` to profile your auras. Remove expensive triggers or use load conditions to reduce overhead.
+  </Step>
+</Steps>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Use Load Conditions" icon="check">
+    Always set appropriate load conditions to improve performance.
+  </Card>
+  <Card title="Specific Triggers" icon="bullseye">
+    Use specific spell IDs instead of spell names when possible.
+  </Card>
+  <Card title="Test Thoroughly" icon="vial">
+    Test auras in realistic scenarios before relying on them.
+  </Card>
+  <Card title="Document Complex Auras" icon="book">
+    Add notes explaining complicated trigger logic or custom code.
+  </Card>
+</CardGroup>
+
+<Warning>
+Avoid creating auras that check conditions every frame unless absolutely necessary. Use event-based triggers for better performance.
+</Warning>
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Templates" icon="layer-group" href="/development/templates">
+    Learn about using templates
+  </Card>
+  <Card title="Import/Export" icon="right-left" href="/development/importing-exporting">
+    Share auras with others
+  </Card>
+  <Card title="Lua Scripting" icon="code" href="/development/lua-scripting">
+    Advanced customization with Lua
+  </Card>
+</CardGroup>

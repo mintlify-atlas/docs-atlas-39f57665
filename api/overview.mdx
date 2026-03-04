@@ -1,0 +1,95 @@
+---
+title: 'API Overview'
+description: 'Introduction to the WeakAuras WotLK API'
+---
+
+## Introduction
+
+The WeakAuras API provides programmatic access to create, modify, and interact with auras in World of Warcraft: Wrath of the Lich King. This API allows addon developers and advanced users to extend WeakAuras functionality through custom code.
+
+## API Structure
+
+The WeakAuras API is organized into several main components:
+
+### Core API
+
+- **Functions**: Core WeakAuras functions for managing auras, regions, and triggers
+- **Events**: Event system and callback registration
+- **Tables**: Data structures and enumerations used throughout WeakAuras
+
+### Systems
+
+- **BuffTrigger**: System for handling buff and debuff triggers
+- **GenericTrigger**: Generic trigger system for events and conditions
+- **BossMods**: Integration with boss mod addons (DBM, BigWigs)
+
+### Region Types
+
+- **Prototype**: Base region methods inherited by all region types
+- **Icon**: Icon display regions
+- **Text**: Text display regions
+- **ProgressTexture**: Progress bar and circular progress regions
+- **Model**: 3D model display regions
+
+## Getting Started
+
+To use the WeakAuras API in your custom code:
+
+```lua
+-- Access the main WeakAuras table
+local WeakAuras = WeakAuras
+
+-- Access private functions and systems
+local Private = select(2, ...)
+
+-- Example: Get aura data
+local data = WeakAuras.GetData("MyAuraID")
+```
+
+## Common Use Cases
+
+### Custom Triggers
+
+Create custom triggers using the execution environment:
+
+```lua
+function()
+  -- Your custom trigger code
+  return true -- Show the aura
+end
+```
+
+### Custom Actions
+
+Execute custom code when an aura shows or hides:
+
+```lua
+-- On Show
+WeakAuras.ScanEvents("CUSTOM_EVENT", data)
+
+-- On Hide
+WeakAuras.prettyPrint("Aura hidden")
+```
+
+### Accessing Trigger State
+
+Access the current state of a trigger:
+
+```lua
+local triggerState = WeakAuras.GetTriggerStateForTrigger(id, triggernum)
+```
+
+## Version Information
+
+This API documentation is for WeakAuras WotLK (Wrath of the Lich King). The internal version can be checked using:
+
+```lua
+local version = WeakAuras.InternalVersion()
+```
+
+## Further Reading
+
+- [Core Functions](/api/functions) - Detailed function reference
+- [Event System](/api/events) - Event registration and callbacks
+- [Data Tables](/api/tables) - Data structures and tables
+- [Region Types](/api/regions/prototype) - Region API reference

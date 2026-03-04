@@ -1,0 +1,397 @@
+---
+title: Text Region
+description: API reference for WeakAuras Text region type
+---
+
+The Text region displays formatted text strings with support for dynamic replacement variables and custom formatting.
+
+## Region Type
+
+```lua
+regionType = "text"
+```
+
+## Default Configuration
+
+```lua
+local default = {
+  displayText = "%p",
+  outline = "OUTLINE",
+  color = {1, 1, 1, 1},
+  justify = "LEFT",
+  selfPoint = "BOTTOM",
+  anchorPoint = "CENTER",
+  anchorFrameType = "SCREEN",
+  xOffset = 0,
+  yOffset = 0,
+  font = defaultFont,
+  fontSize = defaultFontSize,
+  frameStrata = 1,
+  customTextUpdate = "event",
+  automaticWidth = "Auto",
+  fixedWidth = 200,
+  wordWrap = "WordWrap",
+  shadowColor = {0, 0, 0, 1},
+  shadowXOffset = 1,
+  shadowYOffset = -1
+}
+```
+
+## Functions
+
+### Color
+
+Sets the text color and alpha.
+
+```lua
+region:Color(r, g, b, a)
+```
+
+<ParamField path="r" type="number">
+  Red color component (0-1)
+</ParamField>
+
+<ParamField path="g" type="number">
+  Green color component (0-1)
+</ParamField>
+
+<ParamField path="b" type="number">
+  Blue color component (0-1)
+</ParamField>
+
+<ParamField path="a" type="number">
+  Alpha transparency (0-1)
+</ParamField>
+
+**Example:**
+```lua
+-- Set text to yellow
+region:Color(1, 1, 0, 1)
+```
+
+### ColorAnim
+
+Sets animated color values that override base color during animations.
+
+```lua
+region:ColorAnim(r, g, b, a)
+```
+
+<ParamField path="r" type="number">
+  Red color component (0-1)
+</ParamField>
+
+<ParamField path="g" type="number">
+  Green color component (0-1)
+</ParamField>
+
+<ParamField path="b" type="number">
+  Blue color component (0-1)
+</ParamField>
+
+<ParamField path="a" type="number">
+  Alpha transparency (0-1)
+</ParamField>
+
+### GetColor
+
+Returns the current text color values.
+
+```lua
+local r, g, b, a = region:GetColor()
+```
+
+<ResponseField name="r" type="number">
+  Red color component (0-1)
+</ResponseField>
+
+<ResponseField name="g" type="number">
+  Green color component (0-1)
+</ResponseField>
+
+<ResponseField name="b" type="number">
+  Blue color component (0-1)
+</ResponseField>
+
+<ResponseField name="a" type="number">
+  Alpha transparency (0-1)
+</ResponseField>
+
+### SetTextHeight
+
+Sets the font size of the text.
+
+```lua
+region:SetTextHeight(size)
+```
+
+<ParamField path="size" type="number">
+  Font size in points (max 33 for font object)
+</ParamField>
+
+**Example:**
+```lua
+-- Set font size to 16
+region:SetTextHeight(16)
+```
+
+### ChangeText
+
+Changes the displayed text string and reconfigures text updates.
+
+```lua
+region:ChangeText(msg)
+```
+
+<ParamField path="msg" type="string">
+  New text string with optional placeholders
+</ParamField>
+
+**Example:**
+```lua
+-- Change text with placeholders
+region:ChangeText("%n - %p")
+
+-- Static text
+region:ChangeText("Hello World")
+```
+
+### ConfigureTextUpdate
+
+Reconfigures how the text updates based on placeholders and custom text functions.
+
+```lua
+region:ConfigureTextUpdate()
+```
+
+### ConfigureSubscribers
+
+Subscribes or unsubscribes from frame tick events based on text configuration.
+
+```lua
+region:ConfigureSubscribers()
+```
+
+### Update
+
+Updates the text content and progress based on current state.
+
+```lua
+region:Update()
+```
+
+**Example:**
+```lua
+-- Force text update
+region:Update()
+```
+
+### FrameTick
+
+Called every frame when text contains dynamic time placeholders or custom text updates.
+
+```lua
+region:FrameTick()
+```
+
+## Properties
+
+Properties that can be dynamically changed via custom code or conditions.
+
+| Property | Type | Setter | Description |
+|----------|------|--------|-------------|
+| color | color | Color | RGBA text color |
+| fontSize | number | SetTextHeight | Font size in points |
+| displayText | string | ChangeText | Text to display |
+
+## Text Placeholders
+
+Text regions support various placeholder codes that are replaced dynamically:
+
+### Basic Placeholders
+
+- `%p` - Progress (formatted based on display settings)
+- `%t` - Total value
+- `%n` - Name (from state.name)
+- `%i` - Icon (inserts texture code)
+- `%s` - Stacks (from state.stacks)
+- `%c` - Custom text (from custom function)
+
+### Time Placeholders
+
+- `%p` - Time remaining (when duration is active)
+- `%t` - Total duration
+- `%e` - Expiration time
+
+### Custom Text Function
+
+For `%c` placeholder, define a custom function in the aura settings:
+
+```lua
+-- Custom text function
+function()
+  return "Custom: " .. UnitName("player")
+end
+```
+
+## Display Text Formatting
+
+The `displayText_format_*` options control how placeholders are formatted:
+
+```lua
+-- Format options for time display
+data.displayText_format_p_time_precision = 1 -- Decimal places
+data.displayText_format_p_time_dynamic = true -- Dynamic units
+data.displayText_format_p_time_format = "full" -- Format style
+```
+
+## Automatic Width Modes
+
+### Auto Width
+
+Text region automatically sizes to fit content:
+
+```lua
+data.automaticWidth = "Auto"
+```
+
+### Fixed Width
+
+Text wraps at specified width:
+
+```lua
+data.automaticWidth = "Fixed"
+data.fixedWidth = 200
+data.wordWrap = "WordWrap" -- or "NoWrap"
+```
+
+## Text Justification
+
+Control horizontal text alignment:
+
+```lua
+data.justify = "LEFT"   -- Left aligned
+data.justify = "CENTER" -- Centered
+data.justify = "RIGHT"  -- Right aligned
+```
+
+## Font Outline
+
+Control text outline for readability:
+
+```lua
+data.outline = "None"           -- No outline
+data.outline = "OUTLINE"        -- Normal outline
+data.outline = "THICKOUTLINE"   -- Thick outline
+data.outline = "MONOCHROME"     -- Monochrome rendering
+```
+
+## Shadow Settings
+
+Configure text shadow for depth:
+
+```lua
+data.shadowColor = {0, 0, 0, 1}  -- Shadow color (RGBA)
+data.shadowXOffset = 1            -- Horizontal shadow offset
+data.shadowYOffset = -1           -- Vertical shadow offset
+```
+
+## Code Examples
+
+### Dynamic Color Based on Value
+
+```lua
+-- In custom code trigger
+function()
+  local region = aura_env.region
+  local percent = region.state.value / region.state.total
+  
+  if percent > 0.75 then
+    region:Color(0, 1, 0, 1) -- Green
+  elseif percent > 0.25 then
+    region:Color(1, 1, 0, 1) -- Yellow
+  else
+    region:Color(1, 0, 0, 1) -- Red
+  end
+end
+```
+
+### Custom Formatted Text
+
+```lua
+-- Set complex formatted text
+function()
+  local region = aura_env.region
+  local name = UnitName("player")
+  local class = UnitClass("player")
+  
+  region:ChangeText(name .. "\n" .. class)
+end
+```
+
+### Multi-line Status Display
+
+```lua
+-- displayText with multiple lines
+data.displayText = "%n\nHP: %p\nMP: %t"
+```
+
+### Conditional Text Updates
+
+```lua
+-- Custom text update function
+data.customTextUpdate = "update" -- Update every frame
+data.customTextUpdateThrottle = 0.1 -- Throttle to 10 FPS
+
+-- Custom text function
+function()
+  local hp = UnitHealth("player")
+  local maxHp = UnitHealthMax("player")
+  return string.format("%.1f%%", (hp/maxHp)*100)
+end
+```
+
+### Countdown with Color
+
+```lua
+function()
+  local region = aura_env.region
+  if region.state and region.state.expirationTime then
+    local remaining = region.state.expirationTime - GetTime()
+    
+    -- Change color based on time remaining
+    if remaining > 10 then
+      region:Color(0, 1, 0, 1)
+    elseif remaining > 5 then
+      region:Color(1, 1, 0, 1)
+    else
+      region:Color(1, 0, 0, 1)
+    end
+    
+    -- Update text
+    region:ChangeText(string.format("%.1fs", remaining))
+  end
+end
+```
+
+### Raid Marker Symbols
+
+Text automatically converts raid marker codes:
+
+```lua
+-- These symbols are automatically replaced:
+-- {skull}, {cross}, {square}, {moon}, {triangle}, {diamond}, {circle}, {star}
+data.displayText = "{star} Tank {skull}"
+```
+
+## Font Loading
+
+Text regions use LibSharedMedia-3.0 for font management:
+
+```lua
+-- Font is loaded from SharedMedia
+local fontPath = SharedMedia:Fetch("font", data.font)
+region.text:SetFont(fontPath, fontSize, outline)
+```
+
+If a font fails to load, the region falls back to `STANDARD_TEXT_FONT`.

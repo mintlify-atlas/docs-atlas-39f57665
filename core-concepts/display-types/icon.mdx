@@ -1,0 +1,475 @@
+---
+title: "Icon Display"
+description: "Display icons with cooldown sweeps, stacks, and custom textures"
+icon: "image"
+---
+
+## Overview
+
+Icon displays are the most common display type, showing spell icons, textures, or custom images with optional cooldown animations, stack counts, and progress information.
+
+<Info>
+Icons support Masque skinning for integration with action bar addons.
+</Info>
+
+## Basic Icon Configuration
+
+```lua
+{
+  regionType = "icon",
+  width = 64,
+  height = 64,
+  icon = true,
+  iconSource = -1,  -- Automatic from trigger
+  desaturate = false,
+  zoom = 0,
+  color = {1, 1, 1, 1}
+}
+```
+
+## Icon Source
+
+<Tabs>
+  <Tab title="Automatic">
+    ```lua
+    {
+      iconSource = -1  -- Use icon from trigger state
+    }
+    ```
+    Automatically displays the spell/aura icon from trigger data.
+  </Tab>
+  
+  <Tab title="Manual">
+    ```lua
+    {
+      iconSource = 0,  -- Manual selection
+      displayIcon = "Interface\\\\Icons\\\\Spell_Holy_PowerWordShield"
+    }
+    ```
+    Use a specific texture path.
+  </Tab>
+  
+  <Tab title="Custom Function">
+    ```lua
+    -- Icon function in custom trigger
+    function()
+      local _, class = UnitClass("player")
+      return "Interface\\\\TargetingFrame\\\\UI-Classes-Circles"
+    end
+    ```
+  </Tab>
+</Tabs>
+
+## Dimensions and Position
+
+### Size
+
+```lua
+{
+  width = 64,
+  height = 64,
+  keepAspectRatio = false  -- Allow stretching
+}
+```
+
+<CardGroup cols={2}>
+  <Card title="Square Icons" icon="square">
+    Set width = height for standard square icons
+  </Card>
+  <Card title="Custom Ratios" icon="rectangle-wide">
+    Disable keepAspectRatio for custom dimensions
+  </Card>
+</CardGroup>
+
+### Positioning
+
+```lua
+{
+  selfPoint = "CENTER",
+  anchorPoint = "CENTER",
+  anchorFrameType = "SCREEN",
+  xOffset = 0,
+  yOffset = 0
+}
+```
+
+## Visual Effects
+
+### Desaturation
+
+```lua
+{
+  desaturate = true  -- Grayscale icon
+}
+```
+
+<Tip>
+Use desaturation with conditions to show cooldown state visually.
+</Tip>
+
+### Color Tinting
+
+```lua
+{
+  color = {1, 0, 0, 1}  -- Red tint (R, G, B, A)
+}
+```
+
+### Zoom
+
+```lua
+{
+  zoom = 0.3  -- Zoom in 30% (range 0-1)
+}
+```
+
+<Warning>
+High zoom values may crop the icon edges.
+</Warning>
+
+### Alpha/Opacity
+
+```lua
+{
+  alpha = 0.8  -- 80% opacity
+}
+```
+
+## Cooldown Sweep
+
+The iconic circular cooldown animation:
+
+```lua
+{
+  cooldown = true,         -- Enable cooldown display
+  cooldownEdge = false,    -- Smooth edge (vs. sharp)
+  inverse = false          -- Sweep direction
+}
+```
+
+### Cooldown Behavior
+
+<AccordionGroup>
+  <Accordion title="Automatic from Trigger" icon="wand-magic-sparkles">
+    ```lua
+    {
+      progressSource = {-1, ""}  -- Use trigger progress
+    }
+    ```
+    Cooldown automatically syncs with trigger duration/expirationTime.
+  </Accordion>
+  
+  <Accordion title="Manual Progress" icon="sliders">
+    ```lua
+    {
+      progressSource = {0, "auto", 50, 100}  -- value, total
+    }
+    ```
+    Set custom progress values.
+  </Accordion>
+  
+  <Accordion title="Inverse Direction" icon="rotate">
+    ```lua
+    {
+      inverse = true  -- Sweep opposite direction
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Masque Integration
+
+Icons work with Masque addon for skinning:
+
+```lua
+-- Masque is detected automatically
+-- Configure through Masque addon interface
+```
+
+<Info>
+Masque must be installed separately. WeakAuras registers icons as "WA_Aura" type.
+</Info>
+
+### Inner and Outer Regions
+
+For sub-region anchoring:
+
+```lua
+-- Anchor to inner area (inside icon border)
+{
+  anchorPoint = "INNER_CENTER"  
+}
+
+-- Anchor to outer area (outside icon)
+{
+  anchorPoint = "OUTER_TOPRIGHT"
+}
+```
+
+## Texture Coordinates
+
+For advanced texture manipulation:
+
+```lua
+-- Get texture coordinates with zoom
+local function GetTexCoord(region, texWidth, aspectRatio, xOffset, yOffset)
+  -- Returns: ULx, ULy, LLx, LLy, URx, URy, LRx, LRy
+end
+```
+
+## Sub-Regions
+
+Icons support various sub-regions:
+
+<CardGroup cols={2}>
+  <Card title="Text Overlays" icon="font">
+    Display text on the icon (stacks, name, etc.)
+  </Card>
+  <Card title="Glow Effects" icon="sparkles">
+    Add glow animations around the icon
+  </Card>
+  <Card title="Bar Overlays" icon="bars">
+    Overlay progress bars on the icon
+  </Card>
+  <Card title="Model Overlays" icon="cube">
+    Display 3D models on the icon
+  </Card>
+</CardGroup>
+
+## Common Patterns
+
+### Buff/Debuff Tracker
+
+```lua
+{
+  regionType = "icon",
+  width = 48,
+  height = 48,
+  iconSource = -1,  -- Auto from trigger
+  cooldown = true,
+  alpha = 1.0,
+  
+  -- Stack text sub-region
+  subRegions = {{
+    type = "subtext",
+    text_text = "%s",  -- Stack count
+    text_fontSize = 16
+  }}
+}
+```
+
+### Cooldown Monitor
+
+```lua
+{
+  regionType = "icon",
+  width = 64,
+  height = 64,
+  iconSource = -1,
+  cooldown = true,
+  cooldownEdge = false,
+  
+  -- Desaturate when on cooldown
+  conditions = {{
+    check = {
+      trigger = 1,
+      variable = "onCooldown",
+      op = "==",
+      value = 1
+    },
+    changes = {{
+      property = "desaturate",
+      value = true
+    }}
+  }}
+}
+```
+
+### Resource Indicator
+
+```lua
+{
+  regionType = "icon",
+  width = 48,
+  height = 48,
+  displayIcon = "Interface\\\\Icons\\\\Spell_Holy_InnerFire",
+  cooldown = false,  -- No cooldown sweep
+  
+  -- Color based on value
+  conditions = {{
+    check = {
+      trigger = 1,
+      variable = "value",
+      op = "<",
+      value = 20
+    },
+    changes = {{
+      property = "color",
+      value = {1, 0, 0, 1}  -- Red when low
+    }}
+  }}
+}
+```
+
+### Proc Notification
+
+```lua
+{
+  regionType = "icon",
+  width = 96,
+  height = 96,
+  iconSource = -1,
+  zoom = 0.1,
+  
+  -- Animations
+  animation = {
+    start = {
+      type = "preset",
+      preset = "grow",
+      duration = 0.2
+    },
+    main = {
+      type = "preset",
+      preset = "pulse"
+    }
+  }
+}
+```
+
+## Properties Reference
+
+### Modifiable via Conditions
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `desaturate` | boolean | Grayscale effect |
+| `width` | number | Icon width in pixels |
+| `height` | number | Icon height in pixels |
+| `color` | color | RGBA color tint |
+| `inverse` | boolean | Reverse cooldown direction |
+| `zoom` | number | Zoom level (0-1) |
+| `iconSource` | list | Icon source selection |
+| `displayIcon` | icon | Manual icon path |
+| `cooldownEdge` | boolean | Smooth cooldown edge |
+
+## Advanced Techniques
+
+### Custom Icon Function
+
+```lua
+-- In custom trigger
+function icon()
+  local health = UnitHealth("player")
+  local maxHealth = UnitHealthMax("player")
+  local percent = (health / maxHealth) * 100
+  
+  if percent < 25 then
+    return "Interface\\\\Icons\\\\Spell_ChargeNegative"
+  elseif percent < 50 then
+    return "Interface\\\\Icons\\\\Spell_ChargeNeutral"
+  else
+    return "Interface\\\\Icons\\\\Spell_ChargePositive"
+  end
+end
+```
+
+### Dynamic Zoom
+
+```lua
+-- Condition: Zoom based on stacks
+{
+  check = {
+    trigger = 1,
+    variable = "stacks",
+    op = ">=",
+    value = 5
+  },
+  changes = {{
+    property = "zoom",
+    value = 0.2  -- Zoom when stacked
+  }}
+}
+```
+
+### Texture Rotation
+
+Icons support rotation via animations:
+
+```lua
+{
+  animation = {
+    main = {
+      type = "custom",
+      use_rotate = true,
+      rotate = 360,
+      duration_type = "seconds",
+      duration = 2
+    }
+  }
+}
+```
+
+## Performance Considerations
+
+<AccordionGroup>
+  <Accordion title="Icon Updates" icon="rotate">
+    Icons only update when state changes. Avoid FRAME_UPDATE triggers unless necessary.
+  </Accordion>
+  
+  <Accordion title="Texture Loading" icon="image">
+    Custom textures are loaded once and cached. Use consistent paths.
+  </Accordion>
+  
+  <Accordion title="Cooldown Animation" icon="clock">
+    Cooldown sweeps use native WoW cooldown frames for efficiency.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Icon Not Showing" icon="eye-slash">
+    - Verify iconSource is set correctly
+    - Check texture path is valid
+    - Ensure trigger provides icon data if using auto
+    - Check alpha is not 0
+  </Accordion>
+  
+  <Accordion title="Cooldown Not Working" icon="clock">
+    - Enable `cooldown = true`
+    - Verify progressSource is configured
+    - Check trigger provides duration/expirationTime
+    - Ensure progressType is "timed"
+  </Accordion>
+  
+  <Accordion title="Wrong Aspect Ratio" icon="expand">
+    - Adjust width/height to match
+    - Enable keepAspectRatio if desired
+    - Check zoom level
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CheckGroup>
+  - <Check>Use spell IDs for automatic icon detection</Check>
+  - <Check>Set appropriate size for visibility</Check>
+  - <Check>Use conditions for dynamic color changes</Check>
+  - <Check>Enable cooldown for timed effects</Check>
+  - <Check>Add stack text sub-regions when relevant</Check>
+  - <Check>Test with Masque if using icon skins</Check>
+</CheckGroup>
+
+## Related Topics
+
+<CardGroup cols={3}>
+  <Card title="Progress Bar" icon="bars" href="/core-concepts/display-types/progress-bar">
+    Alternative display for progress
+  </Card>
+  <Card title="Text Display" icon="font" href="/core-concepts/display-types/text">
+    Add text overlays
+  </Card>
+  <Card title="Animations" icon="wand-magic-sparkles" href="/core-concepts/animations">
+    Animate icon displays
+  </Card>
+</CardGroup>

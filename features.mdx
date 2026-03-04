@@ -1,0 +1,455 @@
+---
+title: Features
+description: Comprehensive overview of WeakAuras features for WotLK 3.3.5a
+---
+
+## Core Features
+
+WeakAuras provides a comprehensive set of features designed to enhance your WotLK gaming experience while maintaining optimal performance.
+
+### Intuitive Configuration Interface
+
+The WeakAuras interface is designed to be both powerful and accessible:
+
+- **Visual Editor**: Drag-and-drop positioning with real-time preview
+- **Organized Tabs**: Trigger, Display, Load, Actions, Animations, and Conditions
+- **Search & Filter**: Quickly find auras in large collections
+- **Group Management**: Organize related displays together
+- **Import/Export**: Share auras with the community via encoded strings
+
+<Tip>
+  Access the interface with `/wa` or click the minimap icon
+</Tip>
+
+## Display Types
+
+WeakAuras supports multiple region types for different visualization needs:
+
+<AccordionGroup>
+  <Accordion title="Icon" icon="image">
+    Display circular or square icons with textures, cooldown swirls, and stacks.
+    
+    **Perfect for:**
+    - Buff/debuff tracking
+    - Cooldown monitoring
+    - Proc notifications
+    
+    **Features:**
+    - Custom textures or spell icons
+    - Cooldown sweep animations
+    - Stack count display
+    - Desaturation when inactive
+  </Accordion>
+  
+  <Accordion title="Progress Bar (Aura Bar)" icon="bars-progress">
+    Horizontal or vertical bars that fill based on duration or value.
+    
+    **Perfect for:**
+    - Buff/debuff timers
+    - Resource tracking (health, mana)
+    - Cast bars
+    
+    **Features:**
+    - Custom bar textures via SharedMedia
+    - Foreground/background colors
+    - Text overlays (time remaining, name)
+    - Spark indicator
+  </Accordion>
+  
+  <Accordion title="Text" icon="font">
+    Customizable text displays with dynamic content.
+    
+    **Perfect for:**
+    - Numeric values (DPS, health)
+    - Status messages
+    - Timer countdowns
+    
+    **Features:**
+    - Custom fonts via SharedMedia
+    - Color coding
+    - Text formatting options
+    - Shadow and outline effects
+  </Accordion>
+  
+  <Accordion title="Texture" icon="paintbrush">
+    Display custom textures with rotation and animation.
+    
+    **Perfect for:**
+    - Directional indicators
+    - Custom shapes
+    - Decorative elements
+    
+    **Features:**
+    - All Power Auras textures included
+    - Blizzard spell alert textures
+    - Rotation and scaling
+    - Progress texture support
+  </Accordion>
+  
+  <Accordion title="Progress Texture" icon="chart-pie">
+    Textures that fill based on progress (circular or linear).
+    
+    **Perfect for:**
+    - Circular cooldown indicators
+    - Radial progress displays
+    
+    **Features:**
+    - Multiple fill directions
+    - Custom textures
+    - Smooth animations
+  </Accordion>
+  
+  <Accordion title="Model" icon="cube">
+    3D model displays with animations.
+    
+    **Perfect for:**
+    - Special effects
+    - NPC/creature indicators
+    - Unique visual alerts
+    
+    **Features:**
+    - Any WoW model file
+    - Animation control
+    - Model customization
+  </Accordion>
+  
+  <Accordion title="Group" icon="layer-group">
+    Container for organizing multiple displays.
+    
+    **Perfect for:**
+    - Multi-aura setups
+    - Organized layouts
+    
+    **Features:**
+    - Horizontal/vertical/circular/grid layouts
+    - Dynamic groups (child creation)
+    - Sorting options
+    - Spacing and alignment
+  </Accordion>
+  
+  <Accordion title="Dynamic Group" icon="grid">
+    Automatically creates child displays based on triggers.
+    
+    **Perfect for:**
+    - Multi-target tracking
+    - Party/raid frames
+    - Dynamic buff tracking
+    
+    **Features:**
+    - Automatic child creation/removal
+    - Sorting and filtering
+    - Custom child triggers
+  </Accordion>
+</AccordionGroup>
+
+## Trigger System
+
+The heart of WeakAuras is its flexible trigger system:
+
+### Built-in Trigger Types
+
+<CardGroup cols={2}>
+  <Card title="Auras" icon="sparkles">
+    Track buffs and debuffs on any unit with advanced filtering
+    
+    - Buff/Debuff type
+    - Stacks, duration, caster
+    - Spell name or ID
+    - Enchants (weapon)
+  </Card>
+  
+  <Card title="Status" icon="heart">
+    Monitor unit health, power, and resources
+    
+    - Health/power values
+    - Mana, rage, energy
+    - Runes (Death Knight)
+    - Soul Shards, Holy Power
+  </Card>
+  
+  <Card title="Combat" icon="swords">
+    React to combat events and spell casts
+    
+    - COMBAT_LOG events
+    - Spell damage/healing
+    - Deaths
+    - Interrupts
+  </Card>
+  
+  <Card title="Cooldowns" icon="clock">
+    Track spell and item cooldowns
+    
+    - Spell cooldowns
+    - Item cooldowns
+    - GCD tracking
+  </Card>
+  
+  <Card title="Items" icon="bag-shopping">
+    Monitor inventory and equipment
+    
+    - Item count
+    - Equipped items
+    - Item usability
+  </Card>
+  
+  <Card title="Totems" icon="fire">
+    Track active totems (Shaman)
+    
+    - Totem presence
+    - Duration
+    - Totem type
+  </Card>
+  
+  <Card title="Boss Mods" icon="dragon">
+    Integration with DBM and BigWigs
+    
+    - Boss ability timers
+    - Raid warnings
+    - Stage changes
+  </Card>
+  
+  <Card title="Custom" icon="code">
+    Lua-based custom triggers
+    
+    - Full API access
+    - Custom logic
+    - Unlimited flexibility
+  </Card>
+</CardGroup>
+
+### Advanced Trigger Features
+
+<Steps>
+  <Step title="Multiple Triggers">
+    Combine up to 9 triggers with AND/OR/custom logic
+  </Step>
+  
+  <Step title="Trigger Conditions">
+    Add conditions to refine when triggers activate
+  </Step>
+  
+  <Step title="Unit Selection">
+    Choose from player, target, focus, party, raid, boss, and more
+  </Step>
+  
+  <Step title="Clone Behavior">
+    Create multiple displays for multiple units or auras
+  </Step>
+</Steps>
+
+## Animation System
+
+Bring your displays to life with powerful animations:
+
+### Preset Animations
+
+- **Main**: Entrance animation when display appears
+- **Finish**: Exit animation when display disappears  
+- **Start**: Animation at trigger activation
+
+### Animation Types
+
+<Tabs>
+  <Tab title="Transformations">
+    - Fade In/Out
+    - Slide (any direction)
+    - Zoom In/Out
+    - Rotate
+  </Tab>
+  
+  <Tab title="Custom">
+    - Custom animation paths
+    - Bezier curves
+    - Sequential animations
+    - Loop options
+  </Tab>
+</Tabs>
+
+## Conditions System
+
+Dynamically change display properties based on conditions:
+
+```lua
+-- Example: Change color based on duration
+if duration < 5 then
+  return {1, 0, 0, 1} -- Red
+else
+  return {0, 1, 0, 1} -- Green
+end
+```
+
+**Customizable Properties:**
+- Color
+- Size (width/height)
+- Position (x/y)
+- Alpha (transparency)
+- Text
+- Texture
+- And more...
+
+## Load Conditions
+
+Optimize performance by loading displays only when needed:
+
+<AccordionGroup>
+  <Accordion title="Player Conditions">
+    - Class, spec, race
+    - Talent tree
+    - Level range
+    - Equipment set
+  </Accordion>
+  
+  <Accordion title="Encounter Conditions">
+    - In combat
+    - Instance type (raid, dungeon, arena)
+    - Specific zone or boss
+    - Difficulty
+  </Accordion>
+  
+  <Accordion title="Group Conditions">
+    - In party/raid
+    - Group size
+    - Group role
+  </Accordion>
+  
+  <Accordion title="Other Conditions">
+    - Mounted/unmounted
+    - Stealthed
+    - Vehicle
+    - PvP flagged
+  </Accordion>
+</AccordionGroup>
+
+## Actions & Side Effects
+
+Trigger actions when displays show or hide:
+
+- **Chat Messages**: Announce procs or warnings
+- **Sounds**: Play custom sounds (with SharedMedia support)
+- **Custom Code**: Execute Lua on show/hide
+- **Glow**: Highlight action buttons or frames
+- **Text-to-Speech**: Spoken alerts (with Awesome WotLK)
+
+## Grouping & Organization
+
+<CardGroup cols={2}>
+  <Card title="Static Groups" icon="folder">
+    Manually organize displays with fixed layouts
+    
+    - Position children together
+    - Shared anchoring
+    - Bulk configuration
+  </Card>
+  
+  <Card title="Dynamic Groups" icon="grid-2">
+    Automatically create children based on triggers
+    
+    - Multi-target tracking
+    - Sorting options
+    - Custom/ascending/descending
+  </Card>
+</CardGroup>
+
+## Performance Optimizations
+
+WeakAuras is built with performance in mind:
+
+<Check>**Conditional Loading**: Only load displays when needed based on class, spec, zone, etc.</Check>
+<Check>**Modular Design**: Efficient code organization minimizes overhead</Check>
+<Check>**Smart Event Registration**: Only listen to events actually used by your displays</Check>
+<Check>**Prevention of Full Aura Scanning**: Optimized buff/debuff checking</Check>
+<Check>**CPU Profiling**: Built-in profiling to identify performance issues</Check>
+
+```lua
+-- WeakAuras internal version tracking
+local internalVersion = 87
+```
+
+## Customization for Lua Users
+
+Advanced users can leverage Lua for unlimited possibilities:
+
+### Custom Triggers
+
+```lua
+-- Example: Custom health percentage trigger
+function()
+  local health = UnitHealth("player")
+  local maxHealth = UnitHealthMax("player")
+  local percent = (health / maxHealth) * 100
+  
+  if percent < 30 then
+    return true, percent
+  else
+    return false
+  end
+end
+```
+
+### On Show/Hide Code
+
+```lua
+-- Example: Play sound and announce
+PlaySoundFile("Sound\\Interface\\RaidWarning.wav")
+SendChatMessage("Bloodlust active!", "RAID")
+```
+
+### Custom Animation Paths
+
+```lua
+-- Example: Circular motion
+function(progress, start, delta)
+  local angle = progress * 2 * math.pi
+  local x = math.cos(angle) * 100
+  local y = math.sin(angle) * 100
+  return start + x, start + y
+end
+```
+
+## Integration & Extensions
+
+WeakAuras works seamlessly with popular addons:
+
+<CardGroup cols={3}>
+  <Card title="SharedMedia" icon="palette">
+    Access thousands of custom fonts, textures, and sounds
+  </Card>
+  
+  <Card title="DBM / BigWigs" icon="dragon">
+    Boss mod integration for raid mechanics
+  </Card>
+  
+  <Card title="Masque" icon="mask">
+    Skinning support for action button glows
+  </Card>
+  
+  <Card title="GTFO" icon="triangle-exclamation">
+    Enhanced alerts for avoidable damage
+  </Card>
+  
+  <Card title="CustomNames" icon="id-card">
+    Custom unit name support
+  </Card>
+  
+  <Card title="AwesomeCVar" icon="wrench">
+    Enable advanced client features
+  </Card>
+</CardGroup>
+
+<Note>
+  See the [Client Extensions](/client-extensions) page for information about Large Address Aware and Awesome WotLK patches that unlock additional functionality.
+</Note>
+
+## Next Steps
+
+Ready to experience these features firsthand?
+
+<CardGroup cols={2}>
+  <Card title="Install WeakAuras" href="/installation" icon="download">
+    Get started with the installation guide
+  </Card>
+  
+  <Card title="Create Your First Aura" href="/quickstart" icon="rocket">
+    Follow the quick start tutorial
+  </Card>
+</CardGroup>

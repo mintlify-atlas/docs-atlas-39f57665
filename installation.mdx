@@ -1,0 +1,417 @@
+---
+title: Installation
+description: Step-by-step guide to installing WeakAuras for WotLK 3.3.5a
+---
+
+## Prerequisites
+
+Before installing WeakAuras, ensure you have:
+
+<Check>World of Warcraft: Wrath of the Lich King (3.3.5a) installed</Check>
+<Check>Access to your WoW installation directory</Check>
+<Check>Ability to extract ZIP archives</Check>
+
+<Note>
+  WeakAuras is compatible with all WotLK 3.3.5a clients, including popular private server distributions.
+</Note>
+
+## Installation Methods
+
+Choose your preferred installation method:
+
+<Tabs>
+  <Tab title="Manual Installation (Recommended)">
+    ### Step 1: Download WeakAuras
+    
+    Download the latest version from GitHub:
+    
+    <Card href="https://github.com/NoM0Re/WeakAuras-WotLK/archive/refs/heads/master.zip" icon="download">
+      Download WeakAuras WotLK (master.zip)
+    </Card>
+    
+    ### Step 2: Extract the Archive
+    
+    1. Locate the downloaded `WeakAuras-WotLK-master.zip` file
+    2. Extract the archive using your preferred tool (WinRAR, 7-Zip, etc.)
+    3. Open the extracted `WeakAuras-WotLK-master` folder
+    
+    ### Step 3: Install to AddOns Directory
+    
+    1. Navigate to your WoW installation directory
+    2. Open the `Interface\AddOns` folder
+    3. Copy **all folders** from the extracted archive to `Interface\AddOns`
+    
+    <Warning>
+      Make sure to copy the **folders inside** `WeakAuras-WotLK-master`, not the master folder itself!
+    </Warning>
+    
+    You should have these folders in your AddOns directory:
+    
+    ```bash Directory Structure
+    Interface/
+    └── AddOns/
+        ├── WeakAuras/
+        ├── WeakAurasOptions/
+        ├── WeakAurasModelPaths/
+        ├── WeakAurasTemplates/
+        ├── WeakAurasCompanion/
+        └── WeakAurasArchive/
+    ```
+    
+    ### Step 4: Verify Installation
+    
+    1. Launch World of Warcraft
+    2. At the character selection screen, click **AddOns** (bottom-left)
+    3. Verify that **WeakAuras** appears in the list and is checked
+    4. Load into the game
+    
+    <Tip>
+      Type `/wa` in chat to open the WeakAuras configuration window and confirm successful installation.
+    </Tip>
+  </Tab>
+  
+  <Tab title="Git Clone (For Developers)">
+    ### Clone the Repository
+    
+    If you're familiar with Git and want to keep WeakAuras updated easily:
+    
+    ```bash Clone with Git
+    cd "path/to/WoW/Interface/AddOns"
+    git clone https://github.com/NoM0Re/WeakAuras-WotLK.git
+    ```
+    
+    ### Update the Repository
+    
+    ```bash Pull Latest Changes
+    cd "path/to/WoW/Interface/AddOns/WeakAuras-WotLK"
+    git pull origin master
+    ```
+    
+    <Note>
+      When using Git, the folders will be inside the `WeakAuras-WotLK` directory. You may need to symlink or move them to the AddOns folder.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Addon Components
+
+WeakAuras consists of multiple addon components:
+
+<AccordionGroup>
+  <Accordion title="WeakAuras (Core)" icon="shield-halved" defaultOpen>
+    **Required** - The main addon containing all core functionality.
+    
+    **File**: `WeakAuras.toc`
+    
+    ```lua WeakAuras.toc
+    ## Interface: 30300
+    ## Title: WeakAuras
+    ## Author: The WeakAuras Team
+    ## Version: 5.21.2
+    ## Notes: A powerful, comprehensive utility for displaying graphics
+    ##        and information based on buffs, debuffs, and other triggers.
+    ```
+    
+    This component includes:
+    - Core engine and display system
+    - Trigger system (buffs, cooldowns, combat events)
+    - Region types (icons, bars, text, models)
+    - Animation and condition systems
+    - Performance optimizations
+  </Accordion>
+  
+  <Accordion title="WeakAurasOptions" icon="sliders">
+    **Required** - The configuration interface.
+    
+    Provides the powerful GUI for:
+    - Creating and editing auras
+    - Managing groups
+    - Importing/exporting
+    - Trigger configuration
+    - Display customization
+    
+    <Note>
+      This addon is loaded on demand when you type `/wa`
+    </Note>
+  </Accordion>
+  
+  <Accordion title="WeakAurasModelPaths" icon="cube">
+    **Required** - Model file path database.
+    
+    Contains paths to WoW model files for:
+    - 3D model displays
+    - Model selection in the configuration UI
+    - Custom model animations
+  </Accordion>
+  
+  <Accordion title="WeakAurasTemplates" icon="clone">
+    **Required** - Pre-made aura templates.
+    
+    Includes templates for:
+    - Class abilities
+    - Common buffs/debuffs
+    - Cooldown tracking
+    - Resource monitoring
+    
+    <Tip>
+      Templates are a great starting point for creating your own auras!
+    </Tip>
+  </Accordion>
+  
+  <Accordion title="WeakAurasCompanion" icon="handshake">
+    **Optional** - Wago.io integration.
+    
+    Enables:
+    - Automatic aura updates from Wago.io
+    - One-click imports
+    - Version checking
+    
+    <Info>
+      Automatically enabled by WeakAuras. Works with the [WeakAuras Companion App](https://weakauras.wtf).
+    </Info>
+  </Accordion>
+  
+  <Accordion title="WeakAurasArchive" icon="box-archive">
+    **Optional** - Aura storage and backup.
+    
+    Provides:
+    - Local aura storage
+    - Version history
+    - Backup functionality
+    
+    <Info>
+      Automatically enabled by WeakAuras.
+    </Info>
+  </Accordion>
+</AccordionGroup>
+
+## Dependencies & Optional Addons
+
+WeakAuras has several optional dependencies that enhance functionality:
+
+### Included Libraries
+
+These libraries are embedded in WeakAuras:
+
+<Tabs>
+  <Tab title="Core Libraries">
+    - **LibStub**: Library management
+    - **CallbackHandler-1.0**: Event handling
+    - **AceTimer-3.0**: Timer management
+    - **AceSerializer-3.0**: Data serialization
+    - **AceComm-3.0**: Network communication
+  </Tab>
+  
+  <Tab title="Feature Libraries">
+    - **LibSharedMedia-3.0**: Font/texture/sound library
+    - **LibCompress**: Data compression
+    - **LibDeflate**: Deflate compression
+    - **LibSerialize**: Object serialization
+  </Tab>
+  
+  <Tab title="Specialized Libraries">
+    - **LibSpellRange-1.0**: Extended spell range checking
+    - **LibRangeCheck-2.0**: Unit range detection
+    - **LibCustomGlow-1.0**: Custom glow effects
+    - **LibGetFrame-1.0**: Frame detection
+    - **LibGroupTalents-1.0**: Inspect group talents
+    - **LibDBIcon-1.0**: Minimap icon
+  </Tab>
+</Tabs>
+
+### Recommended Optional Addons
+
+<CardGroup cols={2}>
+  <Card title="SharedMedia" icon="palette" href="https://github.com/NoM0Re/SharedMedia">
+    Adds more bar textures and fonts (retail version)
+    
+    **Alternative**: [bKader Shared Media](https://github.com/bkader/SharedMedia) (popular WotLK version)
+  </Card>
+  
+  <Card title="SharedMediaAdditionalFonts" icon="font" href="https://github.com/NoM0Re/SharedMediaAdditionalFonts">
+    Expands available font library for text displays
+  </Card>
+  
+  <Card title="WeakAuras_StopMotion" icon="film" href="https://www.curseforge.com/wow/addons/weakauras-stop-motion">
+    Adds stop motion animation region type
+  </Card>
+  
+  <Card title="ColorPickerAdvanced" icon="eye-dropper">
+    Enhanced color picker with class templates and copy/paste
+    
+    [Download from Google Drive](https://drive.google.com/file/d/1ymNYizWp2TxIS1a6hLg7bT9YoJ3E-8Na/view?usp=sharing)
+  </Card>
+  
+  <Card title="MerfinPlus" icon="music">
+    Predefined TTS, sounds, status bars, fonts and more
+    
+    [Download from Google Drive](https://drive.google.com/file/d/1xDCpDpStRbXdSBKYOeZHpYBt_dRDqb3g/view?usp=sharing)
+  </Card>
+</CardGroup>
+
+### Boss Mods (Highly Recommended)
+
+<Tabs>
+  <Tab title="DBM (Deadly Boss Mods)">
+    Industry-standard boss mod for WotLK raids and dungeons.
+    
+    **Integration Features:**
+    - Boss ability timers as triggers
+    - Phase change detection
+    - Raid warning integration
+    
+    <Check>Requires DBM-Core with revision >= 20250929200404</Check>
+  </Tab>
+  
+  <Tab title="BigWigs">
+    Alternative boss mod with excellent WotLK support.
+    
+    **Integration Features:**
+    - Boss encounter triggers
+    - Custom bar integration
+    - Emphasis integration
+  </Tab>
+</Tabs>
+
+## Post-Installation Setup
+
+### First Launch
+
+<Steps>
+  <Step title="Open WeakAuras">
+    Type `/wa` or `/weakauras` in chat, or click the minimap icon
+  </Step>
+  
+  <Step title="Configure Settings">
+    Click the **Options** button (gear icon) to configure:
+    - Frame strata
+    - Tooltip behavior  
+    - Minimap icon position
+    - Update checking
+  </Step>
+  
+  <Step title="Test Installation">
+    Create a simple test aura:
+    1. Click **New**
+    2. Select **Icon** type
+    3. Choose **Status** > **Health**
+    4. Click **Done**
+    
+    You should see an icon appear showing your health status!
+  </Step>
+</Steps>
+
+### Minimap Icon
+
+The WeakAuras minimap icon provides quick access:
+
+- **Left-click**: Open configuration window
+- **Right-click**: Quick options menu
+- **Drag**: Reposition around minimap
+
+<Tip>
+  You can hide the minimap icon in the WeakAuras options if you prefer using `/wa` command.
+</Tip>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="WeakAuras doesn't appear in AddOns list" icon="triangle-exclamation">
+    **Possible causes:**
+    - Folders not in correct location
+    - TOC file missing or corrupted
+    - Wrong WoW version
+    
+    **Solutions:**
+    1. Verify folders are in `Interface\AddOns` (not in a subfolder)
+    2. Check that `WeakAuras.toc` exists in the `WeakAuras` folder
+    3. Ensure you're running WotLK 3.3.5a (Interface: 30300)
+  </Accordion>
+  
+  <Accordion title="Error: 'Missing library' messages" icon="triangle-exclamation">
+    **Possible causes:**
+    - Incomplete installation
+    - Corrupted download
+    - Conflicting addon
+    
+    **Solutions:**
+    1. Re-download and extract the full archive
+    2. Ensure all WeakAuras folders are present
+    3. Disable other addons temporarily to test
+    4. Check the in-game error message for specific library name
+  </Accordion>
+  
+  <Accordion title="/wa command doesn't work" icon="triangle-exclamation">
+    **Possible causes:**
+    - WeakAurasOptions not installed
+    - Lua error preventing load
+    
+    **Solutions:**
+    1. Verify `WeakAurasOptions` folder exists
+    2. Check for Lua errors (install BugSack addon to view)
+    3. Try `/reload` to refresh the UI
+  </Accordion>
+  
+  <Accordion title="Performance issues or lag" icon="triangle-exclamation">
+    **Possible causes:**
+    - Too many active displays
+    - Inefficient custom triggers
+    - Memory limitations
+    
+    **Solutions:**
+    1. Use load conditions to limit when auras are active
+    2. Apply the [Large Address Aware](/client-extensions#large-address-aware) patch
+    3. Review custom code for performance issues
+    4. Disable unnecessary auras
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  If you encounter errors about missing libraries like `LibStub`, `LibSharedMedia-3.0`, or others, ensure you've copied **all folders** from the download, not just the WeakAuras folder.
+</Warning>
+
+## Updating WeakAuras
+
+To update to a newer version:
+
+<Steps>
+  <Step title="Backup Your Auras">
+    Your auras are saved in `WTF\Account\[AccountName]\SavedVariables\WeakAuras.lua`
+    
+    Make a backup copy before updating!
+  </Step>
+  
+  <Step title="Download New Version">
+    Download the latest release from GitHub
+  </Step>
+  
+  <Step title="Replace Folders">
+    Delete old WeakAuras folders and install new ones following the installation steps
+  </Step>
+  
+  <Step title="Test In-Game">
+    Launch WoW and verify all auras work correctly
+  </Step>
+</Steps>
+
+<Info>
+  WeakAuras automatically handles data migration when updating. Your saved auras will be preserved.
+</Info>
+
+## Next Steps
+
+Now that WeakAuras is installed, you're ready to start creating auras!
+
+<CardGroup cols={2}>
+  <Card title="Quick Start Guide" href="/quickstart" icon="rocket">
+    Create your first aura in minutes
+  </Card>
+  
+  <Card title="Client Extensions" href="/client-extensions" icon="wrench">
+    Enhance performance and unlock features
+  </Card>
+</CardGroup>
+
+<Tip>
+  Join the [Discord community](https://discord.gg/UXSc7nt) for help with installation issues or general support!
+</Tip>

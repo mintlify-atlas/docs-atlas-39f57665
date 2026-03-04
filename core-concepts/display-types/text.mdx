@@ -1,0 +1,479 @@
+---
+title: "Text Display"
+description: "Display dynamic text with custom formatting, fonts, and animations"
+icon: "font"
+---
+
+## Overview
+
+Text displays show customizable text using format strings, custom fonts, and dynamic content from trigger states. They're perfect for names, values, custom messages, and formatted information.
+
+<Info>
+Text displays support dynamic placeholders that update automatically based on trigger state.
+</Info>
+
+## Basic Configuration
+
+```lua
+{
+  regionType = "text",
+  displayText = "%n",  -- Show trigger name
+  font = "Friz Quadrata TT",
+  fontSize = 16,
+  color = {1, 1, 1, 1},
+  justify = "LEFT",
+  
+  selfPoint = "BOTTOM",
+  anchorPoint = "CENTER",
+  xOffset = 0,
+  yOffset = 0
+}
+```
+
+## Text Content
+
+### Format Placeholders
+
+<Tabs>
+  <Tab title="Common">
+    ```lua
+    %n  -- Trigger name (spell/aura name)
+    %i  -- Icon path
+    %s  -- Stack count
+    %t  -- Total value
+    %c  -- Current value
+    %p  -- Progress (remaining time or value/total)
+    ```
+  </Tab>
+  
+  <Tab title="Time">
+    ```lua
+    %p  -- Time remaining (formatted)
+    %duration  -- Full duration
+    %expirationTime  -- Expiration timestamp
+    %initialTime  -- When trigger activated
+    %refreshTime  -- When trigger refreshed
+    ```
+  </Tab>
+  
+  <Tab title="Unit">
+    ```lua
+    %u  -- Unit name
+    %GUID  -- Unit GUID
+    %unitName  -- Formatted unit name
+    %casterName  -- Who cast the spell/aura
+    ```
+  </Tab>
+  
+  <Tab title="Custom">
+    ```lua
+    %c  -- Custom value from customText function
+    -- Define customText function in trigger
+    ```
+  </Tab>
+</Tabs>
+
+### Custom Text Function
+
+```lua
+-- Custom Text field in trigger
+function()
+  local health = UnitHealth("player")
+  local maxHealth = UnitHealthMax("player")
+  local percent = floor((health / maxHealth) * 100)
+  return percent .. "%"
+end
+
+-- Display Text
+displayText = "Health: %c"
+```
+
+<Tip>
+Use `customTextUpdate = "update"` to refresh custom text every frame for dynamic values.
+</Tip>
+
+## Font Configuration
+
+### Font Selection
+
+```lua
+{
+  font = "Friz Quadrata TT",  -- Built-in font
+  font = "Arial Narrow",      // LSM font
+  fontSize = 16
+}
+```
+
+### Font Outline
+
+```lua
+{
+  outline = "OUTLINE",        -- Black outline
+  outline = "THICKOUTLINE",   // Thick outline
+  outline = "None"            // No outline
+}
+```
+
+<CardGroup cols={3}>
+  <Card title="None" icon="font">
+    Clean text, no border
+  </Card>
+  <Card title="Outline" icon="font">
+    Thin black outline
+  </Card>
+  <Card title="Thick Outline" icon="font">
+    Thick black outline
+  </Card>
+</CardGroup>
+
+### Shadow
+
+```lua
+{
+  shadowColor = {0, 0, 0, 1},
+  shadowXOffset = 1,
+  shadowYOffset = -1
+}
+```
+
+## Text Alignment
+
+```lua
+{
+  justify = "LEFT",    -- Left-aligned
+  justify = "CENTER",  // Centered
+  justify = "RIGHT"    // Right-aligned
+}
+```
+
+## Size and Wrapping
+
+### Automatic Width
+
+```lua
+{
+  automaticWidth = "Auto"  -- Resize to fit text
+}
+```
+
+### Fixed Width
+
+```lua
+{
+  automaticWidth = "Fixed",
+  fixedWidth = 200,
+  wordWrap = "WordWrap"  -- or "NoWrap"
+}
+```
+
+<AccordionGroup>
+  <Accordion title="Auto Width" icon="expand">
+    Text region automatically resizes to fit content. Best for dynamic text lengths.
+  </Accordion>
+  
+  <Accordion title="Fixed Width" icon="text-width">
+    Text wraps within fixed width. Use for tooltips or multi-line displays.
+  </Accordion>
+  
+  <Accordion title="Word Wrap" icon="align-justify">
+    Breaks text at word boundaries when using fixed width.
+  </Accordion>
+</AccordionGroup>
+
+## Color
+
+### Static Color
+
+```lua
+{
+  color = {1, 1, 1, 1}  -- White (R, G, B, A)
+}
+```
+
+### Dynamic Color via Conditions
+
+```lua
+{
+  conditions = {{
+    check = {
+      trigger = 1,
+      variable = "value",
+      op = "<",
+      value = 20
+    },
+    changes = {{
+      property = "color",
+      value = {1, 0, 0, 1}  -- Red when low
+    }}
+  }}
+}
+```
+
+## Common Patterns
+
+### Simple Name Display
+
+```lua
+{
+  regionType = "text",
+  displayText = "%n",
+  font = "Friz Quadrata TT",
+  fontSize = 16,
+  color = {1, 1, 1, 1},
+  justify = "CENTER",
+  automaticWidth = "Auto"
+}
+```
+
+### Stack Counter
+
+```lua
+{
+  regionType = "text",
+  displayText = "%s",  -- Stack count
+  font = "Friz Quadrata TT",
+  fontSize = 20,
+  color = {1, 1, 1, 1},
+  outline = "THICKOUTLINE",
+  justify = "CENTER"
+}
+```
+
+### Timer Display
+
+```lua
+{
+  regionType = "text",
+  displayText = "%p",  -- Time remaining
+  font = "Arial Narrow",
+  fontSize = 14,
+  color = {1, 1, 0, 1},  -- Yellow
+  outline = "OUTLINE",
+  justify = "CENTER",
+  
+  -- Color red when < 5 seconds
+  conditions = {{
+    check = {
+      trigger = 1,
+      variable = "expirationTime",
+      op = "<",
+      value = 5
+    },
+    changes = {{
+      property = "color",
+      value = {1, 0, 0, 1}
+    }}
+  }}
+}
+```
+
+### Health Percentage
+
+```lua
+-- Custom text function
+function()
+  local health = UnitHealth("player")
+  local maxHealth = UnitHealthMax("player")
+  return floor((health / maxHealth) * 100)
+end
+
+-- Display configuration
+{
+  regionType = "text",
+  displayText = "%c%%",  -- Custom value with % sign
+  font = "Friz Quadrata TT",
+  fontSize = 18,
+  color = {0, 1, 0, 1},
+  customTextUpdate = "update"  // Update every frame
+}
+```
+
+### Multi-Line Info
+
+```lua
+{
+  regionType = "text",
+  displayText = "%n\\n%p\\nStacks: %s",
+  font = "Friz Quadrata TT",
+  fontSize = 12,
+  color = {1, 1, 1, 1},
+  outline = "OUTLINE",
+  justify = "LEFT",
+  automaticWidth = "Fixed",
+  fixedWidth = 150,
+  wordWrap = "WordWrap"
+}
+```
+
+### Unit Name Display
+
+```lua
+{
+  regionType = "text",
+  displayText = "%unitName",
+  font = "Friz Quadrata TT",
+  fontSize = 14,
+  color = {1, 0.8, 0, 1},  -- Gold
+  outline = "OUTLINE",
+  justify = "CENTER",
+  automaticWidth = "Auto"
+}
+```
+
+## Advanced Formatting
+
+### Number Formatting
+
+Use custom text functions for advanced number formatting:
+
+```lua
+function()
+  local value = 1234567
+  
+  -- Thousands separator
+  local formatted = string.format("%d", value)
+  formatted = formatted:reverse():gsub("(%d%d%d)", "%1,")
+  formatted = formatted:reverse():gsub("^,", "")
+  
+  -- Short form (1.2M)
+  if value >= 1000000 then
+    return string.format("%.1fM", value / 1000000)
+  elseif value >= 1000 then
+    return string.format("%.1fK", value / 1000)
+  end
+  
+  return tostring(value)
+end
+```
+
+### Time Formatting
+
+```lua
+function()
+  local remaining = aura_env.state.expirationTime - GetTime()
+  
+  if remaining < 0 then
+    return "Ready"
+  elseif remaining < 60 then
+    return string.format("%.0fs", remaining)
+  elseif remaining < 3600 then
+    return string.format("%.1fm", remaining / 60)
+  else
+    return string.format("%.1fh", remaining / 3600)
+  end
+end
+```
+
+### Conditional Text
+
+```lua
+function()
+  local state = aura_env.state
+  
+  if state.stacks and state.stacks > 1 then
+    return string.format("%s (%d)", state.name, state.stacks)
+  else
+    return state.name or "Unknown"
+  end
+end
+```
+
+## Text Formatters
+
+WeakAuras provides format modifiers:
+
+```lua
+-- Time formatters
+%p          -- Auto format (5s, 1.2m, etc)
+%p:time     // Force time format
+%p:number   // Force number
+
+-- Custom format in display settings
+displayText_format_p_time_format = "%.1f"  -- 1 decimal
+displayText_format_p_time_dynamic = true   -- Auto units
+```
+
+<Info>
+Access format options in the Text display settings under "Text Format".
+</Info>
+
+## Properties Reference
+
+### Modifiable via Conditions
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `color` | color | Text RGBA color |
+| `fontSize` | number | Font size in pixels |
+| `displayText` | string | Text content with placeholders |
+
+## Performance
+
+<AccordionGroup>
+  <Accordion title="Custom Text Update" icon="rotate">
+    ```lua
+    customTextUpdate = "event"   -- Update on trigger (efficient)
+    customTextUpdate = "update"  -- Update every frame (costly)
+    ```
+    Use "event" unless you need real-time updates.
+  </Accordion>
+  
+  <Accordion title="Text Complexity" icon="code">
+    Complex custom text functions run frequently. Keep them simple and cache values.
+  </Accordion>
+  
+  <Accordion title="Size Recalculation" icon="ruler">
+    Automatic width recalculates on text change. Use fixed width for static layouts.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Placeholder Not Showing" icon="question">
+    - Verify placeholder syntax (%n, %p, etc)
+    - Check trigger provides the required state property
+    - Ensure customText function returns a value
+    - Verify customTextUpdate setting
+  </Accordion>
+  
+  <Accordion title="Text Overlapping" icon="layer-group">
+    - Use fixed width with word wrap
+    - Adjust fontSize
+    - Check z-order and frame levels
+    - Verify anchor points
+  </Accordion>
+  
+  <Accordion title="Font Not Loading" icon="font">
+    - Verify font name matches exactly
+    - Check LSM font is installed
+    - Try a built-in WoW font
+    - Check for font path errors in chat
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CheckGroup>
+  - <Check>Use appropriate fontSize for readability</Check>
+  - <Check>Add outline for visibility on varied backgrounds</Check>
+  - <Check>Use customTextUpdate="event" unless polling needed</Check>
+  - <Check>Keep custom text functions simple</Check>
+  - <Check>Use fixed width for multi-line text</Check>
+  - <Check>Test with longest expected text length</Check>
+  - <Check>Cache repeated calculations in custom functions</Check>
+</CheckGroup>
+
+## Related Topics
+
+<CardGroup cols={3}>
+  <Card title="Icon Display" icon="image" href="/core-concepts/display-types/icon">
+    Combine text with icons
+  </Card>
+  <Card title="Custom Code" icon="code" href="/core-concepts/custom-code">
+    Advanced text formatting
+  </Card>
+  <Card title="Conditions" icon="code-branch" href="/core-concepts/conditions">
+    Dynamic text properties
+  </Card>
+</CardGroup>

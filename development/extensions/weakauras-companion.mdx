@@ -1,0 +1,449 @@
+---
+title: WeakAuras Companion
+description: Desktop application for managing and updating WeakAuras from Wago.io
+icon: desktop
+---
+
+WeakAuras Companion is a desktop application that bridges the gap between [Wago.io](https://wago.io) and your in-game WeakAuras, enabling easy updates and management of your aura collection.
+
+## Overview
+
+WeakAuras Companion provides:
+
+<CardGroup cols={2}>
+  <Card title="Automatic Updates" icon="arrows-rotate">
+    One-click updates for all your Wago.io auras
+  </Card>
+  <Card title="Update Notifications" icon="bell">
+    Alerts when new versions are available
+  </Card>
+  <Card title="Bulk Operations" icon="list-check">
+    Install and update multiple auras at once
+  </Card>
+  <Card title="Collection Management" icon="folder">
+    Organize and track your imported auras
+  </Card>
+</CardGroup>
+
+## Installation
+
+### Download
+
+<Steps>
+  <Step title="Visit WeakAuras.wtf">
+    Go to [https://weakauras.wtf](https://weakauras.wtf)
+  </Step>
+  
+  <Step title="Download for Your OS">
+    Available for:
+    - Windows (exe installer)
+    - macOS (dmg)
+    - Linux (AppImage)
+  </Step>
+  
+  <Step title="Install the Application">
+    Run the installer and follow the setup wizard
+  </Step>
+  
+  <Step title="Configure WoW Path">
+    Point the app to your WoW installation directory:
+    ```
+    C:\Program Files (x86)\World of Warcraft\_classic_
+    ```
+  </Step>
+</Steps>
+
+### First-Time Setup
+
+When you first launch the Companion app:
+
+1. **Select Game Version**: Choose "Wrath of the Lich King (3.3.5)"
+2. **Choose Account**: Select your WoW account folder
+3. **Scan Auras**: The app will scan your existing WeakAuras
+4. **Link Wago.io** (Optional): Connect your Wago account for personalized collections
+
+<Tip>
+The Companion app works without a Wago.io account, but linking provides additional features like saved collections.
+</Tip>
+
+## Using the Companion
+
+### Main Interface
+
+The Companion app has several key sections:
+
+<Tabs>
+  <Tab title="Updates">
+    Shows auras with available updates:
+    
+    - **Aura Name**: The name of your installed aura
+    - **Current Version**: Your installed version
+    - **Latest Version**: Available version on Wago.io
+    - **Changelog**: What's new in the update
+    - **Actions**: Update individual or update all
+    
+    **Update Process:**
+    1. Click "Update" next to an aura
+    2. Review the changelog
+    3. Confirm the update
+    4. The app modifies your SavedVariables
+    5. Reload WoW to see changes
+  </Tab>
+  
+  <Tab title="Installed">
+    Lists all WeakAuras from Wago.io:
+    
+    - Currently installed auras
+    - Installation date
+    - Last update time
+    - Wago.io link for each aura
+    - Option to uninstall
+  </Tab>
+  
+  <Tab title="Browse">
+    Discover new auras on Wago.io:
+    
+    - Search by name, author, or tags
+    - Filter by class, spec, type
+    - Preview aura screenshots
+    - View ratings and downloads
+    - One-click install
+  </Tab>
+  
+  <Tab title="Settings">
+    Configure the app:
+    
+    - WoW installation path
+    - Account selection
+    - Update check frequency
+    - Backup settings
+    - Wago.io account linking
+  </Tab>
+</Tabs>
+
+### Updating Auras
+
+<Steps>
+  <Step title="Check for Updates">
+    Click "Check for Updates" or wait for automatic check
+  </Step>
+  
+  <Step title="Review Available Updates">
+    The Updates tab shows auras with new versions
+  </Step>
+  
+  <Step title="Update Selected">
+    - Update individual auras: Click "Update" next to the aura
+    - Update all: Click "Update All" at the top
+  </Step>
+  
+  <Step title="Reload WoW">
+    Type `/reload` in-game to load the updated auras
+  </Step>
+</Steps>
+
+<Warning>
+**Before Updating:**
+- Exit World of Warcraft (or at least be at character select)
+- The Companion modifies SavedVariables files
+- Updates overwrite your local customizations
+</Warning>
+
+### Installing New Auras
+
+<Steps>
+  <Step title="Browse Wago.io">
+    Use the Browse tab or visit wago.io directly
+  </Step>
+  
+  <Step title="Find an Aura">
+    Search for auras by:
+    - Class/Spec
+    - Content type (raid, PvP, leveling)
+    - Specific bosses or features
+  </Step>
+  
+  <Step title="Install">
+    **Via Companion App:**
+    - Click "Install" in the Browse tab
+    
+    **Via Wago.io:**
+    - Click "Install with Companion" button on the aura page
+  </Step>
+  
+  <Step title="Load In-Game">
+    `/reload` in WoW to load the new aura
+  </Step>
+</Steps>
+
+## Features
+
+### Automatic Update Checks
+
+The Companion automatically checks for updates:
+
+- **Default**: Every 4 hours while running
+- **Configurable**: Change in Settings
+- **Manual**: Click "Check for Updates"
+
+### Backup & Restore
+
+The app can backup your WeakAuras:
+
+```
+Settings -> Backup
+- Create backup before updates: [x]
+- Backup location: C:\Users\...\WeakAurasBackup
+- Manual backup: Click "Create Backup Now"
+```
+
+Restore from backup:
+1. Settings -> Backup
+2. Click "Restore from Backup"
+3. Select backup date
+4. Confirm restoration
+
+### Version History
+
+View past versions of auras:
+
+1. Click an aura in the Installed tab
+2. Click "Version History"
+3. See all previous versions
+4. Downgrade to older version if needed
+
+### Collections
+
+Link your Wago.io account to:
+
+- Save favorite auras
+- Create custom collections
+- Share collections with others
+- Quick-install entire collections
+
+## How It Works
+
+### Technical Details
+
+The Companion app:
+
+1. **Scans SavedVariables**: Reads `WeakAurasSaved.lua` to find installed auras
+2. **Identifies Wago Auras**: Matches UIDs to Wago.io entries
+3. **Fetches Updates**: Queries Wago.io API for new versions
+4. **Modifies SavedVariables**: Updates the Lua file with new aura data
+5. **Preserves Settings**: Keeps your position/size customizations when possible
+
+### File Locations
+
+**WeakAuras SavedVariables:**
+```
+World of Warcraft\_classic_\WTF\Account\ACCOUNT_NAME\SavedVariables\WeakAuras.lua
+```
+
+**Companion Data:**
+```
+Windows: %APPDATA%\weakauras-companion
+macOS: ~/Library/Application Support/weakauras-companion  
+Linux: ~/.config/weakauras-companion
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="App Can't Find WoW Installation">
+    **Solution:**
+    1. Settings -> WoW Path
+    2. Browse to your WoW folder:
+       - Windows: `C:\Program Files (x86)\World of Warcraft\_classic_`
+       - macOS: `/Applications/World of Warcraft/_classic_`
+    3. Ensure `_classic_` folder is selected (for WotLK)
+  </Accordion>
+  
+  <Accordion title="No Auras Detected">
+    **Possible Causes:**
+    - Wrong account folder selected
+    - WeakAuras not installed in-game
+    - No auras from Wago.io installed
+    
+    **Solution:**
+    1. Verify account selection in Settings
+    2. Install at least one aura from Wago.io manually
+    3. Rescan in the Companion app
+  </Accordion>
+  
+  <Accordion title="Updates Not Appearing In-Game">
+    **Solution:**
+    - Make sure WoW is closed or at character select when updating
+    - Type `/reload` after Companion finishes updating
+    - Check if update actually completed (green checkmark in Companion)
+  </Accordion>
+  
+  <Accordion title="'File in Use' Error">
+    **Cause:** WoW is running with a character loaded
+    
+    **Solution:**
+    - Log out to character select before updating
+    - Or close WoW completely
+    - The Companion needs write access to SavedVariables
+  </Accordion>
+  
+  <Accordion title="Aura Customizations Lost After Update">
+    **Why:** Updates overwrite aura data completely
+    
+    **Solution:**
+    - Make a copy of customized auras (export string)
+    - Unlink from Wago.io to prevent auto-updates
+    - Or manually merge changes after updating
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Regular Updates" icon="calendar-check">
+    Check for updates weekly, especially before raid nights
+  </Card>
+  
+  <Card title="Review Changelogs" icon="list">
+    Read what changed before updating, especially for major updates
+  </Card>
+  
+  <Card title="Backup Before Updates" icon="floppy-disk">
+    Enable automatic backups in Settings
+  </Card>
+  
+  <Card title="Test After Updating" icon="vial">
+    Test updated auras before important content
+  </Card>
+  
+  <Card title="Close WoW for Updates" icon="power-off">
+    Exit to character select or close WoW before updating
+  </Card>
+  
+  <Card title="Keep Companion Running" icon="desktop">
+    Leave it running in the background for automatic update checks
+  </Card>
+</CardGroup>
+
+## Advanced Usage
+
+### Command Line Interface
+
+The Companion supports CLI for automation:
+
+```bash
+# Check for updates
+weakauras-companion check
+
+# Update all auras
+weakauras-companion update --all
+
+# Install specific aura by Wago ID
+weakauras-companion install <wago-id>
+
+# Export installed auras list
+weakauras-companion list --export auras.json
+```
+
+### Batch Installation
+
+Install multiple auras from a list:
+
+1. Create a text file with Wago IDs (one per line)
+2. Use the import feature in Companion
+3. Click "Install All"
+
+Useful for setting up new characters or fresh installs.
+
+### Selective Updates
+
+Pause updates for specific auras:
+
+1. Right-click aura in Installed tab
+2. Select "Ignore Updates"
+3. Manual updates still available
+
+Useful for heavily customized auras.
+
+## Integration with Wago.io
+
+### Linking Your Account
+
+<Steps>
+  <Step title="Create Wago Account">
+    Sign up at [wago.io](https://wago.io)
+  </Step>
+  
+  <Step title="Get API Key">
+    Account Settings -> API Key
+  </Step>
+  
+  <Step title="Link in Companion">
+    Settings -> Wago.io -> Enter API Key
+  </Step>
+  
+  <Step title="Sync Collections">
+    Your favorites and collections now sync
+  </Step>
+</Steps>
+
+### Benefits of Linking
+
+- **Saved Collections**: Access your curated aura lists
+- **Favorites Sync**: Star auras on Wago.io, install via Companion
+- **Upload Support**: Upload auras directly from Companion
+- **Private Auras**: Access your private/unlisted uploads
+
+## Alternatives
+
+If the Companion app doesn't work for you:
+
+<Tabs>
+  <Tab title="Manual Import">
+    1. Copy import string from Wago.io
+    2. `/wa` in-game
+    3. Click Import
+    4. Paste string
+    
+    **Pros:** No external app needed
+    **Cons:** Manual process, no auto-updates
+  </Tab>
+  
+  <Tab title="WeakAuras In-Game Updater">
+    Some auras include update checks:
+    - Built into the aura itself
+    - Shows notification when update available
+    - Still requires manual import
+    
+    **Pros:** No external app
+    **Cons:** Only for auras with this feature
+  </Tab>
+</Tabs>
+
+## Support & Resources
+
+<CardGroup cols={3}>
+  <Card title="Website" icon="globe" href="https://weakauras.wtf">
+    Download and documentation
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/WeakAuras/WeakAuras-Companion">
+    Source code and issues
+  </Card>
+  <Card title="Discord" icon="discord" href="https://discord.gg/weakauras">
+    Community support
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Import/Export" icon="right-left" href="/development/importing-exporting">
+    Learn about manual import/export
+  </Card>
+  <Card title="Creating Auras" icon="wand-magic-sparkles" href="/development/creating-auras">
+    Create your own auras
+  </Card>
+  <Card title="Wago.io" icon="upload" href="https://wago.io">
+    Browse aura collections
+  </Card>
+</CardGroup>

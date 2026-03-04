@@ -1,0 +1,653 @@
+---
+title: Performance Optimization
+description: Best practices for creating efficient WeakAuras
+icon: gauge
+---
+
+WeakAuras can monitor dozens or even hundreds of conditions simultaneously. Following these optimization practices ensures your auras remain efficient and don't impact game performance.
+
+## Understanding Performance Impact
+
+### What Affects Performance
+
+<CardGroup cols={2}>
+  <Card title="Trigger Frequency" icon="clock">
+    How often triggers check their conditions
+  </Card>
+  <Card title="Custom Code Complexity" icon="code">
+    Computational cost of Lua scripts
+  </Card>
+  <Card title="Number of Active Auras" icon="layer-group">
+    Total auras loaded and checking
+  </Card>
+  <Card title="Group Iterations" icon="users">
+    Scanning party/raid members
+  </Card>
+</CardGroup>
+
+### Performance Monitoring
+
+Use WeakAuras' built-in profiler:
+
+```bash
+/wa pstart  # Start profiling
+# Play normally for 1-2 minutes
+/wa pstop   # Stop and display results
+```
+
+The profiler shows:
+- CPU time per aura
+- Number of trigger checks
+- Most expensive auras
+- Memory usage
+
+<Tip>
+Profile during typical gameplay (combat, raiding) to identify problem auras.
+</Tip>
+
+## Load Conditions
+
+The most effective optimization: don't load auras when they're not needed.
+
+### Essential Load Conditions
+
+<AccordionGroup>
+  <Accordion title="Class & Spec">
+    Only load for relevant classes:
+    ```lua
+    Load Conditions:
+    - Class: Warrior
+    - Specialization: Arms (1), Fury (2)
+    ```
+    
+    **Impact**: Prevents loading on other classes/specs entirely.
+  </Accordion>
+  
+  <Accordion title="Combat State">
+    Many auras only matter in combat:
+    ```lua
+    Load Conditions:
+    - In Combat: Yes
+    ```
+    
+    **Impact**: Aura doesn't exist while out of combat.
+  </Accordion>
+  
+  <Accordion title="Zone Type">
+    Limit to specific content:
+    ```lua
+    Load Conditions:
+    - Instance Type: Raid, Party
+    ```
+    
+    **Impact**: Don't load PvE auras in PvP, etc.
+  </Accordion>
+  
+  <Accordion title="Specific Zones">
+    For encounter-specific auras:
+    ```lua
+    Load Conditions:
+    - Zone: Icecrown Citadel
+    - Encounter ID: 36626 (Lich King)
+    ```
+    
+    **Impact**: Only loads in that specific encounter.
+  </Accordion>
+  
+  <Accordion title="Player Level">
+    For leveling auras:
+    ```lua
+    Load Conditions:
+    - Player Level: < 80
+    ```
+    
+    **Impact**: Automatically disabled at max level.
+  </Accordion>
+  
+  <Accordion title="Talent Conditions">
+    When talent-dependent:
+    ```lua
+    Load Conditions:
+    - Talent Selected: Mortal Strike (1/1)
+    ```
+    
+    **Impact**: Only loads when talent is taken.
+  </Accordion>
+</AccordionGroup>
+
+### Combining Load Conditions
+
+Stack multiple conditions for precise loading:
+
+```lua
+Load Conditions:
+- Class: Death Knight
+- Specialization: Blood (1)
+- In Combat: Yes
+- Instance Type: Party, Raid
+- Player Level: >= 60
+```
+
+**Result**: This aura ONLY loads for Blood DKs, level 60+, in combat, in group content.
+
+## Trigger Optimization
+
+### Use Specific Triggers
+
+<Tabs>
+  <Tab title="Good: Specific Spell ID">
+    ```lua
+    Trigger Type: Aura
+    Spell ID: 47440  # Battle Shout
+    Unit: player
+    ```
+    Fast and efficient.
+  </Tab>
+  
+  <Tab title="Bad: Name Matching">
+    ```lua
+    Trigger Type: Aura  
+    Spell Name: "Battle Shout"
+    Unit: player
+    ```
+    Slower, locale-dependent.
+  </Tab>
+  
+  <Tab title="Worse: Custom Scanning">
+    ```lua
+    Trigger Type: Custom
+    -- Manually scan all buffs
+    for i = 1, 40 do
+      local name = UnitBuff("player", i)
+      if name == "Battle Shout" then
+        return true
+      end
+    end
+    ```
+    Very slow, unnecessary.
+  </Tab>
+</Tabs>
+
+### Avoid Status-Type Custom Triggers
+
+Status triggers check constantly:
+
+<CodeGroup>
+```lua BAD: Status Check
+-- Event Type: Status
+function()
+  -- Runs every frame or very frequently!
+  local name = WA_GetUnitBuff("player", 47440)
+  return name ~= nil
+end
+```
+
+```lua GOOD: Event-Based
+-- Event Type: Event(s)
+-- Events: UNIT_AURA
+function(event, unit)
+  if unit ~= "player" then return end
+  
+  local name = WA_GetUnitBuff("player", 47440)
+  return name ~= nil
+end
+```
+
+```lua BEST: Built-in Trigger
+-- No custom code needed
+Trigger Type: Aura
+Spell ID: 47440
+Unit: player
+```
+</CodeGroup>
+
+### Event Filtering
+
+Filter events early in custom triggers:
+
+```lua
+function(event, unit)
+  -- Filter immediately
+  if event ~= "UNIT_AURA" then return end
+  if unit ~= "player" and unit ~= "target" then return end
+  
+  -- Now do actual checking
+  local name = WA_GetUnitBuff(unit, spellID)
+  return name ~= nil
+end
+```
+
+### Minimize Group Iterations
+
+<CodeGroup>
+```lua BAD: Full Raid Scan
+function()
+  -- Scans all 40 raid members constantly!
+  for unit in WA_IterateGroupMembers() do
+    if WA_GetUnitDebuff(unit, debuffID) then
+      return true
+    end
+  end
+  return false
+end
+```
+
+```lua GOOD: Event-Driven Scan  
+function(event, unit)
+  -- Only on UNIT_AURA events
+  if event ~= "UNIT_AURA" then return end
+  
+  -- Check the specific unit that changed
+  if WA_GetUnitDebuff(unit, debuffID) then
+    return true, {
+      show = true,
+      changed = true,
+      unit = unit
+    }
+  end
+  
+  return false
+end
+```
+
+```lua BEST: Targeted Check
+-- If you only need to check specific units
+function(event, unit)
+  if event ~= "UNIT_AURA" then return end
+  if unit ~= "player" and unit ~= "target" then return end
+  
+  if WA_GetUnitDebuff(unit, debuffID) then
+    return true
+  end
+  return false
+end
+```
+</CodeGroup>
+
+## Custom Code Optimization
+
+### Cache Expensive Calls
+
+```lua
+-- BAD: Repeated API calls
+function()
+  for i = 1, 10 do
+    local spellName = GetSpellInfo(47440) -- Called 10 times!
+    -- Use spellName
+  end
+end
+
+-- GOOD: Cache the result
+function()
+  local spellName = GetSpellInfo(47440) -- Called once
+  for i = 1, 10 do
+    -- Use cached spellName
+  end
+end
+
+-- BEST: Cache in On Init
+-- On Init:
+aura_env.spellName = GetSpellInfo(47440)
+
+-- Custom Trigger:
+function()
+  -- Use aura_env.spellName (no API call needed)
+end
+```
+
+### Early Returns
+
+```lua
+function(event, unit)
+  -- Fast rejections first
+  if not UnitExists("target") then
+    return false  -- Exit immediately
+  end
+  
+  if not UnitCanAttack("player", "target") then
+    return false  -- Exit before expensive checks
+  end
+  
+  -- Now do expensive operations only if needed
+  local complicatedCheck = expensiveFunction()
+  return complicatedCheck
+end
+```
+
+### Throttling Updates
+
+```lua
+-- On Init
+aura_env.lastUpdate = 0
+aura_env.throttle = 0.2 -- Update at most every 0.2 seconds
+
+-- Custom Trigger  
+function()
+  local now = GetTime()
+  
+  -- Skip if updated recently
+  if now - aura_env.lastUpdate < aura_env.throttle then
+    return -- Don't update yet
+  end
+  
+  aura_env.lastUpdate = now
+  
+  -- Do actual check
+  local result = checkCondition()
+  return result
+end
+```
+
+### Avoid Table Creation
+
+```lua
+-- BAD: Creates new table every call
+function()
+  local myTable = {} -- Memory allocation!
+  for i = 1, 100 do
+    myTable[i] = i
+  end
+  return #myTable > 50
+end
+
+-- GOOD: Reuse tables
+-- On Init:
+aura_env.myTable = {}
+
+-- Custom Trigger:
+function()
+  local t = aura_env.myTable -- Reuse existing table
+  -- ... use t
+end
+```
+
+## Animation Performance
+
+### Limit Animation Complexity
+
+<CardGroup cols={2}>
+  <Card title="Simple Animations" icon="check">
+    Fade, slide, or zoom are efficient
+  </Card>
+  <Card title="Avoid Complex Paths" icon="xmark">
+    Custom animation paths with many points are expensive
+  </Card>
+  <Card title="Limit Simultaneous Animations" icon="check">
+    Don't animate 50 icons at once
+  </Card>
+  <Card title="Disable When Not Visible" icon="check">
+    Animations on off-screen auras waste resources
+  </Card>
+</CardGroup>
+
+### OnUpdate Actions
+
+<Warning>
+"On Every Frame" actions run constantly and should be avoided.
+</Warning>
+
+```lua
+-- BAD: Runs every frame (100+ times per second)
+Actions -> On Every Frame -> Custom
+function()
+  -- This is very expensive!
+end
+
+-- GOOD: Use triggers and state changes instead
+-- Let triggers handle when to show/hide
+-- Use On Show / On Hide for actions
+```
+
+If you must use OnUpdate:
+
+```lua
+-- Throttle updates
+aura_env.lastFrame = aura_env.lastFrame or 0
+
+function()
+  local now = GetTime()
+  if now - aura_env.lastFrame < 0.1 then -- Only every 0.1s
+    return
+  end
+  aura_env.lastFrame = now
+  
+  -- Your per-frame logic
+end
+```
+
+## Memory Management
+
+### Saved Data
+
+Limit `aura_env.saved` usage:
+
+```lua
+-- BAD: Storing large tables
+aura_env.saved = aura_env.saved or {}
+for i = 1, 10000 do
+  aura_env.saved[i] = {data = "lots of data"}
+end
+-- This gets serialized and saved, causing lag!
+
+-- GOOD: Store minimal data
+aura_env.saved = aura_env.saved or {}
+aura_env.saved.counter = (aura_env.saved.counter or 0) + 1
+-- Small, simple data
+```
+
+### Clean Up
+
+Unregister events when done:
+
+```lua
+-- On Init: Create and register
+aura_env.frame = CreateFrame("Frame")
+aura_env.frame:RegisterEvent("SOME_EVENT")
+
+-- When aura is no longer needed, clean up
+-- (usually not necessary, but for temporary auras)
+if someCondition then
+  aura_env.frame:UnregisterAllEvents()
+  aura_env.frame = nil
+end
+```
+
+## Organizing for Performance
+
+### Group Similar Auras
+
+Use groups with shared load conditions:
+
+```
+Group: "Raiding Auras" (Load: In Raid)
+  └─ Boss Timers
+  └─ Raid Debuffs  
+  └─ Cooldown Tracking
+```
+
+All children inherit parent load conditions.
+
+### Dynamic Groups
+
+For multiple similar auras:
+
+```lua
+-- One dynamic group trigger that creates clones
+-- instead of 10 separate auras
+Trigger Type: Multi-target (creates clones)
+```
+
+**Example**: One aura for party buffs creates 5 clones (one per party member) instead of 5 separate auras.
+
+## Profiling & Debugging
+
+### Identify Problem Auras
+
+<Steps>
+  <Step title="Start Profiling">
+    `/wa pstart` before entering raid/dungeon
+  </Step>
+  
+  <Step title="Normal Gameplay">
+    Play for 2-5 minutes, including combat
+  </Step>
+  
+  <Step title="Stop & Review">
+    `/wa pstop` and review results
+  </Step>
+  
+  <Step title="Optimize Top Offenders">
+    Focus on auras with highest CPU usage
+  </Step>
+</Steps>
+
+### Profile Output
+
+```
+WeakAuras Profiling Results:
+
+1. Boss Timer Group       5.2ms  (12,450 checks)
+2. Cooldown Tracker       3.1ms  (8,200 checks)
+3. Raid Debuff Scanner   15.8ms  (1,240 checks) <- Problem!
+4. Buff Monitor           1.2ms  (15,600 checks)
+```
+
+The raid debuff scanner is expensive! Optimize it:
+- Add event filtering
+- Use specific debuff IDs
+- Add load conditions (only in raids)
+
+### Debug Logging
+
+Use DebugPrint sparingly:
+
+```lua
+-- Enable: /wa debuglog
+
+function(event, unit)
+  -- Only log when debugging specific issues
+  if aura_env.debugMode then
+    DebugPrint("Event:", event, "Unit:", unit)
+  end
+  
+  -- Your trigger logic
+end
+```
+
+## Performance Checklist
+
+<AccordionGroup>
+  <Accordion title="Load Conditions" icon="check">
+    - [ ] Class/spec conditions set
+    - [ ] Combat state appropriate  
+    - [ ] Zone/instance type limited
+    - [ ] Talent/level requirements added
+  </Accordion>
+  
+  <Accordion title="Triggers" icon="check">
+    - [ ] Using built-in triggers when possible
+    - [ ] Spell IDs instead of names
+    - [ ] Event-based, not Status-type
+    - [ ] Event filtering implemented
+    - [ ] No unnecessary group iterations
+  </Accordion>
+  
+  <Accordion title="Custom Code" icon="check">
+    - [ ] Expensive calls cached
+    - [ ] Early returns for quick rejection
+    - [ ] No table creation in hot paths
+    - [ ] Updates throttled when appropriate
+    - [ ] No "On Every Frame" actions
+  </Accordion>
+  
+  <Accordion title="General" icon="check">
+    - [ ] Animations kept simple
+    - [ ] Saved data minimal
+    - [ ] Groups used for shared load conditions
+    - [ ] Profiled during typical usage
+    - [ ] No obvious performance warnings
+  </Accordion>
+</AccordionGroup>
+
+## Common Performance Issues
+
+<CardGroup cols={2}>
+  <Card title="Issue: High CPU Usage" icon="microchip">
+    **Causes:**
+    - Status-type custom triggers
+    - Group scanning every frame
+    - No load conditions
+    
+    **Fix:**
+    - Use event-based triggers
+    - Add load conditions
+    - Cache API calls
+  </Card>
+  
+  <Card title="Issue: Lag Spikes" icon="chart-line">
+    **Causes:**
+    - Saving large aura_env.saved
+    - Complex combat log parsing
+    - Creating many objects
+    
+    **Fix:**
+    - Minimize saved data
+    - Filter events early
+    - Reuse objects/tables
+  </Card>
+  
+  <Card title="Issue: Memory Growth" icon="memory">
+    **Causes:**
+    - Tables never cleared
+    - Frames not cleaned up
+    - Large saved variables
+    
+    **Fix:**
+    - Clear old data
+    - Unregister events when done
+    - Limit saved data
+  </Card>
+  
+  <Card title="Issue: Slow Load Times" icon="hourglass">
+    **Causes:**
+    - Too many auras loading
+    - Large saved data
+    - Complex initialization
+    
+    **Fix:**
+    - Add load conditions
+    - Reduce saved data
+    - Simplify On Init code
+  </Card>
+</CardGroup>
+
+## Advanced: Batch Updates
+
+For auras that update together:
+
+```lua
+-- On Init: Setup batch update timer
+aura_env.batchTimer = C_Timer.NewTicker(1.0, function()
+  -- Update all related auras once per second
+  WeakAuras.ScanEvents("BATCH_UPDATE")
+end)
+
+-- Multiple auras listen for "BATCH_UPDATE" event
+-- All update together, once per second
+```
+
+Reduces trigger checks from "every event" to "once per second".
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Custom Triggers" icon="sliders" href="/development/custom-triggers">
+    Optimize trigger patterns
+  </Card>
+  <Card title="Lua Scripting" icon="code" href="/development/lua-scripting">
+    Efficient Lua practices
+  </Card>
+  <Card title="Creating Auras" icon="wand-magic-sparkles" href="/development/creating-auras">
+    Back to basics
+  </Card>
+</CardGroup>

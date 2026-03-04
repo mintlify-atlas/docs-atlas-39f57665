@@ -1,80 +1,534 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quick Start
+description: Create your first WeakAura in minutes - a hands-on guide for WotLK 3.3.5a
 ---
 
-## Get started in three steps
+## Your First Aura in 5 Minutes
 
-Get your documentation site running locally and make your first customization.
-
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
-
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
+This guide will walk you through creating a simple but useful aura: a visual indicator that shows when your health drops below 30%.
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  Before starting, make sure you've [installed WeakAuras](/installation) and can access the configuration window with `/wa`
 </Note>
+
+## Opening the Interface
+
+There are two ways to open WeakAuras:
+
+<Tabs>
+  <Tab title="Slash Command">
+    Type in chat:
+    
+    ```bash
+    /wa
+    ```
+    
+    or
+    
+    ```bash
+    /weakauras
+    ```
+  </Tab>
+  
+  <Tab title="Minimap Icon">
+    **Left-click** the WeakAuras icon on your minimap
+    
+    The icon looks like the WeakAuras logo and can be dragged around the minimap.
+  </Tab>
+</Tabs>
+
+## Creating Your First Aura
+
+<Steps>
+  <Step title="Open the New Aura Dialog">
+    Click the **New** button in the top-left of the WeakAuras window.
+  </Step>
+  
+  <Step title="Choose Display Type">
+    Select **Icon** as the display type.
+    
+    **Why Icon?** Icons are perfect for visual alerts - they're clear, customizable, and performance-friendly.
+    
+    <Tip>
+      Other options include Progress Bar, Text, Texture, and Group. We'll explore these later!
+    </Tip>
+  </Step>
+  
+  <Step title="Name Your Aura">
+    Enter a descriptive name: `Low Health Warning`
+    
+    <Note>
+      Good naming helps you organize auras later, especially when you have dozens!
+    </Note>
+  </Step>
+  
+  <Step title="Click Done">
+    Your new aura is created! You'll see a default icon appear on screen.
+  </Step>
+</Steps>
+
+## Configuring the Trigger
+
+Now let's make the aura show only when your health is low:
+
+<Steps>
+  <Step title="Navigate to the Trigger Tab">
+    With your aura selected, click the **Trigger** tab at the top.
+  </Step>
+  
+  <Step title="Select Trigger Type">
+    - **Type**: Status
+    - **Sub-type**: Health
+    
+    This tells WeakAuras to monitor your health value.
+  </Step>
+  
+  <Step title="Configure Unit">
+    - **Unit**: Player
+    
+    This means we're tracking *your* health, not someone else's.
+  </Step>
+  
+  <Step title="Set Health Condition">
+    - **Health**: Percent
+    - **Operator**: `<=` (less than or equal)
+    - **Value**: 30
+    
+    This makes the aura trigger when your health is at or below 30%.
+    
+    ```lua Trigger Logic
+    if (UnitHealth("player") / UnitHealthMax("player")) * 100 <= 30 then
+      -- Show the aura
+    end
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  To test immediately, damage yourself by jumping off something or finding a low-level mob!
+</Tip>
+
+## Customizing the Display
+
+Let's make the warning more visually obvious:
+
+<Steps>
+  <Step title="Open the Display Tab">
+    Click the **Display** tab.
+  </Step>
+  
+  <Step title="Choose a Texture">
+    Under **Icon**, click **Choose** to select a texture.
+    
+    **Recommended**: Select the red warning icon or skull texture.
+    
+    <Info>
+      You can use any texture file, spell icon, or item icon. The texture picker shows all available options.
+    </Info>
+  </Step>
+  
+  <Step title="Set Color">
+    Click the **Color** swatch and choose bright red (RGB: 255, 0, 0).
+    
+    <Note>
+      Color overlays multiply with the texture. White (255,255,255) shows the original texture colors.
+    </Note>
+  </Step>
+  
+  <Step title="Adjust Size">
+    - **Width**: 64
+    - **Height**: 64
+    
+    This creates a nice, visible icon without being too intrusive.
+  </Step>
+  
+  <Step title="Position the Icon">
+    Drag the icon to a central location where you'll notice it easily - many players prefer just below their character.
+    
+    Or use precise positioning:
+    - **X Offset**: 0
+    - **Y Offset**: -150
+    
+    This centers it horizontally and places it below center screen.
+  </Step>
+</Steps>
+
+## Adding Animation
+
+Make the warning impossible to miss:
+
+<Steps>
+  <Step title="Open Animations Tab">
+    Click the **Animations** tab.
+  </Step>
+  
+  <Step title="Configure Main Animation">
+    The **Main** animation plays while the aura is active.
+    
+    - **Type**: Pulse
+    - **Duration**: 1 second
+    - **Infinite**: ✓ (checked)
+    
+    This creates a pulsing effect that draws attention.
+  </Step>
+  
+  <Step title="Optional: Add Start Animation">
+    The **Start** animation plays when the trigger first activates.
+    
+    - **Type**: Zoom In
+    - **Duration**: 0.5 seconds
+    
+    This makes the icon dramatically appear when you first drop below 30% health.
+  </Step>
+</Steps>
+
+## Testing Your Aura
+
+<Tabs>
+  <Tab title="Close WeakAuras">
+    Click **Done** or press ESC to close the configuration window.
+  </Tab>
+  
+  <Tab title="Damage Yourself">
+    Reduce your health below 30% by:
+    - Jumping from a height
+    - Letting a mob hit you
+    - Using life tap (Warlock)
+    
+    The red icon should appear and pulse!
+  </Tab>
+  
+  <Tab title="Heal Up">
+    When you heal above 30%, the icon should disappear.
+  </Tab>
+</Tabs>
+
+<Check>
+  **Success!** You've created a functional WeakAura!
+</Check>
+
+## Importing Community Auras
+
+Why reinvent the wheel? The WeakAuras community has created thousands of auras you can import instantly.
+
+<Steps>
+  <Step title="Visit Wago.io">
+    Go to [wago.io](https://wago.io/search/imports/wow/all?q=3.3.5) and search for WotLK 3.3.5 auras.
+    
+    <Tip>
+      Filter by class, spec, or purpose (PvP, PvE, leveling)
+    </Tip>
+  </Step>
+  
+  <Step title="Copy Import String">
+    Find an aura you like and click **Copy Import String**.
+    
+    The string looks like: `!WA:2!...` (very long encoded text)
+  </Step>
+  
+  <Step title="Import in WeakAuras">
+    1. Open WeakAuras (`/wa`)
+    2. Click **Import** (or **New** → **Import**)
+    3. Paste the string (Ctrl+V)
+    4. Click **Import**
+  </Step>
+  
+  <Step title="Position and Configure">
+    The imported aura appears on screen. Drag it to your preferred position and adjust settings as needed.
+  </Step>
+</Steps>
+
+<Warning>
+  Always import auras from trusted sources. While WeakAuras is sandboxed for security, be cautious with custom code from unknown authors.
+</Warning>
+
+## Popular Aura Types to Try
+
+Now that you understand the basics, try creating these common aura types:
+
+<CardGroup cols={2}>
+  <Card title="Cooldown Tracker" icon="clock">
+    **Trigger**: Spell Cooldown
+    
+    **Display**: Icon with cooldown sweep
+    
+    **Use**: Track important ability cooldowns
+    
+    ```lua Example
+    Trigger Type: Cooldown
+    Spell Name: Icebound Fortitude
+    Show: On Cooldown
+    ```
+  </Card>
+  
+  <Card title="Buff Monitor" icon="sparkles">
+    **Trigger**: Aura (Buff)
+    
+    **Display**: Icon or progress bar
+    
+    **Use**: Track important buffs and their duration
+    
+    ```lua Example
+    Trigger Type: Aura
+    Unit: Player
+    Buff Name: Bloodlust
+    Show: When Active
+    ```
+  </Card>
+  
+  <Card title="Proc Alert" icon="bolt">
+    **Trigger**: Aura (Buff)
+    
+    **Display**: Large icon with animation
+    
+    **Use**: Never miss important procs
+    
+    ```lua Example
+    Trigger Type: Aura
+    Unit: Player
+    Buff Name: Hot Streak
+    Animation: Bounce + Glow
+    ```
+  </Card>
+  
+  <Card title="Resource Bar" icon="battery-full">
+    **Trigger**: Status (Power)
+    
+    **Display**: Progress bar
+    
+    **Use**: Track mana, rage, energy, runes
+    
+    ```lua Example
+    Trigger Type: Status
+    Status: Power
+    Unit: Player
+    Power Type: Rage
+    ```
+  </Card>
+</CardGroup>
+
+## Using Templates
+
+WeakAuras includes built-in templates for common scenarios:
+
+<Steps>
+  <Step title="Open Templates">
+    Click **New** → **From Template**
+  </Step>
+  
+  <Step title="Browse Categories">
+    Templates are organized by:
+    - Class (Death Knight, Druid, Hunter, etc.)
+    - General (cooldowns, resources)
+    - PvP
+    - Encounters
+  </Step>
+  
+  <Step title="Select and Import">
+    Choose a template and click **Import**. It's pre-configured and ready to use!
+  </Step>
+</Steps>
+
+<Tip>
+  Templates are excellent learning tools. Import one, then examine its configuration to understand how it works.
+</Tip>
+
+## Essential Tips for Beginners
+
+<AccordionGroup>
+  <Accordion title="Organization" icon="folder-tree">
+    - Create **Groups** to organize related auras
+    - Use descriptive names
+    - Prefix names by category: `[CD] Icebound Fortitude`, `[Buff] Battle Shout`
+    
+    <Tip>
+      Right-click an aura to quickly move it into a group
+    </Tip>
+  </Accordion>
+  
+  <Accordion title="Performance" icon="gauge-high">
+    - Use **Load Conditions** to only load auras when needed
+    - Avoid full screen auras unless necessary
+    - Test performance with `/wa pstart` and `/wa pstop`
+    
+    ```lua Load Condition Example
+    Player Class: Death Knight
+    In Combat: Yes
+    Zone: Icecrown Citadel
+    ```
+  </Accordion>
+  
+  <Accordion title="Backup Your Auras" icon="floppy-disk">
+    Your auras are saved in:
+    ```bash
+    WTF\Account\[AccountName]\SavedVariables\WeakAuras.lua
+    ```
+    
+    Back this file up regularly!
+    
+    Or export important auras:
+    1. Select aura in `/wa`
+    2. Click **Export**
+    3. Copy the string to a text file
+  </Accordion>
+  
+  <Accordion title="Copy & Modify" icon="copy">
+    Don't start from scratch every time:
+    1. Right-click an existing aura
+    2. Select **Duplicate**
+    3. Modify the copy
+    
+    This is faster than creating new auras and maintains consistent styling.
+  </Accordion>
+  
+  <Accordion title="Learn from Others" icon="graduation-cap">
+    Import auras you like and study their configuration:
+    - What triggers do they use?
+    - How are animations configured?
+    - What custom code is included?
+    
+    This is the fastest way to learn advanced techniques!
+  </Accordion>
+</AccordionGroup>
+
+## Common Mistakes to Avoid
+
+<Warning>
+  **Wrong Unit Selection**: Make sure you're tracking the correct unit (player, target, focus, etc.)
+</Warning>
+
+<Warning>
+  **Inverted Conditions**: If an aura won't show, check if your condition is backwards (< instead of >, etc.)
+</Warning>
+
+<Warning>
+  **Overlapping Auras**: Multiple auras in the same position can cause confusion. Use groups for organized layouts.
+</Warning>
+
+<Warning>
+  **No Load Conditions**: Auras that always load waste resources. Add load conditions for class, spec, or zone.
+</Warning>
+
+## Keyboard Shortcuts
+
+Speed up your workflow:
+
+| Shortcut | Action |
+|----------|--------|
+| `/wa` | Open WeakAuras |
+| Ctrl+C | Copy selected aura |
+| Ctrl+V | Paste aura |
+| Delete | Delete selected aura |
+| Ctrl+Z | Undo last change |
+| Shift+Drag | Precise positioning (1 pixel) |
+| Alt+Drag | Copy while dragging |
+
+## Testing Your Auras
+
+Before taking auras into real content:
+
+<Steps>
+  <Step title="Test in Safe Environment">
+    Use training dummies, low-level mobs, or duels to test triggers
+  </Step>
+  
+  <Step title="Check Performance">
+    ```bash
+    /wa pstart  # Start profiling
+    # Play for a few minutes
+    /wa pstop   # Stop and display results
+    ```
+    
+    This shows which auras use the most CPU.
+  </Step>
+  
+  <Step title="Verify Load Conditions">
+    Use `/reload` after changing specs, zones, or equipment to ensure load conditions work correctly.
+  </Step>
+</Steps>
+
+## Next Steps
+
+You've mastered the basics! Here's where to go next:
+
+<CardGroup cols={2}>
+  <Card title="Core Concepts" href="/core-concepts/overview" icon="book">
+    Deep dive into displays, triggers, and groups
+  </Card>
+  
+  <Card title="Client Extensions" href="/client-extensions" icon="wrench">
+    Unlock advanced features and improve performance
+  </Card>
+  
+  <Card title="Display Types" href="/core-concepts/display-types/icon" icon="icons">
+    Learn about all display types in detail
+  </Card>
+  
+  <Card title="Lua Scripting" href="/development/lua-scripting" icon="code">
+    Create custom triggers and actions with Lua
+  </Card>
+</CardGroup>
+
+## Getting Help
+
+Stuck? The community is here to help:
+
+<CardGroup cols={3}>
+  <Card title="Discord" icon="discord" href="https://discord.gg/UXSc7nt">
+    Real-time help from the community
+  </Card>
+  
+  <Card title="Wiki" icon="book" href="https://github.com/NoM0Re/WeakAuras-WotLK/wiki">
+    Comprehensive documentation
+  </Card>
+  
+  <Card title="GitHub Issues" icon="github" href="https://github.com/NoM0Re/WeakAuras-WotLK/issues">
+    Report bugs or request features
+  </Card>
+</CardGroup>
+
+<Tip>
+  When asking for help, always mention you're using **WotLK 3.3.5a** and provide your WeakAuras version (shown in `/wa`)
+</Tip>
+
+## Practice Challenge
+
+Reinforce your learning by creating these three auras:
+
+<AccordionGroup>
+  <Accordion title="Challenge 1: Low Mana Warning" icon="1">
+    Create an aura that warns when your mana drops below 20%.
+    
+    **Hints:**
+    - Trigger: Status → Power
+    - Unit: Player
+    - Power Type: Mana
+    - Condition: `<=` 20%
+    - Display: Blue colored icon
+  </Accordion>
+  
+  <Accordion title="Challenge 2: Heroism/Bloodlust Timer" icon="2">
+    Track the Heroism/Bloodlust buff with a countdown.
+    
+    **Hints:**
+    - Trigger: Aura → Buff
+    - Buff names: "Heroism" or "Bloodlust"
+    - Display: Progress bar showing duration
+    - Add text showing seconds remaining
+  </Accordion>
+  
+  <Accordion title="Challenge 3: Multi-target DoT Tracker" icon="3">
+    Track your DoT on multiple enemies (Advanced).
+    
+    **Hints:**
+    - Create a Dynamic Group
+    - Trigger: Aura → Debuff on Unit
+    - Unit: Multi-target
+    - Your DoT spell name
+    - Shows one icon per affected target
+  </Accordion>
+</AccordionGroup>
+
+<Check>
+  Once you've completed these challenges, you're ready to create auras for any situation!
+</Check>

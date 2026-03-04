@@ -1,0 +1,259 @@
+---
+title: 'Core Functions'
+description: 'WeakAuras core API functions'
+---
+
+## Overview
+
+Core WeakAuras functions provide the main API for managing auras, regions, and trigger systems.
+
+## Aura Management
+
+### GetData
+
+Retrieves the data table for a specific aura.
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the aura
+</ParamField>
+
+<ResponseField name="data" type="table">
+  The aura data table containing all configuration
+</ResponseField>
+
+```lua
+local data = WeakAuras.GetData("MyAuraID")
+if data then
+  print("Aura region type:", data.regionType)
+end
+```
+
+### GetRegion
+
+Retrieves the display region for a specific aura.
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the aura
+</ParamField>
+
+<ResponseField name="region" type="frame">
+  The region frame object
+</ResponseField>
+
+```lua
+local region = WeakAuras.GetRegion("MyAuraID")
+if region then
+  region:SetAlpha(0.5)
+end
+```
+
+### InternalVersion
+
+Returns the internal version number of WeakAuras.
+
+<ResponseField name="version" type="number">
+  The internal version number
+</ResponseField>
+
+```lua
+local version = WeakAuras.InternalVersion()
+print("WeakAuras internal version:", version)
+```
+
+## Display Functions
+
+### OpenOptions
+
+Opens the WeakAuras options window.
+
+<ParamField path="msg" type="string" optional>
+  Optional message or aura ID to focus
+</ParamField>
+
+```lua
+WeakAuras.OpenOptions()
+-- Or open to specific aura
+WeakAuras.OpenOptions("MyAuraID")
+```
+
+### Toggle
+
+Toggles the pause state of WeakAuras.
+
+```lua
+WeakAuras.Toggle() -- Pause or resume
+```
+
+### IsPaused
+
+Checks if WeakAuras is currently paused.
+
+<ResponseField name="paused" type="boolean">
+  True if paused, false otherwise
+</ResponseField>
+
+```lua
+if WeakAuras.IsPaused() then
+  print("WeakAuras is paused")
+end
+```
+
+### IsOptionsOpen
+
+Checks if the options window is currently open.
+
+<ResponseField name="open" type="boolean">
+  True if options are open
+</ResponseField>
+
+```lua
+if WeakAuras.IsOptionsOpen() then
+  print("Options window is open")
+end
+```
+
+## Trigger State Management
+
+### GetTriggerStateForTrigger
+
+Retrieves the trigger state for a specific trigger.
+
+<ParamField path="id" type="string" required>
+  The aura identifier
+</ParamField>
+
+<ParamField path="triggernum" type="number" required>
+  The trigger number (1-based index)
+</ParamField>
+
+<ResponseField name="states" type="table">
+  Table of trigger states keyed by clone ID
+</ResponseField>
+
+```lua
+local states = WeakAuras.GetTriggerStateForTrigger("MyAura", 1)
+for cloneId, state in pairs(states) do
+  print("Clone:", cloneId, "Show:", state.show)
+end
+```
+
+### GetActiveConditions
+
+Retrieves active conditions for an aura and clone.
+
+<ParamField path="id" type="string" required>
+  The aura identifier
+</ParamField>
+
+<ParamField path="cloneId" type="string" required>
+  The clone identifier
+</ParamField>
+
+<ResponseField name="conditions" type="table">
+  Table of active conditions
+</ResponseField>
+
+```lua
+local conditions = WeakAuras.GetActiveConditions("MyAura", "")
+```
+
+## Utility Functions
+
+### prettyPrint
+
+Prints a formatted message with the WeakAuras prefix.
+
+<ParamField path="message" type="string" required>
+  The message to print
+</ParamField>
+
+```lua
+WeakAuras.prettyPrint("This is a formatted message")
+```
+
+### split
+
+Splits a string by commas and whitespace.
+
+<ParamField path="input" type="string" required>
+  The string to split
+</ParamField>
+
+<ResponseField name="parts" type="table">
+  Array of string parts
+</ResponseField>
+
+```lua
+local parts = WeakAuras.split("one, two, three")
+for i, part in ipairs(parts) do
+  print(i, part)
+end
+```
+
+### UnitNameWithRealm
+
+Gets the unit name with realm suffix.
+
+<ParamField path="unit" type="string" required>
+  The unit identifier
+</ParamField>
+
+<ResponseField name="name" type="string">
+  The unit name
+</ResponseField>
+
+<ResponseField name="realm" type="string">
+  The realm name
+</ResponseField>
+
+```lua
+local name, realm = WeakAuras.UnitNameWithRealm("player")
+print(name .. "-" .. realm)
+```
+
+## Advanced Functions
+
+### ScanEvents
+
+Manually triggers an event scan.
+
+<ParamField path="event" type="string" required>
+  The event name
+</ParamField>
+
+<ParamField path="..." type="any" optional>
+  Event arguments
+</ParamField>
+
+```lua
+WeakAuras.ScanEvents("CUSTOM_EVENT", arg1, arg2)
+```
+
+### LoadFunction
+
+Loads and compiles a Lua function string.
+
+<ParamField path="code" type="string" required>
+  The Lua code string
+</ParamField>
+
+<ParamField path="id" type="string" required>
+  The aura ID for error reporting
+</ParamField>
+
+<ResponseField name="func" type="function">
+  The compiled function
+</ResponseField>
+
+```lua
+local func = WeakAuras.LoadFunction("return function() print('Hello') end", "MyAura")
+if func then
+  func()()
+end
+```
+
+## See Also
+
+- [Event System](/api/events)
+- [Data Tables](/api/tables)
+- [Region Prototype](/api/regions/prototype)

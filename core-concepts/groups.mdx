@@ -1,0 +1,352 @@
+---
+title: "Groups and Dynamic Groups"
+description: "Organize and manage multiple displays with static and dynamic groups"
+icon: "object-group"
+---
+
+## Overview
+
+Groups are container displays that organize multiple WeakAuras displays into a single managed unit. They provide powerful positioning, layout, and management capabilities for complex display setups.
+
+<Info>
+Groups do not show visual information themselves - they organize and position child displays.
+</Info>
+
+## Group Types
+
+### Static Groups
+
+Static groups manually position child displays with fixed offsets:
+
+```lua
+-- Static group configuration
+{
+  regionType = "group",
+  controlledChildren = {"Display1", "Display2", "Display3"},
+  anchorPoint = "CENTER",
+  xOffset = 0,
+  yOffset = 0,
+  scale = 1.0
+}
+```
+
+**Use Cases:**
+- Fixed UI layouts
+- Custom HUD elements
+- Permanent display arrangements
+
+### Dynamic Groups
+
+Dynamic groups automatically arrange child displays based on rules:
+
+```lua
+-- Dynamic group configuration
+{
+  regionType = "dynamicgroup",
+  controlledChildren = {"Buff1", "Buff2", "Buff3"},
+  grow = "RIGHT",
+  align = "LEFT",
+  space = 2,
+  stagger = 0,
+  sort = "ascending",
+  limit = 10
+}
+```
+
+**Growth Directions:**
+- `RIGHT` - Horizontal growth to the right
+- `LEFT` - Horizontal growth to the left
+- `UP` - Vertical growth upward
+- `DOWN` - Vertical growth downward
+- `CIRCLE` - Circular arrangement
+- `GRID` - Grid layout
+
+<CodeGroup>
+```lua Horizontal Layout
+{
+  grow = "RIGHT",
+  align = "CENTER",
+  space = 5,
+  rows = 1
+}
+```
+
+```lua Grid Layout
+{
+  grow = "GRID",
+  gridType = "RD",  -- Right then Down
+  rowSpace = 3,
+  columnSpace = 3,
+  gridWidth = 5
+}
+```
+
+```lua Circular Layout
+{
+  grow = "CIRCLE",
+  radius = 100,
+  rotation = 0,
+  constantFactor = "RADIUS",
+  arcLength = 360
+}
+```
+</CodeGroup>
+
+## Child Display Management
+
+### Adding Children
+
+<Steps>
+  <Step title="Select Group">
+    Click the group display in the WeakAuras interface
+  </Step>
+  <Step title="Open Group Tab">
+    Navigate to the "Group" tab in display settings
+  </Step>
+  <Step title="Add Displays">
+    Click "Choose" and select displays to add as children
+  </Step>
+  <Step title="Arrange Order">
+    Drag displays to reorder them within the group
+  </Step>
+</Steps>
+
+### Child Properties
+
+Each child display inherits certain properties from the group:
+
+<CardGroup cols={2}>
+  <Card title="Frame Level" icon="layer-group">
+    Children share the group's frame level for consistent layering
+  </Card>
+  <Card title="Position" icon="location-dot">
+    Automatic positioning based on group layout settings
+  </Card>
+  <Card title="Scale" icon="maximize">
+    Group scale affects all children uniformly
+  </Card>
+  <Card title="Alpha" icon="eye">
+    Group alpha can cascade to all children
+  </Card>
+</CardGroup>
+
+## Sorting and Ordering
+
+Dynamic groups support multiple sorting methods:
+
+```lua
+{
+  sort = "hybrid",           -- Sorting method
+  hybridPosition = "hybrid", -- Position within hybrid sort
+  sortHybridTable = {
+    -- Custom hybrid sorting rules
+  }
+}
+```
+
+### Sort Methods
+
+| Method | Description |
+|--------|-------------|
+| `none` | Maintain manual order |
+| `ascending` | Sort by name A-Z |
+| `descending` | Sort by name Z-A |
+| `hybrid` | Custom multi-criteria sorting |
+
+<Tip>
+Use hybrid sorting to combine multiple sort criteria, like sorting buffs by duration then by name.
+</Tip>
+
+## Group Positioning
+
+### Anchor Points
+
+Groups support all standard anchor points:
+
+```lua
+{
+  selfPoint = "CENTER",      -- Where children anchor to
+  anchorPoint = "CENTER",    -- Where group anchors
+  anchorFrameType = "SCREEN",
+  xOffset = 0,
+  yOffset = 0
+}
+```
+
+### Stagger and Spacing
+
+<AccordionGroup>
+  <Accordion title="Space" icon="arrows-left-right">
+    Distance between child displays in pixels:
+    ```lua
+    { space = 5 }  -- 5 pixels between children
+    ```
+  </Accordion>
+  
+  <Accordion title="Stagger" icon="stairs">
+    Perpendicular offset for alternating children:
+    ```lua
+    { 
+      grow = "RIGHT",
+      stagger = 10  -- Every other child offset by 10 pixels
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Grid Spacing" icon="table-cells">
+    Separate row and column spacing:
+    ```lua
+    {
+      grow = "GRID",
+      rowSpace = 5,
+      columnSpace = 3
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Border and Background
+
+Groups can display borders around all visible children:
+
+```lua
+{
+  border = true,
+  borderEdge = "Square Full White",
+  borderSize = 2,
+  borderOffset = 4,
+  borderInset = 1,
+  borderColor = {0, 0, 0, 1},
+  borderBackdrop = "Blizzard Tooltip",
+  backdropColor = {1, 1, 1, 0.5}
+}
+```
+
+<Warning>
+Borders automatically adjust to encompass all visible children, which may cause size changes during animations.
+</Warning>
+
+## Advanced Features
+
+### Limit Display Count
+
+Control how many children are shown:
+
+```lua
+{
+  limit = 5,  -- Show only 5 displays
+  sort = "ascending"  -- Show first 5 alphabetically
+}
+```
+
+### Animation Coordination
+
+Groups can coordinate animations across all children:
+
+```lua
+{
+  groupIcon = true,          -- Use group-level icon
+  useAnchorPerUnit = false,  -- Shared anchor for all
+  stepAngle = 15            -- For circular layouts
+}
+```
+
+### Frame Level Management
+
+```lua
+{
+  sharedFrameLevel = true,  -- All children same level
+  frameStrata = 2          -- Medium strata
+}
+```
+
+<Card title="Frame Level Inheritance" icon="diagram-project">
+When `sharedFrameLevel` is enabled, all children are automatically set to the same frame level, ensuring consistent z-ordering.
+</Card>
+
+## Common Patterns
+
+### Buff Bar
+
+```lua
+-- Horizontal buff display
+{
+  regionType = "dynamicgroup",
+  grow = "RIGHT",
+  align = "LEFT",
+  space = 2,
+  sort = "ascending",
+  limit = 20,
+  border = true,
+  borderOffset = 5
+}
+```
+
+### Raid Cooldown Grid
+
+```lua
+-- Grid of raid cooldowns
+{
+  regionType = "dynamicgroup",
+  grow = "GRID",
+  gridType = "RD",
+  gridWidth = 5,
+  rowSpace = 3,
+  columnSpace = 3,
+  sort = "hybrid"
+}
+```
+
+### Circular Indicator
+
+```lua
+-- Circular resource display
+{
+  regionType = "dynamicgroup",
+  grow = "CIRCLE",
+  radius = 80,
+  rotation = 90,
+  arcLength = 360,
+  constantFactor = "RADIUS"
+}
+```
+
+## Best Practices
+
+<CheckGroup>
+  - <Check>Keep child displays simple for better performance</Check>
+  - <Check>Use appropriate growth directions for your UI layout</Check>
+  - <Check>Test with maximum expected child count</Check>
+  - <Check>Consider using limits for potentially large groups</Check>
+  - <Check>Use borders sparingly to reduce visual clutter</Check>
+</CheckGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Children Not Positioning" icon="triangle-exclamation">
+    Ensure the group display is loaded and children are properly added to `controlledChildren`.
+  </Accordion>
+  
+  <Accordion title="Border Flickering" icon="bolt">
+    Border size recalculates when children show/hide. Consider disabling border or using fixed positioning.
+  </Accordion>
+  
+  <Accordion title="Z-Order Issues" icon="layer-group">
+    Enable `sharedFrameLevel` or manually adjust frame levels of individual children.
+  </Accordion>
+</AccordionGroup>
+
+## Related Topics
+
+<CardGroup cols={3}>
+  <Card title="Display Types" icon="shapes" href="/core-concepts/display-types/icon">
+    Learn about child display types
+  </Card>
+  <Card title="Animations" icon="wand-magic-sparkles" href="/core-concepts/animations">
+    Coordinate animations in groups
+  </Card>
+  <Card title="Conditions" icon="code-branch" href="/core-concepts/conditions">
+    Apply group-level conditions
+  </Card>
+</CardGroup>

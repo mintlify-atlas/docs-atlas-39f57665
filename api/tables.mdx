@@ -1,0 +1,367 @@
+---
+title: 'Data Structures'
+description: 'WeakAuras data tables and structures'
+---
+
+## Overview
+
+WeakAuras uses several data structures to store aura configuration, trigger states, and runtime information.
+
+## Core Tables
+
+### WeakAurasSaved
+
+The main SavedVariables table containing all persistent data.
+
+<ResponseField name="displays" type="table">
+  All aura configurations, keyed by aura ID
+</ResponseField>
+
+<ResponseField name="registered" type="table">
+  Registered aura information
+</ResponseField>
+
+<ResponseField name="minimap" type="table">
+  Minimap icon configuration
+</ResponseField>
+
+<ResponseField name="features" type="table">
+  Feature flags
+</ResponseField>
+
+<ResponseField name="login_squelch_time" type="number">
+  Time in seconds to squelch actions after login (default: 10)
+</ResponseField>
+
+```lua
+local db = WeakAurasSaved
+for id, auraData in pairs(db.displays) do
+  print("Aura:", id)
+end
+```
+
+## Aura Data Structure
+
+Each aura in `WeakAurasSaved.displays` has the following structure:
+
+### Core Properties
+
+<ResponseField name="id" type="string">
+  Unique identifier for the aura
+</ResponseField>
+
+<ResponseField name="uid" type="string">
+  Universal unique identifier
+</ResponseField>
+
+<ResponseField name="regionType" type="string">
+  Region type: "icon", "text", "progresstexture", "model", "group", "dynamicgroup"
+</ResponseField>
+
+<ResponseField name="parent" type="string">
+  Parent group ID if this aura is in a group
+</ResponseField>
+
+<ResponseField name="url" type="string">
+  Wago.io URL if imported from Wago
+</ResponseField>
+
+<ResponseField name="version" type="number">
+  Aura version number
+</ResponseField>
+
+### Trigger Configuration
+
+<ResponseField name="triggers" type="table">
+  Array of trigger configurations
+</ResponseField>
+
+```lua
+data.triggers = {
+  [1] = {
+    trigger = {
+      type = "aura2",
+      subeventPrefix = "SPELL",
+      event = "Health",
+      unit = "player",
+      -- ... trigger-specific settings
+    },
+    untrigger = {
+      -- Untrigger configuration
+    }
+  }
+}
+```
+
+### Actions
+
+<ResponseField name="actions" type="table">
+  Actions to perform on different events
+</ResponseField>
+
+```lua
+data.actions = {
+  init = {
+    do_custom = false,
+    custom = "",
+  },
+  start = {
+    do_sound = false,
+    sound = "",
+    do_custom = false,
+    custom = "",
+    do_message = false,
+    message = "",
+  },
+  finish = {
+    do_sound = false,
+    sound = "",
+    do_custom = false,
+    custom = "",
+  }
+}
+```
+
+### Conditions
+
+<ResponseField name="conditions" type="table">
+  Array of condition configurations
+</ResponseField>
+
+```lua
+data.conditions = {
+  [1] = {
+    check = {
+      trigger = 1,
+      variable = "show",
+      value = 1
+    },
+    changes = {
+      [1] = {
+        property = "alpha",
+        value = 0.5
+      }
+    }
+  }
+}
+```
+
+### Load Conditions
+
+<ResponseField name="load" type="table">
+  Load conditions determining when the aura is loaded
+</ResponseField>
+
+```lua
+data.load = {
+  use_never = false,
+  use_class = true,
+  class = {
+    single = "DEATHKNIGHT",
+    multi = {}
+  },
+  use_spec = true,
+  spec = {
+    single = 1,
+    multi = {}
+  },
+  size = {
+    multi = {}
+  }
+}
+```
+
+## Trigger State Structure
+
+Trigger states contain the current runtime state of a trigger.
+
+### Common State Properties
+
+<ResponseField name="show" type="boolean">
+  Whether the aura should be shown
+</ResponseField>
+
+<ResponseField name="changed" type="boolean">
+  Whether the state has changed
+</ResponseField>
+
+<ResponseField name="progressType" type="string">
+  Progress type: "timed" or "static"
+</ResponseField>
+
+### Timed Progress Properties
+
+<ResponseField name="duration" type="number">
+  Total duration in seconds
+</ResponseField>
+
+<ResponseField name="expirationTime" type="number">
+  GetTime() value when the timer expires
+</ResponseField>
+
+<ResponseField name="autoHide" type="boolean">
+  Whether to auto-hide on expiration
+</ResponseField>
+
+<ResponseField name="paused" type="boolean">
+  Whether the timer is paused
+</ResponseField>
+
+<ResponseField name="remaining" type="number">
+  Remaining time when paused
+</ResponseField>
+
+<ResponseField name="inverse" type="boolean">
+  Whether to display progress inversely
+</ResponseField>
+
+### Static Progress Properties
+
+<ResponseField name="value" type="number">
+  Current value
+</ResponseField>
+
+<ResponseField name="total" type="number">
+  Maximum value
+</ResponseField>
+
+### Display Properties
+
+<ResponseField name="name" type="string">
+  Display name
+</ResponseField>
+
+<ResponseField name="icon" type="string">
+  Icon texture path or spell ID
+</ResponseField>
+
+<ResponseField name="texture" type="string">
+  Texture path
+</ResponseField>
+
+<ResponseField name="stacks" type="number">
+  Stack count
+</ResponseField>
+
+## Unit Tables
+
+WeakAuras provides pre-populated unit tables for common use cases.
+
+### Raid Units
+
+```lua
+WeakAuras.raidUnits = {
+  [1] = "raid1",
+  [2] = "raid2",
+  -- ... up to raid40
+}
+```
+
+### Party Units
+
+```lua
+WeakAuras.partyUnits = {
+  [1] = "party1",
+  [2] = "party2",
+  [3] = "party3",
+  [4] = "party4"
+}
+```
+
+### Pet Units
+
+```lua
+WeakAuras.petUnitToUnit = {
+  pet = "player",
+  raidpet1 = "raid1",
+  partypet1 = "party1",
+  -- ...
+}
+
+WeakAuras.unitToPetUnit = {
+  player = "pet",
+  raid1 = "raidpet1",
+  party1 = "partypet1",
+  -- ...
+}
+```
+
+## Region Tables
+
+### Private.regions
+
+Table of all active regions.
+
+```lua
+local Private = select(2, ...)
+for id, regionData in pairs(Private.regions) do
+  local region = regionData.region
+  local regionType = regionData.regionType
+  print(id, regionType)
+end
+```
+
+### Private.regionTypes
+
+Registered region type definitions.
+
+<ResponseField name="create" type="function">
+  Function to create a new region
+</ResponseField>
+
+<ResponseField name="modify" type="function">
+  Function to modify an existing region
+</ResponseField>
+
+<ResponseField name="default" type="table">
+  Default configuration values
+</ResponseField>
+
+<ResponseField name="properties" type="table">
+  Region properties for conditions
+</ResponseField>
+
+```lua
+local iconType = Private.regionTypes["icon"]
+if iconType then
+  local defaults = iconType.default
+  print("Default width:", defaults.width)
+end
+```
+
+## Trigger System Tables
+
+### Private.triggerTypes
+
+Maps trigger types to their handler systems.
+
+```lua
+local Private = select(2, ...)
+local triggerSystem = Private.triggerTypes["aura2"]
+if triggerSystem then
+  -- BuffTrigger system
+end
+```
+
+## Animation Tables
+
+### Private.anim_presets
+
+Pre-defined animation configurations.
+
+```lua
+local presets = Private.anim_presets
+local fadeAnim = presets.fade
+-- {
+--   type = "custom",
+--   duration = 0.25,
+--   use_alpha = true,
+--   alpha = 0
+-- }
+```
+
+## See Also
+
+- [Core Functions](/api/functions)
+- [Event System](/api/events)
+- [BuffTrigger System](/api/systems/buff-trigger)

@@ -1,0 +1,529 @@
+---
+title: "Combat Log Event Triggers"
+description: "Monitor combat log events for damage, healing, spell casts, and more"
+icon: "swords"
+---
+
+## Overview
+
+Combat log event triggers monitor the `COMBAT_LOG_EVENT_UNFILTERED` event, providing detailed information about damage, healing, spell casts, and other combat activities.
+
+<Info>
+Combat log triggers fire for every matching combat event, making them ideal for proc tracking and combat analysis.
+</Info>
+
+## Basic Combat Event Trigger
+
+```lua
+{
+  type = "event",
+  event = "COMBAT_LOG_EVENT_UNFILTERED",
+  subeventPrefix = "SPELL_CAST_SUCCESS",
+  sourceUnit = "player",
+  spellIds = {"12345"}
+}
+```
+
+## Combat Log Subevents
+
+The combat log uses specific subevent prefixes:
+
+### Spell Events
+
+<Tabs>
+  <Tab title="Cast Events">
+    ```lua
+    {
+      subeventPrefix = "SPELL_CAST_START",    -- Cast begins
+      subeventPrefix = "SPELL_CAST_SUCCESS",  -- Cast completes
+      subeventPrefix = "SPELL_CAST_FAILED"    -- Cast fails
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Aura Events">
+    ```lua
+    {
+      subeventPrefix = "SPELL_AURA_APPLIED",        -- Aura gained
+      subeventPrefix = "SPELL_AURA_REMOVED",        -- Aura lost
+      subeventPrefix = "SPELL_AURA_APPLIED_DOSE",   -- Stacks gained
+      subeventPrefix = "SPELL_AURA_REMOVED_DOSE",   -- Stacks lost
+      subeventPrefix = "SPELL_AURA_REFRESH"         -- Aura refreshed
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Damage Events">
+    ```lua
+    {
+      subeventPrefix = "SPELL_DAMAGE",     -- Spell damage
+      subeventPrefix = "SWING_DAMAGE",     -- Melee damage
+      subeventPrefix = "RANGE_DAMAGE",     -- Ranged damage
+      subeventPrefix = "SPELL_PERIODIC_DAMAGE"  -- DoT tick
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Heal Events">
+    ```lua
+    {
+      subeventPrefix = "SPELL_HEAL",           -- Direct heal
+      subeventPrefix = "SPELL_PERIODIC_HEAL"   -- HoT tick
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Event Filtering
+
+### Source Unit Filter
+
+<CodeGroup>
+```lua Player Actions
+{
+  sourceUnit = "player"  -- Only player's actions
+}
+```
+
+```lua Target Actions  
+{
+  sourceUnit = "target"  -- Only target's actions
+}
+```
+
+```lua Any Ally
+{
+  sourceUnit = "group"  -- Any party/raid member
+}
+```
+</CodeGroup>
+
+### Destination Unit Filter
+
+```lua
+{
+  destUnit = "player",    -- Events affecting player
+  destUnit = "target",    -- Events affecting target
+  destUnit = "boss"       -- Events affecting any boss
+}
+```
+
+### Spell Filter
+
+<Tabs>
+  <Tab title="Spell IDs">
+    ```lua
+    {
+      use_spellId = true,
+      spellIds = {
+        "48068",  -- Renew
+        "48066"   -- Power Word: Shield
+      }
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Spell Names">
+    ```lua
+    {
+      use_spellName = true,
+      spellName = "Fireball"
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Spell School">
+    ```lua
+    {
+      use_spellschool = true,
+      spellschool = {
+        [2] = true,   -- Holy
+        [4] = true    -- Fire
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Damage and Healing Filters
+
+### Amount Thresholds
+
+```lua
+{
+  subeventPrefix = "SPELL_DAMAGE",
+  use_amount = true,
+  amount = "1000",
+  amount_operator = ">="
+}
+```
+
+### Crit Detection
+
+```lua
+{
+  subeventPrefix = "SPELL_DAMAGE",
+  use_critical = true,
+  critical = true  -- Only crits
+}
+```
+
+### Overkill Tracking
+
+```lua
+{
+  subeventPrefix = "SPELL_DAMAGE",
+  use_overkill = true,
+  overkill = "0",
+  overkill_operator = ">"  -- Overkill occurred
+}
+```
+
+### Absorb and Block
+
+```lua
+{
+  use_absorbed = true,
+  absorbed = "0",
+  absorbed_operator = ">",  -- Some damage absorbed
+  
+  use_blocked = true,
+  blocked = "0",
+  blocked_operator = ">"    -- Some damage blocked
+}
+```
+
+## Advanced Filters
+
+### Power Type
+
+```lua
+{
+  subeventPrefix = "SPELL_ENERGIZE",
+  use_powertype = true,
+  powertype = 0  -- Mana
+}
+```
+
+**Power Types:**
+- `0` - Mana
+- `1` - Rage
+- `2` - Focus
+- `3` - Energy
+- `6` - Runic Power
+
+### Extra Spell
+
+```lua
+{
+  use_extraSpellId = true,
+  extraSpellId = "12345"  -- Proc spell ID
+}
+```
+
+### Miss Type
+
+```lua
+{
+  subeventPrefix = "SPELL_MISSED",
+  use_missType = true,
+  missType = "RESIST"  -- Only resists
+}
+```
+
+**Miss Types:** `MISS`, `DODGE`, `PARRY`, `BLOCK`, `RESIST`, `IMMUNE`, `EVADE`, `DEFLECT`, `ABSORB`
+
+## Event Counter
+
+Count occurrences of combat events:
+
+```lua
+{
+  event = "COMBAT_LOG_EVENT_UNFILTERED",
+  use_count = true,
+  count = "3",           -- Every 3rd event
+  count_operator = "=="
+}
+```
+
+<Info>
+Event counters persist until manually reset, useful for proc tracking.
+</Info>
+
+## Event Arguments
+
+Combat log events provide extensive information:
+
+```lua
+function(event, timestamp, subevent, hideCaster,
+         sourceGUID, sourceName, sourceFlags, sourceRaidFlags,
+         destGUID, destName, destFlags, destRaidFlags,
+         ...  -- Additional args based on subevent
+)
+```
+
+### Damage Event Args
+
+```lua
+-- After standard args:
+spellId, spellName, spellSchool,
+amount, overkill, school, resisted, blocked, absorbed, critical
+```
+
+### Heal Event Args
+
+```lua
+-- After standard args:
+spellId, spellName, spellSchool,
+amount, overhealing, absorbed, critical
+```
+
+### Aura Event Args
+
+```lua
+-- After standard args:
+spellId, spellName, spellSchool,
+auraType, amount  -- amount is stack count
+```
+
+## Custom Event Processing
+
+Process combat events with custom logic:
+
+```lua
+function(event, timestamp, subevent, ...) 
+  local args = {...}
+  
+  -- Extract common fields
+  local sourceGUID = args[1]
+  local sourceName = args[2]
+  local destGUID = args[5]
+  local destName = args[6]
+  
+  -- Damage events have these fields
+  if subevent:match("_DAMAGE$") then
+    local spellId = args[9]
+    local amount = args[12]
+    local critical = args[18]
+    
+    return critical and amount > 10000
+  end
+  
+  return false
+end
+```
+
+## Performance Considerations
+
+<AccordionGroup>
+  <Accordion title="Event Volume" icon="chart-line">
+    Combat log generates massive event volume in raids:
+    ```lua
+    -- Good: Specific filtering
+    {
+      sourceUnit = "player",
+      spellIds = {"12345"},
+      subeventPrefix = "SPELL_CAST_SUCCESS"
+    }
+    
+    -- Bad: No filtering
+    {
+      event = "COMBAT_LOG_EVENT_UNFILTERED"
+      -- Processes EVERY combat event!
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Subevent Filtering" icon="filter">
+    Always specify subeventPrefix to reduce processing:
+    ```lua
+    {
+      subeventPrefix = "SPELL_",  -- Only spell events
+      -- Much faster than checking every event
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Unit Filtering" icon="users">
+    Filter by source/dest units early:
+    ```lua
+    {
+      sourceUnit = "player",  -- Filter before custom code
+      -- Prevents running code for non-player events
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Common Patterns
+
+### Proc Detection
+
+```lua
+{
+  type = "event",
+  event = "COMBAT_LOG_EVENT_UNFILTERED",
+  subeventPrefix = "SPELL_AURA_APPLIED",
+  sourceUnit = "player",
+  spellIds = {"12345"},  -- Proc buff ID
+  duration = 10           -- Show for 10 seconds
+}
+```
+
+### Damage Tracker
+
+```lua
+{
+  type = "event",
+  event = "COMBAT_LOG_EVENT_UNFILTERED",
+  subeventPrefix = "SPELL_DAMAGE",
+  sourceUnit = "player",
+  use_amount = true,
+  amount = "5000",
+  amount_operator = ">=",
+  use_critical = true,
+  critical = true
+}
+```
+
+### Interrupt Monitor
+
+```lua
+{
+  type = "event",
+  event = "COMBAT_LOG_EVENT_UNFILTERED",
+  subeventPrefix = "SPELL_INTERRUPT",
+  sourceUnit = "group",  -- Track all party interrupts
+  duration = 5
+}
+```
+
+### Dispel Tracker
+
+```lua
+{
+  type = "event",
+  event = "COMBAT_LOG_EVENT_UNFILTERED",
+  subeventPrefix = "SPELL_DISPEL",
+  sourceUnit = "player",
+  use_extraSpellId = true  -- Track what was dispelled
+}
+```
+
+### Death Detection
+
+```lua
+{
+  type = "event",
+  event = "COMBAT_LOG_EVENT_UNFILTERED",
+  subeventPrefix = "UNIT_DIED",
+  destUnit = "player"  -- Player death
+}
+```
+
+## Combining with Other Triggers
+
+Combat events work well in multi-trigger setups:
+
+```lua
+{
+  disjunctive = "all",
+  triggers = {
+    [1] = {
+      -- Trigger 1: In combat
+      type = "status",
+      event = "Conditions",
+      use_incombat = true
+    },
+    [2] = {
+      -- Trigger 2: Damage spike
+      type = "event",
+      event = "COMBAT_LOG_EVENT_UNFILTERED",
+      subeventPrefix = "SPELL_DAMAGE",
+      destUnit = "player",
+      use_amount = true,
+      amount = "10000",
+      amount_operator = ">="
+    }
+  }
+}
+```
+
+## Spell School Reference
+
+<CardGroup cols={3}>
+  <Card title="Physical" icon="dumbbell">
+    School ID: `1`
+  </Card>
+  <Card title="Holy" icon="hands-praying">
+    School ID: `2`
+  </Card>
+  <Card title="Fire" icon="fire">
+    School ID: `4`
+  </Card>
+  <Card title="Nature" icon="leaf">
+    School ID: `8`
+  </Card>
+  <Card title="Frost" icon="snowflake">
+    School ID: `16`
+  </Card>
+  <Card title="Shadow" icon="moon">
+    School ID: `32`
+  </Card>
+  <Card title="Arcane" icon="wand-sparkles">
+    School ID: `64`
+  </Card>
+</CardGroup>
+
+<Tip>
+Multiple schools are bitwise OR: Frostfire = 16 | 4 = 20
+</Tip>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Events Not Firing" icon="circle-exclamation">
+    - Verify subeventPrefix matches exactly
+    - Check source/dest unit filters
+    - Ensure you're in combat range
+    - Use `/combatlog` to verify events are generated
+  </Accordion>
+  
+  <Accordion title="Too Many Triggers" icon="fire">
+    - Add more specific filters (spell ID, unit)
+    - Use subeventPrefix to filter early
+    - Consider using aura2 triggers for buffs instead
+  </Accordion>
+  
+  <Accordion title="Missing Information" icon="question">
+    Some events have limited information:
+    - Environmental damage has no source
+    - Some NPC events lack detailed flags
+    - Check combat log output for available data
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CheckGroup>
+  - <Check>Always specify subeventPrefix for performance</Check>
+  - <Check>Use spell IDs instead of names when possible</Check>
+  - <Check>Filter by source/dest units early</Check>
+  - <Check>Avoid custom code in high-volume scenarios</Check>
+  - <Check>Use aura2 triggers for buff/debuff tracking</Check>
+  - <Check>Test in raid environments for performance</Check>
+</CheckGroup>
+
+## Related Topics
+
+<CardGroup cols={3}>
+  <Card title="Buff/Debuff Triggers" icon="sparkles" href="/core-concepts/triggers/buff-debuff">
+    More efficient aura tracking
+  </Card>
+  <Card title="Custom Lua" icon="code" href="/core-concepts/triggers/custom-lua">
+    Advanced event processing
+  </Card>
+  <Card title="Trigger Overview" icon="bolt" href="/core-concepts/triggers/overview">
+    Trigger system fundamentals
+  </Card>
+</CardGroup>

@@ -1,0 +1,582 @@
+---
+title: Lua Scripting
+description: Advanced customization using Lua code in WeakAuras
+icon: code
+---
+
+WeakAuras supports custom Lua code for advanced functionality beyond standard triggers and conditions. This guide covers the Lua environment, common patterns, and best practices.
+
+## The Aura Environment
+
+WeakAuras provides a sandboxed Lua environment for custom code execution.
+
+### aura_env
+
+The `aura_env` table is unique to each aura and persists while the aura is loaded:
+
+```lua
+-- Store variables specific to this aura
+aura_env.myCounter = 0
+aura_env.lastCastTime = 0
+aura_env.playerName = UnitName("player")
+
+-- Access in other custom code sections
+if aura_env.myCounter > 5 then
+  -- Do something
+end
+```
+
+<Tip>
+Use `aura_env` to share data between different custom code sections (Init, Trigger, Actions).
+</Tip>
+
+### aura_env.config
+
+For non-group auras, `aura_env.config` contains the aura's configuration:
+
+```lua
+-- Access aura settings
+local width = aura_env.config.width
+local height = aura_env.config.height
+local icon = aura_env.config.displayIcon
+```
+
+### aura_env.saved
+
+Data stored in `aura_env.saved` persists across sessions:
+
+```lua
+-- Initialize saved data
+aura_env.saved = aura_env.saved or {}
+aura_env.saved.totalCasts = aura_env.saved.totalCasts or 0
+
+-- Increment and save
+aura_env.saved.totalCasts = aura_env.saved.totalCasts + 1
+```
+
+<Warning>
+Large amounts of saved data can impact load times. Keep `aura_env.saved` data minimal.
+</Warning>
+
+## Custom Code Sections
+
+### On Init
+
+Runs once when the aura is loaded:
+
+```lua
+-- Initialize variables
+aura_env.spellID = 47440 -- Battle Shout
+aura_env.warnThreshold = 30 -- Warn at 30 seconds remaining
+aura_env.hasWarned = false
+
+-- Create frame for event handling
+aura_env.frame = aura_env.frame or CreateFrame("Frame")
+
+-- Register events
+aura_env.frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+aura_env.frame:SetScript("OnEvent", function(self, event, ...)
+  if event == "PLAYER_ENTERING_WORLD" then
+    print("Aura initialized")
+  end
+end)
+```
+
+### Custom Trigger
+
+Defines when the aura should show:
+
+```lua
+function()
+  -- Return true to show, false to hide
+  local name, _, _, count, _, duration, expirationTime = WA_GetUnitBuff("player", "Battle Shout")
+  
+  if name then
+    -- Provide state data to the display
+    return true, {
+      show = true,
+      changed = true,
+      name = name,
+      duration = duration,
+      expirationTime = expirationTime,
+      stacks = count or 1
+    }
+  end
+  
+  return false
+end
+```
+
+<Note>
+Custom triggers should return:
+1. Boolean (true = show, false = hide)
+2. Optional state table with display information
+</Note>
+
+### Custom Untrigger
+
+Optional: defines when to hide the aura:
+
+```lua
+function()
+  -- Return true to hide
+  local name = WA_GetUnitBuff("player", "Battle Shout")
+  return not name -- Hide when buff is gone
+end
+```
+
+### Custom Duration
+
+Provides duration information for progress bars and cooldown displays:
+
+```lua
+function()
+  local name, _, _, _, _, duration, expirationTime = WA_GetUnitBuff("player", "Battle Shout")
+  
+  if name and duration and duration > 0 then
+    return duration, expirationTime
+  end
+  
+  return 0, 0 -- No duration
+end
+```
+
+### Custom Actions
+
+Execute code when aura shows/hides:
+
+```lua
+-- On Show
+if aura_env.config.playSound then
+  PlaySoundFile("Sound\\Interface\\AlarmClockWarning3.ogg")
+end
+
+print("Buff active! Duration:", aura_env.state.duration)
+
+-- On Hide  
+aura_env.hasWarned = false
+print("Buff faded")
+```
+
+## Available APIs
+
+### WeakAuras Functions
+
+<AccordionGroup>
+  <Accordion title="WA_GetUnitBuff / WA_GetUnitDebuff">
+    Efficient buff/debuff lookup:
+    
+    ```lua
+    -- By spell name
+    local name, icon, count, _, _, duration, expirationTime, _, _, _, spellId = 
+      WA_GetUnitBuff("player", "Battle Shout")
+    
+    -- By spell ID (faster)
+    local name, icon, count, _, _, duration, expirationTime = 
+      WA_GetUnitBuff("player", 47440)
+    
+    -- With filter
+    local name = WA_GetUnitBuff("player", "Blessing of Might", "PLAYER") -- Only buffs cast by player
+    ```
+  </Accordion>
+  
+  <Accordion title="WA_IterateGroupMembers">
+    Iterate party/raid members:
+    
+    ```lua
+    for unit in WA_IterateGroupMembers() do
+      local name = UnitName(unit)
+      local health = UnitHealth(unit)
+      print(name, health)
+    end
+    ```
+  </Accordion>
+  
+  <Accordion title="WA_ClassColorName">
+    Get colored player names:
+    
+    ```lua
+    local coloredName = WA_ClassColorName("player") -- |cFFC79C6EWarrior|r
+    local shortName = WA_ClassColorName("target", 10) -- Limit to 10 characters
+    ```
+  </Accordion>
+  
+  <Accordion title="WA_Utf8Sub">
+    Safely substring UTF-8 text:
+    
+    ```lua
+    local short = WA_Utf8Sub("Long Player Name", 8) -- "Long Pla"
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### WeakAuras Namespace
+
+Access WeakAuras functions (read-only):
+
+```lua
+-- Get aura data (returns a copy)
+local data = WeakAuras.GetData("AuraName")
+
+-- Get region
+local region = WeakAuras.GetRegion("AuraName")
+
+-- Scan for events (trigger refresh)
+WeakAuras.ScanEvents("AURA_UPDATE")
+
+-- Show/hide overlays
+WeakAuras.ShowOverlayGlow(frame)
+WeakAuras.HideOverlayGlow(frame)
+```
+
+<Warning>
+Calling `WeakAuras.GetData()` frequently can impact performance. Cache results when possible.
+</Warning>
+
+### Standard WoW API
+
+All standard WoW API functions are available:
+
+```lua
+-- Unit functions
+local health = UnitHealth("player")
+local maxHealth = UnitHealthMax("player")
+local power = UnitPower("player", 0) -- 0 = mana
+local name, realm = UnitName("target")
+local class = UnitClass("player")
+
+-- Spell functions
+local start, duration = GetSpellCooldown(47440) -- Battle Shout
+local name = GetSpellInfo(47440)
+
+-- Combat  
+local inCombat = UnitAffectingCombat("player")
+
+-- Time
+local currentTime = GetTime()
+```
+
+### Utility Functions
+
+```lua
+-- Debug output
+DebugPrint("Value:", someVariable) -- Only shows if debug mode enabled
+
+-- Regular print
+print("Message") -- Always shows in chat
+
+-- Math
+local rounded = math.floor(3.7) -- 3
+local ceiled = math.ceil(3.2) -- 4
+local maxVal = math.max(5, 10, 3) -- 10
+```
+
+## Common Patterns
+
+### Tracking Multiple Buffs
+
+```lua
+function()
+  local buffs = {"Battle Shout", "Commanding Shout", "Fortitude"}
+  local activeBuffs = {}
+  
+  for _, buffName in ipairs(buffs) do
+    if WA_GetUnitBuff("player", buffName) then
+      table.insert(activeBuffs, buffName)
+    end
+  end
+  
+  if #activeBuffs > 0 then
+    return true, {
+      show = true,
+      changed = true,
+      activeCount = #activeBuffs,
+      buffList = table.concat(activeBuffs, ", ")
+    }
+  end
+  
+  return false
+end
+```
+
+### Cooldown Tracking
+
+```lua
+function()
+  local spellID = 47440 -- Battle Shout
+  local start, duration = GetSpellCooldown(spellID)
+  
+  if start and duration and duration > 0 then
+    local remaining = (start + duration) - GetTime()
+    
+    return true, {
+      show = true,
+      changed = true,
+      duration = duration,
+      expirationTime = start + duration,
+      remaining = remaining,
+      ready = false
+    }
+  else
+    return true, {
+      show = true,
+      changed = true,
+      ready = true
+    }
+  end
+end
+```
+
+### Health Threshold Warnings
+
+```lua
+function()
+  local healthPct = (UnitHealth("player") / UnitHealthMax("player")) * 100
+  local threshold = 35 -- 35% health
+  
+  if healthPct < threshold then
+    return true, {
+      show = true,
+      changed = true,
+      health = healthPct,
+      progressType = "static",
+      value = healthPct,
+      total = 100
+    }
+  end
+  
+  return false
+end
+```
+
+### Raid Debuff Checking
+
+```lua
+function()
+  local debuffSpellIDs = {12345, 23456, 34567} -- Raid debuffs to track
+  
+  for unit in WA_IterateGroupMembers() do
+    for _, spellID in ipairs(debuffSpellIDs) do
+      local name, _, count, _, _, duration, expirationTime = WA_GetUnitDebuff(unit, spellID)
+      
+      if name then
+        return true, {
+          show = true,
+          changed = true,
+          unit = unit,
+          unitName = WA_ClassColorName(unit),
+          debuffName = name,
+          stacks = count or 1,
+          duration = duration,
+          expirationTime = expirationTime
+        }
+      end
+    end
+  end
+  
+  return false
+end
+```
+
+### Event-Based Triggers
+
+```lua
+-- On Init: Setup event listener
+aura_env.frame = aura_env.frame or CreateFrame("Frame")
+aura_env.shouldShow = false
+
+aura_env.frame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+aura_env.frame:SetScript("OnEvent", function(self, event, unit, _, spellID)
+  if unit == "player" and spellID == 47440 then -- Battle Shout cast
+    aura_env.shouldShow = true
+    aura_env.castTime = GetTime()
+    WeakAuras.ScanEvents("CUSTOM_TRIGGER_CHECK")
+  end
+end)
+
+-- Custom Trigger
+function()
+  if aura_env.shouldShow then
+    local elapsed = GetTime() - aura_env.castTime
+    
+    if elapsed < 5 then -- Show for 5 seconds
+      return true, {
+        show = true,
+        changed = true,
+        elapsed = elapsed
+      }
+    else
+      aura_env.shouldShow = false
+    end
+  end
+  
+  return false
+end
+```
+
+## Performance Considerations
+
+<CardGroup cols={2}>
+  <Card title="Use Specific Events" icon="bolt">
+    Register only the events you need instead of scanning every frame.
+  </Card>
+  
+  <Card title="Cache WoW API Calls" icon="database">
+    Store results of expensive function calls instead of calling repeatedly.
+  </Card>
+  
+  <Card title="Limit Group Iterations" icon="users">
+    Only iterate raid members when necessary. Use specific units when possible.
+  </Card>
+  
+  <Card title="Avoid Every Frame Updates" icon="stopwatch">
+    Use event-based triggers instead of "On Every Frame" actions.
+  </Card>
+</CardGroup>
+
+### Optimization Example
+
+```lua
+-- BAD: Calls API every frame
+function()
+  local name = GetSpellInfo(47440)
+  local health = UnitHealth("player")
+  -- ... more API calls every trigger check
+end
+
+-- GOOD: Cache static data in aura_env
+-- On Init:
+aura_env.spellName = GetSpellInfo(47440) -- Cache spell name
+
+-- Custom Trigger:
+function()
+  local health = UnitHealth("player") -- Only call what changes
+  -- Use aura_env.spellName instead of calling GetSpellInfo again
+end
+```
+
+## Debugging
+
+### DebugPrint Function
+
+```lua
+DebugPrint("Variable value:", myVariable)
+DebugPrint("Table:", aura_env.myTable)
+```
+
+Enable debug output with `/wa debuglog` to see DebugPrint messages.
+
+### Error Handling
+
+```lua
+-- Wrap risky code in pcall
+local success, result = pcall(function()
+  -- Code that might error
+  return someFunction()
+end)
+
+if not success then
+  print("Error occurred:", result)
+end
+```
+
+### Profiling
+
+Check aura performance:
+
+```
+/wa pstart  -- Start profiling
+-- Play the game for a bit
+/wa pstop   -- Stop and show results
+```
+
+## Security & Sandboxing
+
+WeakAuras sandboxes custom code for security:
+
+### Blocked Functions
+
+These functions are **not available** in custom code:
+
+- `loadstring`, `pcall`, `xpcall` (code execution)
+- `setfenv`, `getfenv` (environment manipulation)  
+- `SendMail`, `SetTradeMoney` (economy)
+- `RunScript` (arbitrary code execution)
+- File I/O functions
+
+### Read-Only Access
+
+WeakAuras table is read-only in custom code:
+
+```lua
+-- OK: Reading WeakAuras functions
+local region = WeakAuras.GetRegion("MyAura")
+
+-- NOT OK: Writing to WeakAuras
+WeakAuras.myVariable = 123 -- Will error
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Initialize Variables in On Init">
+    Set up `aura_env` variables in the On Init section:
+    
+    ```lua
+    -- On Init
+    aura_env.counter = 0
+    aura_env.threshold = 50
+    aura_env.spellID = 47440
+    ```
+  </Accordion>
+  
+  <Accordion title="Comment Your Code">
+    Document complex logic:
+    
+    ```lua
+    -- Check if player has Battle Shout and is in combat
+    -- Returns true when buff duration < 30 seconds remaining
+    function()
+      local name, _, _, _, _, duration, expirationTime = WA_GetUnitBuff("player", 47440)
+      -- ... implementation
+    end
+    ```
+  </Accordion>
+  
+  <Accordion title="Validate Input">
+    Check for nil values:
+    
+    ```lua
+    local name, _, count = WA_GetUnitBuff("player", spellID)
+    if name then -- Make sure buff exists
+      local stacks = count or 1 -- Default to 1 if count is nil
+      -- ... use stacks
+    end
+    ```
+  </Accordion>
+  
+  <Accordion title="Clean Up Resources">
+    Unregister events and clean up frames when appropriate:
+    
+    ```lua
+    -- When no longer needed
+    if aura_env.frame then
+      aura_env.frame:UnregisterAllEvents()
+    end
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Custom Triggers" icon="sliders" href="/development/custom-triggers">
+    Advanced trigger patterns
+  </Card>
+  <Card title="Performance" icon="gauge" href="/development/performance-optimization">
+    Optimization techniques
+  </Card>
+  <Card title="AuraEnvironment.lua" icon="file-code" href="https://github.com/NoM0Re/WeakAuras-WotLK/blob/master/WeakAuras/AuraEnvironment.lua">
+    View source code
+  </Card>
+</CardGroup>

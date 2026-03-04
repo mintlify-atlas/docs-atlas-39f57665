@@ -1,0 +1,554 @@
+---
+title: Progress Texture Region
+description: API reference for WeakAuras Progress Texture region type
+---
+
+The Progress Texture region displays a textured progress bar or radial fill. It supports horizontal, vertical, and circular progress displays with advanced texture transformation.
+
+## Region Type
+
+```lua
+regionType = "progresstexture"
+```
+
+## Default Configuration
+
+```lua
+local default = {
+  foregroundTexture = "Interface\\Addons\\WeakAuras\\PowerAurasMedia\\Auras\\Aura3",
+  backgroundTexture = "Interface\\Addons\\WeakAuras\\PowerAurasMedia\\Auras\\Aura3",
+  desaturateBackground = false,
+  desaturateForeground = false,
+  sameTexture = true,
+  compress = false,
+  blendMode = "BLEND",
+  backgroundOffset = 2,
+  width = 200,
+  height = 200,
+  orientation = "VERTICAL",
+  inverse = false,
+  foregroundColor = {1, 1, 1, 1},
+  backgroundColor = {0.5, 0.5, 0.5, 0.5},
+  startAngle = 0,
+  endAngle = 360,
+  user_x = 0,
+  user_y = 0,
+  crop_x = 0.41,
+  crop_y = 0.41,
+  rotation = 0,
+  mirror = false
+}
+```
+
+## Orientation Types
+
+- `HORIZONTAL` - Fill left to right
+- `HORIZONTAL_INVERSE` - Fill right to left
+- `VERTICAL` - Fill bottom to top
+- `VERTICAL_INVERSE` - Fill top to bottom
+- `CLOCKWISE` - Circular fill clockwise
+- `ANTICLOCKWISE` - Circular fill counter-clockwise
+
+## Functions
+
+### Color
+
+Sets the foreground texture color and alpha.
+
+```lua
+region:Color(r, g, b, a)
+```
+
+<ParamField path="r" type="number">
+  Red color component (0-1)
+</ParamField>
+
+<ParamField path="g" type="number">
+  Green color component (0-1)
+</ParamField>
+
+<ParamField path="b" type="number">
+  Blue color component (0-1)
+</ParamField>
+
+<ParamField path="a" type="number">
+  Alpha transparency (0-1)
+</ParamField>
+
+**Example:**
+```lua
+-- Set foreground to blue
+region:Color(0, 0.5, 1, 1)
+```
+
+### ColorAnim
+
+Sets animated color values for the foreground.
+
+```lua
+region:ColorAnim(r, g, b, a)
+```
+
+<ParamField path="r" type="number">
+  Red color component (0-1)
+</ParamField>
+
+<ParamField path="g" type="number">
+  Green color component (0-1)
+</ParamField>
+
+<ParamField path="b" type="number">
+  Blue color component (0-1)
+</ParamField>
+
+<ParamField path="a" type="number">
+  Alpha transparency (0-1)
+</ParamField>
+
+### GetColor
+
+Returns current foreground color values.
+
+```lua
+local r, g, b, a = region:GetColor()
+```
+
+<ResponseField name="r" type="number">
+  Red color component (0-1)
+</ResponseField>
+
+<ResponseField name="g" type="number">
+  Green color component (0-1)
+</ResponseField>
+
+<ResponseField name="b" type="number">
+  Blue color component (0-1)
+</ResponseField>
+
+<ResponseField name="a" type="number">
+  Alpha transparency (0-1)
+</ResponseField>
+
+### SetValueOnTexture
+
+Sets the progress value (0-1) and updates the texture display.
+
+```lua
+region:SetValueOnTexture(progress)
+```
+
+<ParamField path="progress" type="number">
+  Progress value from 0 to 1
+</ParamField>
+
+**Example:**
+```lua
+-- Set to 75% progress
+region:SetValueOnTexture(0.75)
+```
+
+### Scale
+
+Scales the region by the given factors.
+
+```lua
+region:Scale(scalex, scaley)
+```
+
+<ParamField path="scalex" type="number">
+  Horizontal scale factor (negative mirrors horizontally)
+</ParamField>
+
+<ParamField path="scaley" type="number">
+  Vertical scale factor (negative mirrors vertically)
+</ParamField>
+
+**Example:**
+```lua
+-- Scale to 150% size
+region:Scale(1.5, 1.5)
+```
+
+### Rotate
+
+Rotates the texture by the specified angle.
+
+```lua
+region:Rotate(angle)
+```
+
+<ParamField path="angle" type="number">
+  Rotation angle in radians
+</ParamField>
+
+**Example:**
+```lua
+-- Rotate 45 degrees
+region:Rotate(math.rad(45))
+```
+
+### GetRotation
+
+Returns the current rotation angle.
+
+```lua
+local angle = region:GetRotation()
+```
+
+<ResponseField name="angle" type="number">
+  Current rotation in radians
+</ResponseField>
+
+### SetTexture
+
+Changes the foreground texture (and background if sameTexture is enabled).
+
+```lua
+region:SetTexture(texture)
+```
+
+<ParamField path="texture" type="string">
+  Path to texture file
+</ParamField>
+
+**Example:**
+```lua
+region:SetTexture("Interface\\Addons\\WeakAuras\\Media\\Textures\\Circle")
+```
+
+### SetForegroundDesaturated
+
+Converts foreground texture to grayscale.
+
+```lua
+region:SetForegroundDesaturated(desaturate)
+```
+
+<ParamField path="desaturate" type="boolean">
+  true for grayscale, false for full color
+</ParamField>
+
+### SetBackgroundDesaturated
+
+Converts background texture to grayscale.
+
+```lua
+region:SetBackgroundDesaturated(desaturate)
+```
+
+<ParamField path="desaturate" type="boolean">
+  true for grayscale, false for full color
+</ParamField>
+
+### SetBackgroundColor
+
+Sets the background texture color.
+
+```lua
+region:SetBackgroundColor(r, g, b, a)
+```
+
+<ParamField path="r" type="number">
+  Red color component (0-1)
+</ParamField>
+
+<ParamField path="g" type="number">
+  Green color component (0-1)
+</ParamField>
+
+<ParamField path="b" type="number">
+  Blue color component (0-1)
+</ParamField>
+
+<ParamField path="a" type="number">
+  Alpha transparency (0-1)
+</ParamField>
+
+### SetRegionWidth
+
+Sets the base width of the region.
+
+```lua
+region:SetRegionWidth(width)
+```
+
+<ParamField path="width" type="number">
+  Width in pixels
+</ParamField>
+
+### SetRegionHeight
+
+Sets the base height of the region.
+
+```lua
+region:SetRegionHeight(height)
+```
+
+<ParamField path="height" type="number">
+  Height in pixels
+</ParamField>
+
+### SetInverse
+
+Inverts the fill direction.
+
+```lua
+region:SetInverse(inverse)
+```
+
+<ParamField path="inverse" type="boolean">
+  true to invert fill direction
+</ParamField>
+
+### SetOrientation
+
+Changes the progress orientation.
+
+```lua
+region:SetOrientation(orientation)
+```
+
+<ParamField path="orientation" type="string">
+  One of: HORIZONTAL, HORIZONTAL_INVERSE, VERTICAL, VERTICAL_INVERSE, CLOCKWISE, ANTICLOCKWISE
+</ParamField>
+
+### SetMirror
+
+Mirrors the texture horizontally.
+
+```lua
+region:SetMirror(mirror)
+```
+
+<ParamField path="mirror" type="boolean">
+  true to mirror horizontally
+</ParamField>
+
+### SetOverlayColor
+
+Sets the color of an overlay texture.
+
+```lua
+region:SetOverlayColor(id, r, g, b, a)
+```
+
+<ParamField path="id" type="number">
+  Overlay index
+</ParamField>
+
+<ParamField path="r" type="number">
+  Red color component (0-1)
+</ParamField>
+
+<ParamField path="g" type="number">
+  Green color component (0-1)
+</ParamField>
+
+<ParamField path="b" type="number">
+  Blue color component (0-1)
+</ParamField>
+
+<ParamField path="a" type="number">
+  Alpha transparency (0-1)
+</ParamField>
+
+### UpdateTime
+
+Updates progress based on duration and expiration time.
+
+```lua
+region:UpdateTime()
+```
+
+### UpdateValue
+
+Updates progress based on value and total.
+
+```lua
+region:UpdateValue()
+```
+
+### Update
+
+Refreshes the entire region including texture and progress.
+
+```lua
+region:Update()
+```
+
+## Texture Transformation
+
+Progress textures support advanced transformation:
+
+### Crop Settings
+
+Control how much of the texture is cropped:
+
+```lua
+data.crop_x = 0.41 -- Horizontal crop amount
+data.crop_y = 0.41 -- Vertical crop amount
+data.crop = 0.41   -- Crop amount for circular progress
+```
+
+### Offset Settings
+
+Shift the texture position:
+
+```lua
+data.user_x = 0 -- Horizontal offset (-1 to 1)
+data.user_y = 0 -- Vertical offset (-1 to 1)
+```
+
+### Rotation
+
+Rotate the entire texture:
+
+```lua
+data.rotation = 0 -- Rotation in radians
+```
+
+## Circular Progress
+
+For circular/radial progress, configure start and end angles:
+
+```lua
+data.orientation = "CLOCKWISE"
+data.startAngle = 0    -- Start at top (0-360)
+data.endAngle = 360    -- Full circle (0-720)
+```
+
+**Example - Half Circle:**
+```lua
+data.startAngle = 0
+data.endAngle = 180
+```
+
+## Compress Mode
+
+Compress mode scales the texture as it fills instead of revealing:
+
+```lua
+data.compress = true  -- Texture scales with progress
+data.compress = false -- Texture is revealed by progress
+```
+
+## Smooth Progress
+
+Enable smooth progress transitions:
+
+```lua
+data.smoothProgress = true
+```
+
+When enabled, progress changes are animated smoothly using the SmoothStatusBar mixin.
+
+## Blend Modes
+
+Control how textures blend with background:
+
+```lua
+data.blendMode = "BLEND"     -- Normal blending
+data.blendMode = "ADD"       -- Additive blending
+data.blendMode = "MOD"       -- Modulative blending
+data.blendMode = "ALPHAKEY"  -- Alpha key blending
+```
+
+## Properties
+
+| Property | Type | Setter | Description |
+|----------|------|--------|-------------|
+| desaturateForeground | boolean | SetForegroundDesaturated | Grayscale foreground |
+| desaturateBackground | boolean | SetBackgroundDesaturated | Grayscale background |
+| foregroundColor | color | Color | Foreground RGBA color |
+| backgroundColor | color | SetBackgroundColor | Background RGBA color |
+| width | number | SetRegionWidth | Region width |
+| height | number | SetRegionHeight | Region height |
+| orientation | string | SetOrientation | Progress direction |
+| inverse | boolean | SetInverse | Invert progress |
+| mirror | boolean | SetMirror | Horizontal mirror |
+
+## State Values
+
+Reads these values from trigger state:
+
+- `state.texture` - Override texture path
+- `state.value` - Current value
+- `state.total` - Maximum value
+- `state.duration` - Time duration
+- `state.expirationTime` - End time
+- `state.inverse` - Invert progress
+- `state.paused` - Pause progress updates
+
+## Code Examples
+
+### Health Bar with Color Gradient
+
+```lua
+function()
+  local region = aura_env.region
+  local health = UnitHealth("player")
+  local maxHealth = UnitHealthMax("player")
+  local percent = health / maxHealth
+  
+  -- Set progress
+  region:SetValueOnTexture(percent)
+  
+  -- Color gradient from red to green
+  if percent > 0.5 then
+    region:Color(0, 1, 0, 1)
+  else
+    region:Color(1, 1 - (percent * 2), 0, 1)
+  end
+end
+```
+
+### Rotating Circular Progress
+
+```lua
+-- Setup circular progress
+data.orientation = "CLOCKWISE"
+data.startAngle = 0
+data.endAngle = 360
+
+-- Add rotation animation
+function()
+  local region = aura_env.region
+  local time = GetTime()
+  region:Rotate(time) -- Rotate based on time
+end
+```
+
+### Dynamic Texture Based on State
+
+```lua
+function()
+  local region = aura_env.region
+  local inCombat = UnitAffectingCombat("player")
+  
+  if inCombat then
+    region:SetTexture("Interface\\Addons\\WeakAuras\\Media\\Textures\\Square_White")
+    region:Color(1, 0, 0, 1)
+  else
+    region:SetTexture("Interface\\Addons\\WeakAuras\\Media\\Textures\\Circle")
+    region:Color(0, 1, 0, 1)
+  end
+end
+```
+
+### Inverse Fill on Low Value
+
+```lua
+function()
+  local region = aura_env.region
+  local value = region.state.value
+  local total = region.state.total
+  
+  if value < total * 0.25 then
+    region:SetInverse(true)
+    region:Color(1, 0, 0, 1) -- Red when low
+  else
+    region:SetInverse(false)
+    region:Color(1, 1, 1, 1) -- White when normal
+  end
+end
+```

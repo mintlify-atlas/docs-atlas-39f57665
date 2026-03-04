@@ -1,0 +1,465 @@
+---
+title: "Progress Bar Display"
+description: "Show progress with customizable bars and textures"
+icon: "chart-simple"
+---
+
+## Overview
+
+Progress bar displays (Progress Texture) show progress using filled textures that can grow, shrink, or rotate. They support various orientations, circular progress, and custom textures.
+
+<Info>
+Progress bars use `ProgressTexture.lua` for advanced texture manipulation and progress display.
+</Info>
+
+## Basic Configuration
+
+```lua
+{
+  regionType = "progresstexture",
+  width = 200,
+  height = 50,
+  orientation = "HORIZONTAL",
+  inverse = false,
+  
+  foregroundTexture = "Interface\\\\Addons\\\\WeakAuras\\\\PowerAurasMedia\\\\Auras\\\\Aura3",
+  foregroundColor = {1, 1, 1, 1},
+  
+  backgroundTexture = "Interface\\\\Addons\\\\WeakAuras\\\\PowerAurasMedia\\\\Auras\\\\Aura3",
+  backgroundColor = {0.5, 0.5, 0.5, 0.5},
+  backgroundOffset = 2
+}
+```
+
+## Orientations
+
+<Tabs>
+  <Tab title="Horizontal">
+    ```lua
+    {
+      orientation = "HORIZONTAL",
+      inverse = false  -- Fill left to right
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Vertical">
+    ```lua
+    {
+      orientation = "VERTICAL",
+      inverse = false  -- Fill bottom to top
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Circular">
+    ```lua
+    {
+      orientation = "CLOCKWISE",
+      startAngle = 0,
+      endAngle = 360
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Diagonal">
+    ```lua
+    {
+      orientation = "HORIZONTAL_INVERSE",
+      rotation = 45  -- Angled progress
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Orientation Types
+
+| Type | Description |
+|------|-------------|
+| `HORIZONTAL` | Left to right |
+| `HORIZONTAL_INVERSE` | Right to left |
+| `VERTICAL` | Bottom to top |
+| `VERTICAL_INVERSE` | Top to bottom |
+| `CLOCKWISE` | Circular clockwise |
+| `ANTICLOCKWISE` | Circular counter-clockwise |
+
+## Textures
+
+### Foreground (Progress)
+
+```lua
+{
+  foregroundTexture = "path/to/texture",
+  foregroundColor = {1, 0.5, 0, 1},  -- Orange
+  desaturateForeground = false
+}
+```
+
+### Background
+
+```lua
+{
+  sameTexture = false,  -- Use different texture
+  backgroundTexture = "path/to/background",
+  backgroundColor = {0.2, 0.2, 0.2, 0.8},
+  desaturateBackground = true,
+  backgroundOffset = 2  // Padding around edge
+}
+```
+
+<Tip>
+Set `sameTexture = true` to automatically use the same texture for background.
+</Tip>
+
+## Circular Progress
+
+Create circular/radial progress displays:
+
+```lua
+{
+  orientation = "CLOCKWISE",
+  startAngle = 0,      -- Start position (degrees)
+  endAngle = 360,      // Full circle
+  rotation = 0,        // Rotate entire display
+  
+  user_x = 0,          // Center offset X
+  user_y = 0,          // Center offset Y
+  
+  crop_x = 0.41,       // Crop inner area
+  crop_y = 0.41
+}
+```
+
+### Arc Configuration
+
+<CodeGroup>
+```lua Full Circle
+{
+  startAngle = 0,
+  endAngle = 360
+}
+```
+
+```lua Half Circle
+{
+  startAngle = 90,
+  endAngle = 270
+}
+```
+
+```lua Quarter Arc
+{
+  startAngle = 0,
+  endAngle = 90
+}
+```
+</CodeGroup>
+
+## Advanced Settings
+
+### Compression
+
+```lua
+{
+  compress = true  -- Shrink empty space instead of fade
+}
+```
+
+<CardGroup cols={2}>
+  <Card title="Compressed" icon="compress">
+    Bar physically shrinks as it empties
+  </Card>
+  <Card title="Non-Compressed" icon="expand">
+    Bar fades/reveals as value changes
+  </Card>
+</CardGroup>
+
+### Mirroring
+
+```lua
+{
+  mirror = true  -- Mirror horizontally
+}
+```
+
+### Rotation
+
+```lua
+{
+  rotation = 45,  -- Degrees (0-360)
+  
+  // Internal transform variables
+  cos_rotation = math.cos(math.rad(45)),
+  sin_rotation = math.sin(math.rad(45))
+}
+```
+
+### Scaling
+
+```lua
+{
+  scale_x = 1.0,  -- Horizontal scale
+  scale_y = 1.0   // Vertical scale
+}
+```
+
+## Blend Modes
+
+```lua
+{
+  blendMode = "BLEND"     -- Normal
+  blendMode = "ADD"       -- Additive (brighter)
+  blendMode = "MOD"       -- Multiply (darker)
+  blendMode = "ALPHAKEY"  -- Alpha keying
+}
+```
+
+## Slant Mode
+
+For skewed/slanted bars:
+
+```lua
+{
+  slantMode = "INSIDE",   -- Slant inward
+  slantMode = "OUTSIDE",  -- Slant outward
+  slantMode = "UP",       // Slant upward
+  slantMode = "DOWN"      // Slant downward
+}
+```
+
+## Progress Sources
+
+<Tabs>
+  <Tab title="Automatic">
+    ```lua
+    {
+      progressSource = {-1, ""}  -- From trigger
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Manual">
+    ```lua
+    {
+      progressSource = {0, "auto", 50, 100}  -- value, total
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Trigger Property">
+    ```lua
+    {
+      progressSource = {1, "auto", "value", "total"}
+      // Trigger 1, auto type, value prop, total prop
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Common Patterns
+
+### Health Bar
+
+```lua
+{
+  regionType = "progresstexture",
+  width = 200,
+  height = 20,
+  orientation = "HORIZONTAL",
+  
+  foregroundTexture = "Interface\\\\TargetingFrame\\\\UI-StatusBar",
+  foregroundColor = {0, 1, 0, 1},  -- Green
+  
+  backgroundTexture = "Interface\\\\TargetingFrame\\\\UI-StatusBar",
+  backgroundColor = {0.5, 0, 0, 0.5},  -- Dark red
+  
+  progressSource = {1, "auto", "value", "total"}
+}
+```
+
+### Cast Bar
+
+```lua
+{
+  regionType = "progresstexture",
+  width = 300,
+  height = 30,
+  orientation = "HORIZONTAL",
+  inverse = false,
+  
+  foregroundColor = {1, 0.7, 0, 1},  -- Gold
+  
+  // Use timed progress from trigger
+  progressSource = {-1, ""}
+}
+```
+
+### Circular Cooldown
+
+```lua
+{
+  regionType = "progresstexture",
+  width = 100,
+  height = 100,
+  orientation = "CLOCKWISE",
+  
+  startAngle = 90,   -- Start at top
+  endAngle = 450,    // Full rotation
+  rotation = 0,
+  
+  foregroundTexture = "Interface\\\\Addons\\\\WeakAuras\\\\PowerAurasMedia\\\\Auras\\\\Aura3",
+  foregroundColor = {0, 0.8, 1, 1},
+  
+  backgroundOffset = 3,
+  backgroundColor = {0, 0, 0, 0.5}
+}
+```
+
+### Resource Tracker
+
+```lua
+{
+  regionType = "progresstexture",
+  width = 250,
+  height = 40,
+  orientation = "HORIZONTAL",
+  
+  // Dynamic color based on value
+  conditions = {
+    {
+      check = {
+        trigger = 1,
+        variable = "value",
+        op = "<",
+        value = 30
+      },
+      changes = {{
+        property = "foregroundColor",
+        value = {1, 0, 0, 1}  -- Red when low
+      }}
+    },
+    {
+      check = {
+        trigger = 1,
+        variable = "value",
+        op = ">=",
+        value = 70
+      },
+      changes = {{
+        property = "foregroundColor",
+        value = {0, 1, 0, 1}  -- Green when high
+      }}
+    }
+  }
+}
+```
+
+## Properties Reference
+
+### Modifiable via Conditions
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `desaturateForeground` | boolean | Grayscale foreground |
+| `desaturateBackground` | boolean | Grayscale background |
+| `foregroundColor` | color | Foreground RGBA |
+| `backgroundColor` | color | Background RGBA |
+| `width` | number | Bar width |
+| `height` | number | Bar height |
+| `orientation` | list | Growth direction |
+| `inverse` | boolean | Reverse direction |
+| `mirror` | boolean | Horizontal flip |
+
+## Advanced Texture Transforms
+
+The texture coordinate system uses complex transforms:
+
+```lua
+local function ApplyTransform(x, y, region)
+  // 1) Translate to center
+  x, y = x - 0.5, y - 0.5
+  
+  // 2) Shrink by 1/sqrt(2)
+  x, y = x * 1.4142, y * 1.4142
+  
+  // 3) Scale
+  x = x / region.scale_x
+  y = y / region.scale_y
+  
+  // 4) Mirror
+  if region.mirror_h then x = -x end
+  if region.mirror_v then y = -y end
+  
+  // 5) Rotate
+  local rx = region.cos_rotation * x - region.sin_rotation * y
+  local ry = region.sin_rotation * x + region.cos_rotation * y
+  
+  // 6) Translate back
+  return rx + 0.5 + region.user_x,
+         ry + 0.5 + region.user_y
+end
+```
+
+## Performance
+
+<AccordionGroup>
+  <Accordion title="Texture Complexity" icon="image">
+    Complex textures with many vertices can impact performance. Use simpler textures for better FPS.
+  </Accordion>
+  
+  <Accordion title="Update Frequency" icon="clock">
+    Progress bars update when value changes. Avoid polling triggers for smooth updates.
+  </Accordion>
+  
+  <Accordion title="Circular Progress" icon="circle-notch">
+    Circular progress uses more vertices than linear. Limit count in complex UIs.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Bar Not Filling" icon="chart-simple">
+    - Verify progressSource is configured
+    - Check trigger provides value/total or duration/expirationTime
+    - Ensure orientation matches intended direction
+    - Check inverse setting
+  </Accordion>
+  
+  <Accordion title="Texture Distorted" icon="image">
+    - Adjust crop_x and crop_y for circular displays
+    - Check scale_x and scale_y values
+    - Verify texture aspect ratio matches bar dimensions
+  </Accordion>
+  
+  <Accordion title="Colors Wrong" icon="palette">
+    - Verify foregroundColor and backgroundColor RGBA values
+    - Check desaturate settings
+    - Ensure blend mode is appropriate
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CheckGroup>
+  - <Check>Use appropriate orientation for your layout</Check>
+  - <Check>Set backgroundOffset for visual separation</Check>
+  - <Check>Choose textures that tile well</Check>
+  - <Check>Use conditions for dynamic color changes</Check>
+  - <Check>Test circular progress with different arc ranges</Check>
+  - <Check>Consider compression vs fade for your use case</Check>
+</CheckGroup>
+
+## Related Topics
+
+<CardGroup cols={3}>
+  <Card title="Icon Display" icon="image" href="/core-concepts/display-types/icon">
+    Alternative display type
+  </Card>
+  <Card title="Text Display" icon="font" href="/core-concepts/display-types/text">
+    Add progress text
+  </Card>
+  <Card title="Conditions" icon="code-branch" href="/core-concepts/conditions">
+    Dynamic property changes
+  </Card>
+</CardGroup>

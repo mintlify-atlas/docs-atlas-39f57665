@@ -1,0 +1,703 @@
+---
+title: Custom Triggers
+description: Creating advanced custom trigger types and patterns
+icon: sliders
+---
+
+Custom triggers provide complete control over when your auras show and hide using Lua code. This guide covers advanced patterns and best practices for creating custom triggers.
+
+## When to Use Custom Triggers
+
+Use custom triggers when:
+
+<CardGroup cols={2}>
+  <Card title="Complex Conditions" icon="diagram-project">
+    Multiple conditions that can't be expressed with standard triggers
+  </Card>
+  <Card title="Calculated Values" icon="calculator">
+    Display values that require computation or transformation
+  </Card>
+  <Card title="Multiple Units" icon="users">
+    Track conditions across party/raid members
+  </Card>
+  <Card title="Custom Events" icon="bolt">
+    React to specific game events not covered by standard triggers
+  </Card>
+</CardGroup>
+
+<Warning>
+Custom triggers run more frequently than built-in triggers and can impact performance. Use standard triggers when possible.
+</Warning>
+
+## Custom Trigger Structure
+
+### Basic Template
+
+```lua
+function(event, ...)
+  -- event: The WoW event that fired (if any)
+  -- ...: Event arguments
+  
+  -- Your condition logic here
+  local shouldShow = false
+  
+  -- Check your condition
+  if someCondition then
+    shouldShow = true
+  end
+  
+  if shouldShow then
+    return true, {     -- First return: true = show, false = hide
+      show = true,     -- Required: mirror of first return
+      changed = true,  -- Required: true if state changed
+      -- Additional state properties for display
+      value = 100,
+      name = "My Value"
+    }
+  end
+  
+  return false  -- Hide the aura
+end
+```
+
+### Return Values
+
+<Tabs>
+  <Tab title="Simple Return">
+    Just show/hide:
+    ```lua
+    function()
+      if condition then
+        return true  -- Show
+      end
+      return false   -- Hide
+    end
+    ```
+  </Tab>
+  
+  <Tab title="With State">
+    Provide data to the display:
+    ```lua
+    function()
+      if condition then
+        return true, {
+          show = true,
+          changed = true,
+          -- Custom state data
+          stacks = 5,
+          duration = 30,
+          expirationTime = GetTime() + 30
+        }
+      end
+      return false
+    end
+    ```
+  </Tab>
+  
+  <Tab title="Progress Bar">
+    For progress displays:
+    ```lua
+    function()
+      local current = UnitHealth("player")
+      local max = UnitHealthMax("player")
+      
+      return true, {
+        show = true,
+        changed = true,
+        progressType = "static",
+        value = current,
+        total = max
+      }
+    end
+    ```
+  </Tab>
+</Tabs>
+
+## Trigger Events
+
+Custom triggers can respond to WoW events:
+
+### Event Registration
+
+```lua
+-- In "Custom Trigger" tab, "Event Type" dropdown:
+-- Select "Event(s)" and specify events
+
+-- Common events:
+UNIT_AURA           -- Aura changes on a unit
+UNIT_HEALTH         -- Health changes
+UNIT_POWER_UPDATE   -- Power/mana changes  
+SPELL_UPDATE_COOLDOWN -- Cooldown changes
+COMBAT_LOG_EVENT_UNFILTERED -- Combat log events
+PLAYER_TARGET_CHANGED -- Target changed
+```
+
+### Event Handling
+
+```lua
+function(event, unit, ...)
+  -- event: Event name (e.g., "UNIT_AURA")
+  -- unit: First argument (for unit events)
+  -- ...: Additional event arguments
+  
+  if event == "UNIT_AURA" then
+    if unit == "player" then
+      -- Check for buff
+      local name = WA_GetUnitBuff("player", "Battle Shout")
+      return name ~= nil
+    end
+  elseif event == "PLAYER_TARGET_CHANGED" then
+    -- Handle target change
+    return UnitExists("target")
+  end
+  
+  return false
+end
+```
+
+### Status Type (No Events)
+
+For continuous checking without events:
+
+```lua
+-- Set Event Type to "Status"
+-- Will check every frame or on manual refresh
+
+function()
+  -- No event parameter in Status type
+  local health = UnitHealth("player")
+  local maxHealth = UnitHealthMax("player")
+  local healthPct = (health / maxHealth) * 100
+  
+  if healthPct < 35 then
+    return true, {
+      show = true,
+      changed = true,
+      health = healthPct
+    }
+  end
+  
+  return false
+end
+```
+
+<Tip>
+Use "Event(s)" type when possible instead of "Status" to avoid checking every frame.
+</Tip>
+
+## Advanced Patterns
+
+### Multi-Buff Tracking
+
+Track the first active buff from a list:
+
+```lua
+function(event, unit)
+  if event ~= "UNIT_AURA" or unit ~= "player" then
+    return false
+  end
+  
+  local buffsToTrack = {
+    {id = 47440, name = "Battle Shout"},
+    {id = 47436, name = "Commanding Shout"},
+    {id = 48162, name = "Prayer of Fortitude"}
+  }
+  
+  for _, buff in ipairs(buffsToTrack) do
+    local name, icon, count, _, _, duration, expirationTime = WA_GetUnitBuff("player", buff.id)
+    
+    if name then
+      return true, {
+        show = true,
+        changed = true,
+        name = name,
+        icon = icon,
+        stacks = count or 1,
+        duration = duration,
+        expirationTime = expirationTime,
+        buffID = buff.id
+      }
+    end
+  end
+  
+  return false
+end
+```
+
+### Cooldown with Charges
+
+Track abilities with multiple charges:
+
+```lua
+function(event)
+  if event ~= "SPELL_UPDATE_COOLDOWN" and event ~= "SPELL_UPDATE_CHARGES" then
+    return
+  end
+  
+  local spellID = 49028 -- Death Coil (example)
+  local currentCharges, maxCharges, start, duration = GetSpellCharges(spellID)
+  
+  if not currentCharges then
+    -- Spell doesn't have charges, fall back to regular cooldown
+    local cdStart, cdDuration = GetSpellCooldown(spellID)
+    if cdDuration and cdDuration > 0 then
+      return true, {
+        show = true,
+        changed = true,
+        charges = 0,
+        maxCharges = 1,
+        duration = cdDuration,
+        expirationTime = cdStart + cdDuration
+      }
+    else
+      return true, {
+        show = true,
+        changed = true,
+        charges = 1,
+        maxCharges = 1,
+        ready = true
+      }
+    end
+  end
+  
+  return true, {
+    show = true,
+    changed = true,
+    charges = currentCharges,
+    maxCharges = maxCharges,
+    duration = duration,
+    expirationTime = start + duration,
+    ready = currentCharges == maxCharges
+  }
+end
+```
+
+### Raid Debuff Scanner
+
+Find first raid member with specific debuffs:
+
+```lua
+function(event, unit)
+  -- Only check on aura updates
+  if event ~= "UNIT_AURA" then
+    return
+  end
+  
+  -- Debuffs to scan for
+  local debuffs = {28169, 28522, 29998} -- Boss debuff IDs
+  
+  -- Function to check a single unit
+  local function checkUnit(unitID)
+    for _, debuffID in ipairs(debuffs) do
+      local name, icon, count, _, _, duration, expirationTime = WA_GetUnitDebuff(unitID, debuffID)
+      if name then
+        return {
+          unit = unitID,
+          unitName = WA_ClassColorName(unitID, 12),
+          debuffName = name,
+          debuffIcon = icon,
+          stacks = count or 1,
+          duration = duration,
+          expirationTime = expirationTime,
+          spellID = debuffID
+        }
+      end
+    end
+    return nil
+  end
+  
+  -- Check the unit that triggered the event first
+  if unit then
+    local result = checkUnit(unit)
+    if result then
+      return true, {
+        show = true,
+        changed = true,
+        unpack(result)
+      }
+    end
+  end
+  
+  -- Check all raid members
+  for unitID in WA_IterateGroupMembers() do
+    local result = checkUnit(unitID)
+    if result then
+      return true, {
+        show = true,
+        changed = true,
+        unpack(result)
+      }
+    end
+  end
+  
+  return false
+end
+```
+
+### Combat Log Parsing
+
+React to specific combat log events:
+
+```lua
+function(event, ...)
+  if event ~= "COMBAT_LOG_EVENT_UNFILTERED" then
+    return
+  end
+  
+  local timestamp, subEvent, _, sourceGUID, sourceName, _, _, 
+        destGUID, destName, _, _, spellID, spellName = ...
+  
+  -- Track damage from specific spell
+  if subEvent == "SPELL_DAMAGE" and spellID == 47450 then -- Mortal Strike
+    -- Store in aura_env for persistence
+    aura_env.lastMSTime = GetTime()
+    aura_env.lastMSTarget = destName
+    
+    return true, {
+      show = true,
+      changed = true,
+      targetName = destName,
+      spellName = spellName,
+      timestamp = timestamp
+    }
+  end
+  
+  -- Hide after 3 seconds
+  if aura_env.lastMSTime and (GetTime() - aura_env.lastMSTime) > 3 then
+    aura_env.lastMSTime = nil
+    return false
+  end
+  
+  -- Keep showing if within time window
+  if aura_env.lastMSTime then
+    return true, {
+      show = true,
+      changed = false,
+      targetName = aura_env.lastMSTarget,
+      spellName = "Mortal Strike"
+    }
+  end
+  
+  return false
+end
+```
+
+### Resource with Threshold
+
+Show when resource is below/above threshold:
+
+```lua
+function(event, unit, powerType)
+  -- Only update on power changes
+  if event ~= "UNIT_POWER_UPDATE" or unit ~= "player" then
+    return
+  end
+  
+  local powerType = 0 -- 0 = Mana, 1 = Rage, 3 = Energy, etc.
+  local current = UnitPower("player", powerType)
+  local max = UnitPowerMax("player", powerType)
+  local percent = (current / max) * 100
+  
+  local threshold = 20 -- Show when below 20%
+  
+  if percent < threshold then
+    return true, {
+      show = true,
+      changed = true,
+      progressType = "static",
+      value = current,
+      total = max,
+      percent = percent
+    }
+  end
+  
+  return false
+end
+```
+
+### Buff Stack Counter
+
+Track buff stacks with custom thresholds:
+
+```lua
+function(event, unit)
+  if event ~= "UNIT_AURA" or unit ~= "player" then
+    return
+  end
+  
+  local spellID = 49222 -- Bone Shield
+  local name, icon, count, _, _, duration, expirationTime = WA_GetUnitBuff("player", spellID)
+  
+  if name then
+    local stacks = count or 1
+    
+    -- Color based on stack count
+    local color
+    if stacks >= 5 then
+      color = {0, 1, 0, 1} -- Green
+    elseif stacks >= 3 then
+      color = {1, 1, 0, 1} -- Yellow  
+    else
+      color = {1, 0, 0, 1} -- Red
+    end
+    
+    return true, {
+      show = true,
+      changed = true,
+      stacks = stacks,
+      duration = duration,
+      expirationTime = expirationTime,
+      color = color,
+      icon = icon
+    }
+  end
+  
+  return false
+end
+```
+
+## Custom Trigger Duration
+
+Provide custom duration info for progress displays:
+
+```lua
+-- In "Duration Info" tab
+function()
+  -- Return: duration, expirationTime
+  
+  -- From buff
+  local name, _, _, _, _, duration, expirationTime = WA_GetUnitBuff("player", 47440)
+  if name and duration and duration > 0 then
+    return duration, expirationTime
+  end
+  
+  -- From cooldown
+  local start, duration = GetSpellCooldown(47440)
+  if start and duration and duration > 0 then
+    return duration, start + duration
+  end
+  
+  -- No duration
+  return 0, 0
+end
+```
+
+## Custom Untrigger
+
+Define when to hide the aura:
+
+```lua
+-- Custom Untrigger function
+function()
+  -- Return true to HIDE the aura
+  -- Return false to keep showing
+  
+  -- Hide when buff is gone
+  local name = WA_GetUnitBuff("player", "Battle Shout")
+  if not name then
+    return true -- Hide
+  end
+  
+  -- Hide when out of combat
+  if not UnitAffectingCombat("player") then
+    return true -- Hide
+  end
+  
+  return false -- Keep showing
+end
+```
+
+<Note>
+Untrigger is optional. If not specified, the aura hides when the trigger returns false.
+</Note>
+
+## Performance Optimization
+
+### Event Filtering
+
+Only process relevant events:
+
+```lua
+function(event, unit)
+  -- Filter events early
+  if event == "UNIT_AURA" then
+    if unit ~= "player" and unit ~= "target" then
+      return -- Ignore other units
+    end
+  elseif event ~= "PLAYER_TARGET_CHANGED" then
+    return -- Ignore other events
+  end
+  
+  -- Main trigger logic here
+  -- ...
+end
+```
+
+### Caching
+
+Cache expensive lookups:
+
+```lua
+-- On Init
+aura_env.spellName = GetSpellInfo(47440) -- Cache spell name
+aura_env.lastCheck = 0
+aura_env.cachedResult = nil
+
+-- Custom Trigger
+function(event)
+  local now = GetTime()
+  
+  -- Only check every 0.5 seconds
+  if now - aura_env.lastCheck < 0.5 and aura_env.cachedResult then
+    return aura_env.cachedResult.show, aura_env.cachedResult.state
+  end
+  
+  aura_env.lastCheck = now
+  
+  -- Do expensive check
+  local result = expensiveFunction()
+  
+  aura_env.cachedResult = {
+    show = result,
+    state = { show = result, changed = true }
+  }
+  
+  return result, aura_env.cachedResult.state
+end
+```
+
+### Early Returns
+
+Exit quickly when possible:
+
+```lua
+function(event, unit)
+  -- Quick rejection
+  if not UnitExists("target") then
+    return false
+  end
+  
+  if not UnitAffectingCombat("player") then
+    return false
+  end
+  
+  -- Now do expensive checks
+  -- ...
+end
+```
+
+## Testing Custom Triggers
+
+### Debug Output
+
+```lua
+function(event, ...)
+  DebugPrint("Event:", event)
+  DebugPrint("Args:", ...)
+  
+  -- Your trigger logic
+  local result = checkCondition()
+  
+  DebugPrint("Result:", result)
+  return result
+end
+```
+
+Enable with `/wa debuglog`
+
+### Manual Testing
+
+Test triggers manually:
+
+```
+/wa scan  -- Force rescan of triggers
+```
+
+## Common Pitfalls
+
+<AccordionGroup>
+  <Accordion title="Forgetting to Return">
+    Always return a value:
+    ```lua
+    -- BAD
+    function()
+      if condition then
+        return true
+      end
+      -- Missing return here!
+    end
+    
+    -- GOOD  
+    function()
+      if condition then
+        return true
+      end
+      return false -- Always return
+    end
+    ```
+  </Accordion>
+  
+  <Accordion title="Not Checking for nil">
+    Validate data before using:
+    ```lua
+    -- BAD
+    local name, _, count = WA_GetUnitBuff("player", spellID)
+    return count > 5 -- Errors if count is nil!
+    
+    -- GOOD
+    local name, _, count = WA_GetUnitBuff("player", spellID)
+    if name then
+      return (count or 1) > 5
+    end
+    return false
+    ```
+  </Accordion>
+  
+  <Accordion title="Using Wrong Event Type">
+    Match event type to function signature:
+    ```lua
+    -- Event Type: "Event(s)"
+    function(event, ...) -- Receives event name
+      if event == "UNIT_AURA" then ...
+    end
+    
+    -- Event Type: "Status"  
+    function() -- No event parameter
+      -- Check conditions directly
+    end
+    ```
+  </Accordion>
+  
+  <Accordion title="Expensive Operations Every Frame">
+    Avoid heavy processing:
+    ```lua
+    -- BAD: Scans all raid members every check
+    function()
+      for unit in WA_IterateGroupMembers() do
+        -- Expensive check
+      end
+    end
+    
+    -- GOOD: Only on specific events
+    function(event, unit)
+      if event == "UNIT_AURA" then
+        -- Only check the unit that changed
+      end
+    end
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Lua Scripting" icon="code" href="/development/lua-scripting">
+    Learn more about Lua in WeakAuras
+  </Card>
+  <Card title="Performance" icon="gauge" href="/development/performance-optimization">
+    Optimize your triggers
+  </Card>
+  <Card title="Creating Auras" icon="wand-magic-sparkles" href="/development/creating-auras">
+    Back to aura basics
+  </Card>
+</CardGroup>
