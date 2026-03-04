@@ -1,0 +1,157 @@
+{
+  "projectType": "framework",
+  "projectName": "WeakAuras",
+  "projectDescription": "A powerful framework that displays customizable graphics on World of Warcraft's user interface to indicate buffs, debuffs, and other relevant information.",
+  "theme": "aspen",
+  "primaryColor": "#5c64f4",
+  "lightColor": "#acb4fc",
+  "darkColor": "#ffffff",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Getting Started",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "introduction",
+              "features"
+            ]
+          },
+          {
+            "group": "Setup",
+            "pages": [
+              "installation",
+              "quickstart",
+              "client-extensions"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Core Concepts",
+        "groups": [
+          {
+            "group": "Architecture",
+            "pages": [
+              "core-concepts/overview",
+              "core-concepts/displays",
+              "core-concepts/groups"
+            ]
+          },
+          {
+            "group": "Triggers",
+            "pages": [
+              "core-concepts/triggers/overview",
+              "core-concepts/triggers/buff-debuff",
+              "core-concepts/triggers/combat-events",
+              "core-concepts/triggers/custom-lua"
+            ]
+          },
+          {
+            "group": "Display Types",
+            "pages": [
+              "core-concepts/display-types/icon",
+              "core-concepts/display-types/progress-bar",
+              "core-concepts/display-types/text",
+              "core-concepts/display-types/texture",
+              "core-concepts/display-types/model"
+            ]
+          },
+          {
+            "group": "Customization",
+            "pages": [
+              "core-concepts/animations",
+              "core-concepts/conditions",
+              "core-concepts/custom-code"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Development",
+        "groups": [
+          {
+            "group": "Creating Auras",
+            "pages": [
+              "development/creating-auras",
+              "development/templates",
+              "development/importing-exporting"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "development/lua-scripting",
+              "development/custom-triggers",
+              "development/performance-optimization"
+            ]
+          },
+          {
+            "group": "Extensions",
+            "pages": [
+              "development/extensions/weakauras-companion",
+              "development/extensions/stop-motion",
+              "development/extensions/shared-media"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Core API",
+            "pages": [
+              "api/overview",
+              "api/functions",
+              "api/events",
+              "api/tables"
+            ]
+          },
+          {
+            "group": "Systems",
+            "pages": [
+              "api/systems/buff-trigger",
+              "api/systems/generic-trigger",
+              "api/systems/boss-mods"
+            ]
+          },
+          {
+            "group": "Region Types",
+            "pages": [
+              "api/regions/prototype",
+              "api/regions/icon",
+              "api/regions/text",
+              "api/regions/progress-texture",
+              "api/regions/model"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Intuitive and powerful configuration interface",
+    "Custom textures and progress bars with exact duration tracking",
+    "Triggers for auras, health, power, cooldowns, combat events, and more",
+    "Preset and user-defined animations with custom side-effects",
+    "Advanced grouping and positioning system",
+    "CPU optimizations with conditional loading and modularity",
+    "Powerful Lua customization for advanced users"
+  ],
+  "publicApiSurface": [
+    "WeakAuras.ScanEvents()",
+    "WeakAuras.RegisterRegionType()",
+    "WeakAuras.RegisterTriggerType()",
+    "WeakAuras.Add()",
+    "WeakAuras.Delete()",
+    "WeakAuras.GetData()",
+    "WeakAuras.Modernize()",
+    "WeakAuras.CheckRange()",
+    "WeakAuras.IsSpellInRange()",
+    "WeakAuras.UnitCastingInfo()",
+    "WeakAuras.UnitChannelInfo()",
+    "/wa or /weakauras command"
+  ]
+}
