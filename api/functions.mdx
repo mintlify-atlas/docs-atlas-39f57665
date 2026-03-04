@@ -47,6 +47,72 @@ if region then
 end
 ```
 
+### Add
+
+Adds a new aura or updates an existing one.
+
+<ParamField path="data" type="table" required>
+  The aura data table with all configuration
+</ParamField>
+
+<ParamField path="simpleChange" type="boolean" optional>
+  If true, treats this as a simple property change (optimization)
+</ParamField>
+
+```lua
+-- Add new aura
+WeakAuras.Add({
+  id = "MyAura",
+  regionType = "icon",
+  triggers = {
+    {
+      trigger = {
+        type = "aura2",
+        auranames = "Bloodlust"
+      }
+    }
+  }
+})
+```
+
+<Warning>Always validate your data table structure before calling Add to avoid errors.</Warning>
+
+### Delete
+
+Deletes an aura.
+
+<ParamField path="data" type="table|string" required>
+  The aura data table or aura ID string
+</ParamField>
+
+```lua
+-- Delete by ID
+WeakAuras.Delete("MyAuraID")
+
+-- Or delete by data table
+local data = WeakAuras.GetData("MyAuraID")
+WeakAuras.Delete(data)
+```
+
+### Rename
+
+Renames an aura to a new ID.
+
+<ParamField path="data" type="table" required>
+  The aura data table
+</ParamField>
+
+<ParamField path="newid" type="string" required>
+  The new unique identifier
+</ParamField>
+
+```lua
+local data = WeakAuras.GetData("OldID")
+WeakAuras.Rename(data, "NewID")
+```
+
+<Note>Rename updates all internal references and parent-child relationships automatically.</Note>
+
 ### InternalVersion
 
 Returns the internal version number of WeakAuras.
@@ -251,6 +317,185 @@ if func then
   func()()
 end
 ```
+
+## Range and Combat Functions
+
+### CheckRange
+
+Checks if a unit is within a specific range.
+
+<ParamField path="unit" type="string" required>
+  The unit ID (e.g., "target", "player")
+</ParamField>
+
+<ParamField path="range" type="number" required>
+  The range to check in yards
+</ParamField>
+
+<ParamField path="operator" type="string" required>
+  The comparison operator: `<=` or `>=`
+</ParamField>
+
+<ResponseField name="inRange" type="boolean">
+  True if the unit meets the range condition
+</ResponseField>
+
+```lua
+-- Check if target is within 30 yards
+if WeakAuras.CheckRange("target", 30, "<=") then
+  print("Target is close")
+end
+```
+
+### IsSpellInRange
+
+Checks if a spell is in range of a unit.
+
+<ParamField path="spellId" type="number|string" required>
+  The spell ID or name
+</ParamField>
+
+<ParamField path="unit" type="string" required>
+  The unit ID
+</ParamField>
+
+<ResponseField name="inRange" type="boolean">
+  True if spell is in range
+</ResponseField>
+
+```lua
+local inRange = WeakAuras.IsSpellInRange(5308, "target") -- Execute
+if inRange then
+  print("Execute is in range")
+end
+```
+
+### GetRange
+
+Gets the estimated range to a unit.
+
+<ParamField path="unit" type="string" required>
+  The unit ID
+</ParamField>
+
+<ParamField path="checkVisible" type="boolean" optional>
+  If true, only check visible units
+</ParamField>
+
+<ResponseField name="minRange" type="number">
+  Minimum range in yards
+</ResponseField>
+
+<ResponseField name="maxRange" type="number">
+  Maximum range in yards
+</ResponseField>
+
+```lua
+local minRange, maxRange = WeakAuras.GetRange("target", true)
+print(string.format("Target is %d-%d yards away", minRange or 0, maxRange or 999))
+```
+
+## State Functions
+
+### IsAuraActive
+
+Checks if an aura is currently active (showing).
+
+<ParamField path="id" type="string" required>
+  The aura identifier
+</ParamField>
+
+<ResponseField name="active" type="boolean">
+  True if aura is active
+</ResponseField>
+
+```lua
+if WeakAuras.IsAuraActive("MyAura") then
+  print("Aura is showing")
+end
+```
+
+### IsAuraLoaded
+
+Checks if an aura is loaded (meets load conditions).
+
+<ParamField path="id" type="string" required>
+  The aura identifier
+</ParamField>
+
+<ResponseField name="loaded" type="boolean">
+  True if aura is loaded
+</ResponseField>
+
+```lua
+if WeakAuras.IsAuraLoaded("MyAura") then
+  print("Aura is loaded and ready")
+end
+```
+
+## Registration Functions
+
+### RegisterSubRegionType
+
+Registers a new sub-region type for custom extensions.
+
+<ParamField path="name" type="string" required>
+  The sub-region type name
+</ParamField>
+
+<ParamField path="displayName" type="string" required>
+  The display name shown in UI
+</ParamField>
+
+<ParamField path="supportFunction" type="function" required>
+  Function that determines if this sub-region is supported for a region type
+</ParamField>
+
+<ParamField path="createFunction" type="function" required>
+  Function to create the sub-region
+</ParamField>
+
+<ParamField path="modifyFunction" type="function" required>
+  Function to update the sub-region
+</ParamField>
+
+<ParamField path="onAcquire" type="function" optional>
+  Called when sub-region is acquired from pool
+</ParamField>
+
+<ParamField path="onRelease" type="function" optional>
+  Called when sub-region is released to pool
+</ParamField>
+
+<ParamField path="default" type="table" required>
+  Default configuration table
+</ParamField>
+
+<ParamField path="properties" type="table" required>
+  Property definitions for configuration
+</ParamField>
+
+```lua
+-- Example: Register custom sub-region
+WeakAuras.RegisterSubRegionType(
+  "customSubRegion",
+  "Custom Sub-Region",
+  function(regionType) return true end, -- Support all types
+  function(parent) -- Create
+    local region = CreateFrame("Frame", nil, parent)
+    return region
+  end,
+  function(parent, region, data) -- Modify
+    region:SetSize(data.width or 100, data.height or 100)
+  end,
+  nil, -- onAcquire
+  nil, -- onRelease
+  { width = 100, height = 100 }, -- default
+  {} -- properties
+)
+```
+
+<Warning>Only use registration functions if you're developing WeakAuras extensions.</Warning>
 
 ## See Also
 
